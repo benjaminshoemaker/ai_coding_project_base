@@ -1,0 +1,147 @@
+Would you like to run the following command?
+
+  $ test -f EXECUTION_PLAN.md && echo 'EXECUTION_PLAN.md exists' || echo 'EXECUTION_PLAN.md missing'
+
+› 1. Yes, proceed (y)
+  2. Yes, and don't ask again for commands that start with `test -f EXECUTION_PLAN.md` (p)
+  3. No, and tell Codex what to do differently (esc)
+
+
+---
+
+  Would you like to run the following command?
+
+  $ rg -n "Step 1\.5|1\.5" EXECUTION_PLAN.md TECHNICAL_SPEC.md CLAUDE.md 2>/dev/null || true
+
+  1. Yes, proceed (y)
+› 2. Yes, and don't ask again for commands that start with `rg -n "Step 1\.5|1\.5" EXECUTION_PLAN.md TECHNICAL_SPEC.md
+     CLAUDE.md 2>/dev/null || true` (p)
+  3. No, and tell Codex what to do differently (esc)
+
+---
+
+  Would you like to run the following command?
+
+  $ sed -n '1,200p' TECHNICAL_SPEC.md 2>/dev/null || true
+
+  1. Yes, proceed (y)
+› 2. Yes, and don't ask again for commands that start with `sed -n '1,200p' TECHNICAL_SPEC.md 2>/dev/null || true` (p)
+  3. No, and tell Codex what to do differently (esc)
+
+---
+
+  Would you like to run the following command?
+
+  $ ls -la apps/web/lib apps/web/app 2>/dev/null || true
+
+› 1. Yes, proceed (y)
+  2. Yes, and don't ask again for commands that start with `ls -la apps/web/lib apps/web/app 2>/dev/null || true` (p)
+  3. No, and tell Codex what to do differently (esc)
+
+---
+
+  Would you like to run the following command?
+
+  $ for f in .env.local apps/web/.env.local; do if [ -f "$f" ]; then echo "--- $f"; rg -n "^[A-Za-z_][A-Za-z0-9_]*=" "$f" |
+  cut -d: -f2- | cut -d= -f1 | sort -u; else echo "--- $f (missing)"; fi; done
+
+› 1. Yes, proceed (y)
+  2. Yes, and don't ask again for commands that start with `for f in .env.local apps/web/.env.local; do if [ -f "$f" ]; then
+     echo "--- $f"; rg -n "^[A-Za-z_][A-Za-z0-9_]*=" "$f" | cut -d: -f2- | cut -d= -f1 | sort -u; else echo "--- $f
+     (missing)"; fi; done` (p)
+  3. No, and tell Codex what to do differently (esc)
+
+---
+
+  Would you like to run the following command?
+
+  $ python - <<'PY'
+  import re, pathlib
+  root=pathlib.Path('.')
+  for name in ['AGENTS.md','PRODUCT_SPEC.md','TECHNICAL_SPEC.md','EXECUTION_PLAN.md']:
+      p=root/name
+  [… 18 lines] ctrl + a view all
+
+› 1. Yes, proceed (y)
+  2. Yes, and don't ask again for commands that start with `python - <<'PY'
+     import re, pathlib
+     root=pathlib.Path('.')
+     for name in ['AGENTS.md','PRODUCT_SPEC.md','TECHNICAL_SPEC.md','EXECUTION_PLAN.md']:
+         p=root/name
+         text=p.read_text(encoding='utf-8', errors='replace')
+         lines=text.splitlines()
+         headings=[(i+1,l) for i,l in enumerate(lines) if re.match(r'^(#{1,6})\s+\S', l)]
+         print('\n'+'='*80)
+         print(name, f'({len(lines)} lines)')
+         print('Headings:')
+         for i,(ln,h) in enumerate(headings[:60]):
+             print(f'  {ln:5d}: {h}')
+         if len(headings)>60:
+             print(f'  ... ({len(headings)-60} more)')
+     PY` (p)
+  3. No, and tell Codex what to do differently (esc)
+
+---
+
+  Would you like to run the following command?
+
+  $ node - <<'NODE'
+  const fs = require('fs');
+  const files = ['AGENTS.md','PRODUCT_SPEC.md','TECHNICAL_SPEC.md','EXECUTION_PLAN.md'];
+  [… 20 lines] ctrl + a view all
+
+› 1. Yes, proceed (y)
+  2. Yes, and don't ask again for commands that start with `node - <<'NODE'
+     const fs = require('fs');
+     const files = ['AGENTS.md','PRODUCT_SPEC.md','TECHNICAL_SPEC.md','EXECUTION_PLAN.md'];
+     for (const f of files) {
+       const text = fs.readFileSync(f, 'utf8');
+       const lines = text.split(/\r?\n/);
+       const headings = [];
+       for (let i = 0; i < lines.length; i++) {
+         const l = lines[i];
+         if (/^#{1,6}\s+\S/.test(l)) headings.push([i+1, l]);
+       }
+       console.log('\n' + '='.repeat(80));
+       console.log(`${f} (${lines.length} lines)`);
+       console.log('Headings:');
+       headings.slice(0, 80).forEach(([ln, h]) => console.log(String(ln).padStart(5) + ': ' + h));
+       if (headings.length > 80) console.log(`  ... (${headings.length-80} more)`);
+     }
+     NODE` (p)
+  3. No, and tell Codex what to do differently (esc)
+
+---
+
+  Would you like to run the following command?
+
+  $ find apps/web/types -maxdepth 2 -type f -print -exec sed -n '1,200p' {} \;
+
+› 1. Yes, proceed (y)
+  2. Yes, and don't ask again for commands that start with `find apps/web/types -maxdepth 2 -type f -print -exec sed -n
+     '1,200p' {} \;` (p)
+  3. No, and tell Codex what to do differently (esc)
+
+---
+
+  Would you like to run the following command?
+
+  $ mkdir -p apps/web/lib/github
+
+› 1. Yes, proceed (y)
+  2. Yes, and don't ask again for commands that start with `mkdir -p apps/web/lib/github` (p)
+  3. No, and tell Codex what to do differently (esc)
+
+---
+
+  Would you like to run the following command?
+
+  $ pnpm -C apps/web add @octokit/app @octokit/rest
+
+› 1. Yes, proceed (y)
+  2. Yes, and don't ask again for commands that start with `pnpm -C apps/web add @octokit/app @octokit/rest` (p)
+  3. No, and tell Codex what to do differently (esc)
+
+---
+
+

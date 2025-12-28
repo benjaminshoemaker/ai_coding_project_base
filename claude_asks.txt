@@ -1,0 +1,79 @@
+---
+ Bash command
+
+   vercel dev --yes 2>&1 &
+   sleep 15
+   curl -s http://localhost:3000/api/health 2>/dev/null || echo "API not ready"
+   Start vercel dev and test API
+
+ Do you want to proceed?
+ ❯ 1. Yes
+   2. Type here to tell Claude what to do differently
+
+---
+
+ Bash command
+
+   pkill -f "vercel" 2>/dev/null || true
+   pkill -f "next" 2>/dev/null || true
+   sleep 2
+   vercel dev --yes 2>&1 &
+   sleep 18
+   curl -s http://localhost:3000/api/health 2>/dev/null || echo "API not ready"
+   Restart vercel dev and test API
+
+ Do you want to proceed?
+ ❯ 1. Yes
+   2. Type here to tell Claude what to do differently
+
+--- 
+
+ Bash command
+
+   cat /tmp/claude/tasks/b1f3863.output
+   Check vercel dev output
+
+ Do you want to proceed?
+ ❯ 1. Yes
+   2. Yes, allow reading from tasks/ from this project
+   3. Type here to tell Claude what to do differently
+
+--- 
+
+ Bash command
+
+   mkdir -p /Users/coding/Projects/nfl_game_explainer/src/app/game/\[gameId\]
+   Create game route directory
+
+ Do you want to proceed?
+ ❯ 1. Yes
+   2. Yes, and always allow access to game/ from this project
+   3. Type here to tell Claude what to do differently
+
+---
+
+ Bash command
+
+   lsof -i :3000 -i :8000 | grep LISTEN || echo "No servers running"
+   Check if dev servers are running
+
+ Do you want to proceed?
+   1. Yes
+ ❯ 2. Yes, and don't ask again for lsof commands in /Users/coding/Projects/nfl_game_explainer
+   3. Type here to tell Claude what to do differently
+
+---
+
+ Bash command
+
+   diff <(sed -n '113,122p' /Users/coding/Projects/nfl_game_explainer/game_compare.py) <(sed -n '37,55p'
+   /Users/coding/Projects/nfl_game_explainer/api/lib/game_analysis.py) || true
+   Compare get_game_data implementations
+
+ Do you want to proceed?
+ ❯ 1. Yes
+   2. Type here to tell Claude what to do differently
+
+---
+
+

@@ -1,0 +1,18 @@
+Components needed for executing an AI coding agent project
+
+Global
+* Agent Configs (~/.codex/config.toml, .claude/settings.json)
+* Skills:
+** Code verification
+* AGENTS.md basic rules
+
+Local
+* (optional) existing codebase
+* Feature / Product Spec
+* Tech Spec
+* Implementation plan
+* AGENTS.md project-specific rules
+* Manifest file
+** TODOS file
+** Decisions, deferrals
+** Status & next action
