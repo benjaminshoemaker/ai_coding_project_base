@@ -23,9 +23,9 @@ PART 1: EXECUTION HIERARCHY DEFINITIONS
 - Ends with manual testing and human approval
 - Includes pre-phase setup requirements (external services, env vars, etc.)
 
-**STEP**: A merge boundary containing parallelizable work
-- Groups tasks that can execute concurrently in git worktrees
-- All tasks in a step merge together before next step begins
+**STEP**: A completion boundary containing sequential work
+- Groups related tasks that should be completed together
+- All tasks in a step must complete before the next step begins
 - Has clear dependencies on prior steps
 
 **TASK**: An atomic unit of work for a single AI agent session
@@ -139,20 +139,19 @@ Keep AGENTS.md focused on workflow mechanics only. Do NOT include:
 
 # AGENTS.md - {Project Name}
 
-> Workflow guidelines for AI agents in a worktree-based development process.
+> Workflow guidelines for AI agents in a sequential development process.
 
 ## Workflow Overview
 
 ```
 HUMAN (Orchestrator)
-├── Creates git worktrees for parallel tasks
-├── Assigns tasks from EXECUTION_PLAN.md
-├── Merges worktrees at step boundaries
+├── Assigns tasks from EXECUTION_PLAN.md in order
+├── Reviews completed tasks before assigning the next
 └── Reviews at phase checkpoints
 
 AI AGENT (Claude Code or Codex CLI)
 ├── Executes ONE task at a time
-├── Works in isolated worktree branch
+├── Works on a single branch
 ├── Follows TDD: tests first, then implementation
 └── Reports completion or blockers
 ```
@@ -162,7 +161,7 @@ AI AGENT (Claude Code or Codex CLI)
 | Level | Managed By | Boundary |
 |-------|------------|----------|
 | Phase | Human | Manual testing, approval gate |
-| Step | Human | Git merge of parallel worktrees |
+| Step | Human | All tasks in the step completed |
 | Task | Agent | Single focused implementation |
 
 ---
@@ -271,19 +270,18 @@ Do not attempt to reconstruct previous conversation context.
 
 ---
 
-## Worktree Context
+## Branch Context
 
-You're likely running in an isolated git worktree:
+You're working on a task branch:
 
 ```
-../worktrees/task-1.1.A/    ← You are here
-├── [full repo clone]
-└── .git                    ← Links to main repo
+main
+└── task-1.1.A    ← You are here
 ```
 
 **Key implications:**
-- Your branch is isolated until the human merges
-- Don't depend on work from parallel worktrees
+- Complete your task before the next one begins
+- The human will review and merge when appropriate
 - Only modify files relevant to your task
 
 ---
@@ -462,4 +460,5 @@ AGENTS.md
 □ Includes blocker reporting format
 □ Includes git conventions
 □ Includes critical guardrails (no duplicating files, read errors fully)
+□ Describes sequential task execution (not parallel worktrees)
 ```
