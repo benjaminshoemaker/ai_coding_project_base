@@ -23,7 +23,15 @@ Claude Code, or manual usage.
 
 ### Before Creating a PR
 
-Always run the full verification gate:
+**Preferred:** Use the `/create-pr` skill instead of the Create PR button:
+
+```
+/create-pr
+```
+
+This automatically runs `.workstream/verify.sh` before creating the PR.
+
+**Alternative:** If using the Create PR button, manually run verification first:
 
 ```bash
 bash .workstream/verify.sh

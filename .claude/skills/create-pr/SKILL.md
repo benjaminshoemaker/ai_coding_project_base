@@ -1,13 +1,13 @@
 ---
 name: create-pr
-description: Create a GitHub PR with automatic Codex review. Runs code/doc review before PR creation and includes findings in PR body.
-argument-hint: "[focus] [--skip-review] [--base BRANCH] [--title TITLE] [--draft]"
+description: Create a GitHub PR with verification and Codex review. Runs verify.sh and code/doc review before PR creation.
+argument-hint: "[focus] [--skip-verify] [--skip-review] [--base BRANCH] [--title TITLE] [--draft]"
 allowed-tools: Bash, Read, Glob, Grep
 ---
 
 # Create PR
 
-Create a GitHub pull request with automatic Codex review. Auto-generates title and body from commits, runs Codex review (code or doc), and includes findings in the PR description.
+Create a GitHub pull request with verification and Codex review. Runs `.workstream/verify.sh` (if available), auto-generates title and body from commits, runs Codex review (code or doc), and includes findings in the PR description.
 
 ## When to Use
 
@@ -26,6 +26,7 @@ Create a GitHub pull request with automatic Codex review. Auto-generates title a
 | Argument | Example | Description |
 |----------|---------|-------------|
 | `focus` | `security` | Focus Codex review on specific area |
+| `--skip-verify` | | Skip verification (`.workstream/verify.sh`) |
 | `--skip-review` | | Skip Codex review entirely |
 | `--base BRANCH` | `--base develop` | Base branch for PR (default: repo default) |
 | `--title TITLE` | `--title "Add auth"` | Override auto-generated title |
@@ -40,11 +41,12 @@ Copy this checklist and track progress:
 ```
 Create PR Progress:
 - [ ] Step 1: Pre-flight checks
-- [ ] Step 2: Gather branch context
-- [ ] Step 3: Auto-generate title and body
-- [ ] Step 4: Run Codex review
-- [ ] Step 5: Show preview and confirm
-- [ ] Step 6: Create PR
+- [ ] Step 2: Run verification
+- [ ] Step 3: Gather branch context
+- [ ] Step 4: Auto-generate title and body
+- [ ] Step 5: Run Codex review
+- [ ] Step 6: Show preview and confirm
+- [ ] Step 7: Create PR
 ```
 
 ## Step 1: Pre-flight Checks
@@ -137,7 +139,66 @@ If unpushed commits (or no upstream):
 git push -u origin $CURRENT_BRANCH
 ```
 
-## Step 2: Gather Branch Context
+## Step 2: Run Verification
+
+**If `--skip-verify` is set:** Skip this step entirely, continue to Step 3.
+
+### Check for Verification Script
+
+```bash
+[[ -f .workstream/verify.sh ]]
+```
+
+**If `.workstream/verify.sh` does not exist:**
+- Skip verification silently
+- Continue to Step 3
+
+### Run Verification
+
+```bash
+bash .workstream/verify.sh
+```
+
+This runs the project's verification gate (typically: typecheck → lint → test → build).
+
+### Handle Results
+
+**If verification passes (exit code 0):**
+```
+VERIFICATION: PASSED
+====================
+All checks passed (typecheck, lint, test, build).
+```
+Continue to Step 3.
+
+**If verification fails (non-zero exit code):**
+```
+VERIFICATION: FAILED
+====================
+
+{verification output showing failures}
+
+Fix the issues above before creating a PR.
+```
+
+Use AskUserQuestion:
+```
+Question: "Verification failed. How would you like to proceed?"
+Header: "Verify failed"
+Options:
+  - Label: "Fix issues first"
+    Description: "Stop PR creation, address the failures (Recommended)"
+  - Label: "Create PR anyway"
+    Description: "Proceed despite verification failures"
+  - Label: "Cancel"
+    Description: "Abort PR creation"
+```
+
+If "Fix issues first": stop and show what needs fixing.
+If "Create PR anyway": continue to Step 3 (note failure in PR body).
+If "Cancel": stop.
+
+## Step 3: Gather Branch Context
 
 ```bash
 # Commits on this branch
@@ -168,7 +229,7 @@ git diff $BASE_BRANCH...HEAD --name-only
 - If ONLY doc/config files changed: use `/codex-consult`
 - Default to `/codex-review` if unsure
 
-## Step 3: Auto-generate Title and Body
+## Step 4: Auto-generate Title and Body
 
 ### Title Generation
 
@@ -201,17 +262,17 @@ Structure the body:
 - [ ] {Inferred testing steps based on changes}
 ```
 
-## Step 4: Run Codex Review
+## Step 5: Run Codex Review
 
 **If `--skip-review` is set:**
 - Skip this step entirely
 - Add to PR body: `**Codex Review:** SKIPPED (--skip-review)`
-- Continue to Step 5
+- Continue to Step 6
 
 **If running inside Codex (CODEX_SANDBOX set):**
 - Skip this step
 - Add to PR body: `**Codex Review:** SKIPPED (running inside Codex)`
-- Continue to Step 5
+- Continue to Step 6
 
 ### Check Codex Availability
 
@@ -222,7 +283,7 @@ codex --version 2>/dev/null
 **If Codex not available:**
 - Skip review silently
 - Add to PR body: `**Codex Review:** SKIPPED (Codex CLI not available)`
-- Continue to Step 5
+- Continue to Step 6
 
 ### Run Review
 
@@ -283,7 +344,7 @@ Append a Codex Review section to the PR body:
 {bulleted list}
 ```
 
-## Step 5: Show Preview and Confirm
+## Step 6: Show Preview and Confirm
 
 Display the complete PR before creating:
 
@@ -317,7 +378,7 @@ Options:
 If "Edit title": ask for new title via AskUserQuestion, then re-preview.
 If "Cancel": stop.
 
-## Step 6: Create PR
+## Step 7: Create PR
 
 ```bash
 gh pr create --title "$TITLE" --body "$(cat <<'EOF'
@@ -355,6 +416,8 @@ Review: {PASS | PASS WITH NOTES | NEEDS ATTENTION | SKIPPED}
 | Not on a feature branch | Report and stop |
 | No commits ahead | Report and stop |
 | Push fails | Report error and stop |
+| Verification unavailable | Skip verification silently |
+| Verification fails | Ask user (fix, continue, or cancel) |
 | Codex unavailable | Skip review, note in PR body |
 | Codex times out | Skip review, note in PR body |
 | Codex critical issues | Ask user (fix, continue, or cancel) |
@@ -386,9 +449,19 @@ If both `codexReview.enabled` and `codexConsult.enabled` are `false`, Codex revi
 /create-pr
 ```
 
+**Skip verification (e.g., for doc-only changes):**
+```
+/create-pr --skip-verify
+```
+
 **Skip Codex review:**
 ```
 /create-pr --skip-review
+```
+
+**Skip both verification and review (fastest):**
+```
+/create-pr --skip-verify --skip-review
 ```
 
 **Security-focused review with custom base:**

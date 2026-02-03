@@ -512,6 +512,21 @@ task(1.2.A): Add user authentication endpoint [REQ-002]
 task(1.1.A): Set up project scaffolding
 ```
 
+### Creating Pull Requests
+
+Use the `/create-pr` skill instead of manual PR creation:
+
+```
+/create-pr
+```
+
+This ensures:
+- `.workstream/verify.sh` runs before PR creation (typecheck, lint, test, build)
+- Consistent PR title and body formatting
+- Optional cross-model review via Codex CLI
+
+If verification fails, fix the issues before creating the PR.
+
 ### Branch and Commit Structure
 
 | Item | Format | Example |
@@ -641,5 +656,5 @@ Generate:
 - [ ] Test quality standards present (AAA pattern, naming, what to test)
 - [ ] Mocking policy present (what to mock, mock hygiene)
 - [ ] "When to stop" triggers present
-- [ ] Git conventions present
+- [ ] Git conventions present (including `/create-pr` for PRs)
 - [ ] Guardrails present
