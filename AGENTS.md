@@ -56,6 +56,55 @@ Guidelines:
   - Update `README.md` (commands list / file structure section) accordingly.
   - Ensure the skill aligns with constraints in `.claude/settings.json`.
 
+## Global Skill Resolution
+
+When `~/.claude/skills/` contains symlinks to this toolkit, per-project skill
+copies can be skipped during `/setup` and `/update-target-projects`. Claude Code
+discovers skills from three tiers with project-local shadowing global:
+
+1. **managed** (`/Library/Application Support/ClaudeCode/.claude/skills`)
+2. **user** (`~/.claude/skills`) ← toolkit symlinks go here
+3. **project** (`.claude/skills/`) ← shadows user/managed if present
+
+**Resolution modes:**
+
+| Mode | Description | When Used |
+|------|-------------|-----------|
+| `global` | All skills resolve via `~/.claude/skills/` | New projects with healthy symlinks |
+| `local` | All skills copied to project `.claude/skills/` | Shared repos, CI, explicit override |
+| `mixed` | Some global, some local | Partial migration or unavailable global |
+
+**Behavior by project type:**
+
+- **New projects:** `/setup` checks `is_globally_usable()` for each skill. If
+  globally available, skip copy—skill resolves via user tier.
+- **Existing projects:** Continue syncing locally until explicit migration.
+  Local copies shadow global symlinks, so deletion is required to switch.
+- **Shared repos:** Auto-detected via git remotes. Default to local copies
+  for portability. Set `"force_local_skills": false` to override.
+
+**Configuration (`toolkit-version.json`):**
+
+```json
+{
+  "force_local_skills": null,
+  "skill_resolution": "global"
+}
+```
+
+- `force_local_skills`: `true`=always local, `false`=always global, `null`=auto
+- `skill_resolution`: Current mode (`global`, `local`, or `mixed`)
+
+**Migration:**
+
+- **Adopt global:** `/update-target-projects` → option 8. Removes local copies,
+  backs up modified skills, switches to global resolution.
+- **Revert to local:** `/update-target-projects` → option 9. Copies from global
+  back to project for portability.
+
+**Fallback:** If a skill is not globally available (symlink missing or broken),
+it is copied locally regardless of resolution mode.
+
 ## Cross-Model Verification
 
 The toolkit supports cross-model verification using OpenAI Codex CLI:

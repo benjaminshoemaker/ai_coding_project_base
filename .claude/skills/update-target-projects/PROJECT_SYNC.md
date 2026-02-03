@@ -11,6 +11,41 @@ CURRENT_COMMIT=$(git rev-parse HEAD)
 find "$SEARCH_PATH" -maxdepth 4 -name "toolkit-version.json" -path "*/.claude/*" 2>/dev/null
 ```
 
+## Shared Repo Detection
+
+Before classifying skills, detect if the project is shared (requires local copies for portability):
+
+```bash
+is_shared_repo() {
+  local project_path="$1"
+
+  # Has git remote?
+  if git -C "$project_path" remote -v 2>/dev/null | grep -q .; then
+    return 0
+  fi
+
+  # In CI environment?
+  if [[ -n "$CI" || -n "$GITHUB_ACTIONS" || -n "$GITLAB_CI" || -n "$JENKINS_URL" ]]; then
+    return 0
+  fi
+
+  return 1
+}
+```
+
+| Indicator | Meaning | Default Behavior |
+|-----------|---------|------------------|
+| Has git remote | Project likely shared with collaborators | Use local copies |
+| CI environment | Running in automation | Use local copies |
+| No indicators | Local-only project | Can use global resolution |
+
+**Warning output (when shared repo detected):**
+```
+⚠️  Shared repo detected (has git remote).
+    Using local skill copies for portability.
+    Set "force_local_skills": false to override.
+```
+
 For each discovered project:
 1. Read `.claude/toolkit-version.json`
 2. Verify `toolkit_location` matches current toolkit (skip if different)
@@ -66,6 +101,54 @@ else
 fi
 ```
 
+## Skill Classification Flow
+
+For each skill being synced, follow this classification logic:
+
+```
+0. Check if shared repo (has git remote or in CI)
+   → if is_shared_repo() AND force_local_skills is NOT explicitly false:
+     force local resolution, show warning, skip global checks
+
+1. Check force_local_skills override in toolkit-version.json
+   → if true, skip global check entirely (always copy locally)
+   → if false, force global resolution (user explicitly wants global)
+
+2. Check if this is a NEW project (no existing .claude/skills/)
+   → if new AND is_globally_usable(skill_name):
+     classify as GLOBAL_USABLE — skip copy, record resolution "global"
+
+3. Check if EXISTING project with local copies
+   → if local copy exists: continue syncing locally (preserve shadowing)
+   → classification falls through to existing CURRENT/NEW/CLEAN_UPDATE/LOCAL_MODIFIED
+
+4. (Existing logic) Hash-based classification for local copies
+```
+
+**Shared repo handling in code:**
+```bash
+# At start of classification for each project
+if is_shared_repo "$project_path"; then
+  local force_local=$(jq -r '.force_local_skills // null' "$version_file" 2>/dev/null)
+  if [[ "$force_local" != "false" ]]; then
+    # Auto-enable local mode for shared repos
+    echo "⚠️  Shared repo detected. Using local skill copies for portability."
+    FORCE_LOCAL_RESOLUTION=true
+  fi
+fi
+```
+
+### Classification Table (Updated)
+
+| Condition | Classification | Action |
+|-----------|----------------|--------|
+| New project, globally usable | `GLOBAL_USABLE` | Skip copy, record "global" |
+| Existing project, local copy exists | (use existing logic) | Sync locally |
+| Target doesn't exist, not global | `NEW` | Copy from toolkit |
+| Target hash = Toolkit hash | `CURRENT` | Skip (already up to date) |
+| Target hash = Stored hash | `CLEAN_UPDATE` | Copy from toolkit |
+| Target hash ≠ Stored hash | `LOCAL_MODIFIED` | Skip with warning |
+
 ## Sync Execution
 
 For each selected project:
@@ -82,14 +165,15 @@ For each selected project:
 **Sync Logic (for each project):**
 
 1. Change working context to target project
-2. **Detect orphaned skills** — skills in target that no longer exist in toolkit
-3. For each skill in the sync list, compare hashes:
+2. **Check resolution mode** — read `force_local_skills` and `skill_resolution` from toolkit-version.json
+3. **Detect orphaned skills** — skills in target that no longer exist in toolkit
+4. For each skill in the sync list, compare hashes:
    - If toolkit hash = target hash: skip (current)
    - If target missing: copy from toolkit (new)
    - If target = last-synced hash: copy from toolkit (clean update)
    - If target differs from last-synced: report conflict (ask user)
-4. **Delete orphaned skills** (with user confirmation if locally modified)
-5. Update `toolkit-version.json` with new commit, hashes, and removed skills
+5. **Delete orphaned skills** (with user confirmation if locally modified)
+6. Update `toolkit-version.json` with new commit, hashes, and removed skills
 
 **Skills to sync:** All skills from `.claude/skills/` are synced dynamically, **excluding toolkit-only skills** (those with `toolkit-only: true` in SKILL.md frontmatter).
 
@@ -258,4 +342,75 @@ Workstream script hashes are stored under a `"workstream"` key:
     ".workstream/README.md": { ... }
   }
 }
+```
+
+## Schema Extension for Global Resolution
+
+The toolkit-version.json schema is extended to track skill resolution mode:
+
+```json
+{
+  "schema_version": "1.1",
+  "toolkit_location": "/path/to/toolkit",
+  "toolkit_commit": "abc1234",
+  "toolkit_commit_date": "2026-02-01T12:00:00Z",
+  "last_sync": "2026-02-01T12:00:00Z",
+  "force_local_skills": null,
+  "skill_resolution": "global",
+  "files": {
+    ".claude/skills/fresh-start/SKILL.md": {
+      "hash": "abc123...",
+      "synced_at": "2026-02-01T12:00:00Z",
+      "resolution": "global"
+    },
+    ".claude/skills/custom-skill/SKILL.md": {
+      "hash": "def456...",
+      "synced_at": "2026-02-01T12:00:00Z",
+      "resolution": "local"
+    }
+  },
+  "workstream": { ... }
+}
+```
+
+### New Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `force_local_skills` | `boolean\|null` | Override auto-detection: `true`=always local, `false`=always global, `null`=auto |
+| `skill_resolution` | `"global"\|"local"\|"mixed"` | Project-level summary of resolution mode |
+| `files.*.resolution` | `"global"\|"local"` | Per-file resolution indicator |
+
+### Resolution Values
+
+| `skill_resolution` | Meaning |
+|--------------------|---------|
+| `"global"` | All skills resolved via `~/.claude/skills/` |
+| `"local"` | All skills copied to project's `.claude/skills/` |
+| `"mixed"` | Some global, some local (e.g., partial migration or unavailable global skills) |
+
+## Updated Sync Summary Format
+
+The sync summary now shows resolution breakdown:
+
+```
+SYNC SUMMARY
+============
+Global resolution:  25 skills (via ~/.claude/skills)
+Local resolution:   5 skills (copied to project)
+  - New files:      2 copied
+  - Updated files:  1 copied
+  - Current files:  2 skipped
+  - Modified files: 0 skipped (local changes preserved)
+```
+
+For projects using all-local resolution:
+```
+SYNC SUMMARY
+============
+Resolution mode: local (skill_resolution: "local")
+  - New files:      3 copied
+  - Updated files:  5 copied
+  - Current files:  22 skipped
+  - Modified files: 0 skipped
 ```

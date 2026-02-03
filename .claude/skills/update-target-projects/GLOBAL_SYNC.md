@@ -1,12 +1,13 @@
 # Global Skills Sync
 
-Manage symlinks in `~/.claude/skills/` that point to the toolkit, enabling Conductor autocomplete across all workspaces.
+Manage symlinks in `~/.claude/skills/` that point to the toolkit, enabling Conductor autocomplete across all workspaces and global skill resolution for Claude Code.
 
 ## Configuration
 
 ```bash
 GLOBAL_SKILLS_DIR="$HOME/.claude/skills"
 TOOLKIT_SKILLS_DIR="$(pwd)/.claude/skills"
+TOOLKIT_ROOT="$(pwd)"  # For symlink target verification
 ```
 
 ## Check Global Skills Status
@@ -38,11 +39,19 @@ check_global_skill() {
   local global_path="$GLOBAL_SKILLS_DIR/$skill_name"
   local toolkit_path="$TOOLKIT_SKILLS_DIR/$skill_name"
 
+  # Check for broken symlink first (-L tests symlink existence, -e tests target)
+  if [[ -L "$global_path" && ! -e "$global_path" ]]; then
+    echo "BROKEN_SYMLINK"
+    return
+  fi
+
   if [[ ! -e "$global_path" ]]; then
     echo "MISSING"
   elif [[ -L "$global_path" ]]; then
-    local target=$(readlink "$global_path")
-    if [[ "$target" == "$toolkit_path" || "$target" == *"/.claude/skills/$skill_name" ]]; then
+    # Use realpath for canonical comparison (handles relative symlinks correctly)
+    local resolved=$(realpath "$global_path" 2>/dev/null)
+    local expected=$(realpath "$toolkit_path" 2>/dev/null)
+    if [[ "$resolved" == "$expected" ]]; then
       echo "SYMLINK_CURRENT"
     else
       echo "SYMLINK_OTHER"
@@ -60,6 +69,76 @@ check_global_skill() {
 | `SYMLINK_CURRENT` | Symlink to this toolkit | No action needed |
 | `SYMLINK_OTHER` | Symlink to different source | Skip (not ours) |
 | `REAL_DIR` | Real directory (not symlink) | Skip (preserve) |
+| `BROKEN_SYMLINK` | Symlink target doesn't exist | Repair or warn |
+
+## Symlink Target Verification
+
+Verify that symlinks point to the expected toolkit location using `realpath`:
+
+```bash
+verify_symlink_target() {
+  local skill_name="$1"
+  local expected_toolkit="${2:-$TOOLKIT_ROOT}"
+  local global_path="$GLOBAL_SKILLS_DIR/$skill_name"
+
+  if [[ ! -L "$global_path" ]]; then
+    return 1  # Not a symlink
+  fi
+
+  local resolved=$(realpath "$global_path" 2>/dev/null)
+  local expected_resolved=$(realpath "$expected_toolkit/.claude/skills/$skill_name" 2>/dev/null)
+
+  [[ "$resolved" == "$expected_resolved" ]]
+}
+```
+
+## High-Level Availability Helpers
+
+These helpers determine if skills can be resolved globally (used by `/setup` and `/update-target-projects`):
+
+```bash
+# Check if a specific skill is globally usable (healthy symlink to this toolkit)
+is_globally_usable() {
+  local skill_name="$1"
+  local status=$(check_global_skill "$skill_name")
+
+  # Must be a current symlink AND point to this toolkit
+  if [[ "$status" == "SYMLINK_CURRENT" ]]; then
+    verify_symlink_target "$skill_name" "$TOOLKIT_ROOT"
+    return $?
+  fi
+
+  return 1
+}
+
+# Returns true if ALL distributable skills are globally usable
+all_skills_globally_usable() {
+  for skill_name in "${TOOLKIT_SKILLS[@]}"; do
+    if ! is_globally_usable "$skill_name"; then
+      return 1
+    fi
+  done
+  return 0
+}
+
+# Repair a broken symlink
+repair_global_symlink() {
+  local skill_name="$1"
+  local global_path="$GLOBAL_SKILLS_DIR/$skill_name"
+
+  if [[ -L "$global_path" ]]; then
+    rm "$global_path"  # Remove broken or wrong symlink
+  fi
+  ln -s "$TOOLKIT_ROOT/.claude/skills/$skill_name" "$global_path"
+  echo "REPAIRED"
+}
+```
+
+| Helper | Purpose | Returns |
+|--------|---------|---------|
+| `is_globally_usable` | Check if a single skill resolves via global symlink | 0=usable, 1=not usable |
+| `all_skills_globally_usable` | Check if ALL skills can use global resolution | 0=all usable, 1=some missing |
+| `repair_global_symlink` | Fix a broken or missing symlink | "REPAIRED" |
 
 ## Orphan Detection
 
@@ -72,8 +151,10 @@ find_orphaned_global_skills() {
     local global_path="$GLOBAL_SKILLS_DIR/$item"
     # Only consider symlinks pointing to this toolkit
     if [[ -L "$global_path" ]]; then
-      local target=$(readlink "$global_path")
-      if [[ "$target" == *"/ai_coding_project_base/.claude/skills/"* ]]; then
+      # Use realpath for canonical comparison (handles relative symlinks)
+      local resolved=$(realpath "$global_path" 2>/dev/null)
+      local toolkit_resolved=$(realpath "$TOOLKIT_ROOT/.claude/skills" 2>/dev/null)
+      if [[ "$resolved" == "$toolkit_resolved/"* ]]; then
         # Check if skill still exists in toolkit
         if [[ ! -d "$TOOLKIT_SKILLS_DIR/$item" ]]; then
           orphans+=("$item")
@@ -104,6 +185,12 @@ sync_global_skill() {
     MISSING)
       ln -s "$toolkit_path" "$global_path"
       echo "LINKED"
+      ;;
+    BROKEN_SYMLINK)
+      # Remove broken symlink and recreate
+      rm "$global_path"
+      ln -s "$toolkit_path" "$global_path"
+      echo "REPAIRED"
       ;;
     SYMLINK_CURRENT|REAL_DIR)
       echo "CURRENT"
@@ -159,3 +246,35 @@ These will be deleted during sync.
 Status: DIRECTORY NOT FOUND
 Creating ~/.claude/skills/ ...
 ```
+
+**If broken symlinks found:**
+```
+BROKEN SYMLINKS DETECTED
+────────────────────────
+The following global symlinks have invalid targets:
+  - old-skill (target: /nonexistent/path)
+
+Options:
+1. Repair automatically (re-create pointing to toolkit)
+2. Delete broken symlinks
+3. Skip (leave as-is)
+```
+
+## Global Resolution for New Projects
+
+When `/setup` creates a new project, it checks `is_globally_usable()` for each skill.
+If a skill is globally usable, it is NOT copied to the project—Claude Code will
+discover it from `~/.claude/skills/` automatically.
+
+**State model:**
+
+| State | Global symlink? | Local copy? | Claude uses |
+|-------|-----------------|-------------|-------------|
+| `GLOBAL_USABLE` | ✅ healthy | ❌ none | Global ✅ |
+| `LOCAL_SHADOWING` | ✅ healthy | ✅ exists | Local (shadows global) |
+| `LOCAL_ONLY` | ❌ missing | ✅ exists | Local |
+| `MISSING` | ❌ missing | ❌ none | ⚠️ Skill unavailable |
+
+**Key insight:** Only `GLOBAL_USABLE` actually resolves via global symlinks.
+If local copies exist, they shadow the global symlinks—explicit migration is
+required to switch existing projects to global resolution.

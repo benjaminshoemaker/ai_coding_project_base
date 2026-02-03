@@ -50,36 +50,80 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
     - Create `$1/features/<feature-name>/` directory
     - Store the feature path as `FEATURE_PATH` = `$1/features/<feature-name>`
 
-3. **Copy skills to target**
+3. **Copy skills to target (with global resolution check)**
 
-   Copy skills to the target's `.claude/skills/`, **excluding toolkit-only skills**:
+   Before copying each skill, check if it's globally available. See [GLOBAL_SYNC.md](../update-target-projects/GLOBAL_SYNC.md) for helper definitions.
 
-   **Filtering logic:** For each skill directory in `.claude/skills/`:
-   1. Read the skill's `SKILL.md`
-   2. Parse the YAML frontmatter (content between first `---` and closing `---`)
-   3. If frontmatter contains `toolkit-only: true`, **skip** this skill (do not copy)
-   4. Otherwise, copy the skill directory to the target
-
+   **Pre-copy checks:**
    ```bash
+   # Source the global sync helpers
+   GLOBAL_SKILLS_DIR="$HOME/.claude/skills"
+   TOOLKIT_ROOT="$(pwd)"
+
+   # Check if global directory exists and has symlinks
+   GLOBAL_AVAILABLE=false
+   if [[ -d "$GLOBAL_SKILLS_DIR" ]]; then
+     # Count symlinks pointing to this toolkit
+     SYMLINK_COUNT=$(find "$GLOBAL_SKILLS_DIR" -maxdepth 1 -type l 2>/dev/null | wc -l)
+     if [[ "$SYMLINK_COUNT" -gt 0 ]]; then
+       GLOBAL_AVAILABLE=true
+     fi
+   fi
+   ```
+
+   **Copy logic with global resolution:**
+   ```bash
+   GLOBAL_COUNT=0
+   LOCAL_COUNT=0
+
    for skill_dir in .claude/skills/*/; do
      skill_name="$(basename "$skill_dir")"
+
      # Check for toolkit-only flag in YAML frontmatter (between --- markers)
      if sed -n '/^---$/,/^---$/p' "$skill_dir/SKILL.md" 2>/dev/null | grep -q '^toolkit-only: true'; then
        continue  # Skip toolkit-only skills
      fi
+
+     # Check if this skill is globally usable
+     if [[ "$GLOBAL_AVAILABLE" == "true" ]]; then
+       global_path="$GLOBAL_SKILLS_DIR/$skill_name"
+       if [[ -L "$global_path" && -e "$global_path" ]]; then
+         # Verify it points to this toolkit
+         resolved=$(realpath "$global_path" 2>/dev/null)
+         expected=$(realpath "$skill_dir" 2>/dev/null)
+         if [[ "$resolved" == "$expected" ]]; then
+           echo "  $skill_name — globally available"
+           ((GLOBAL_COUNT++))
+           continue  # Skip copy, will resolve via global
+         fi
+       fi
+     fi
+
+     # Copy locally
      cp -r "$skill_dir" "$1/.claude/skills/"
+     echo "  $skill_name — copied locally"
+     ((LOCAL_COUNT++))
    done
    ```
+
+   **Summary output:**
+   - If all skills are global: `"All skills resolved via ~/.claude/skills/ — no local copies needed"`
+   - If mixed: `"Skills: {GLOBAL_COUNT} global, {LOCAL_COUNT} local"`
+   - If all local: `"Copied {LOCAL_COUNT} skills to project"`
 
    Copy verification config (if missing):
    - `.claude/verification-config.json` → target's `.claude/verification-config.json`
 
-   **Verify copies:** After copying, confirm the target has the expected files:
+   **Verify result:**
    ```bash
-   # Count skill directories in target to verify copy succeeded
-   ls -d "$1/.claude/skills/"*/ 2>/dev/null | wc -l
+   # For local-only or mixed: verify local copies exist
+   if [[ "$LOCAL_COUNT" -gt 0 ]]; then
+     actual_count=$(ls -d "$1/.claude/skills/"*/ 2>/dev/null | wc -l)
+     if [[ "$actual_count" -eq 0 ]]; then
+       # STOP and report copy failure
+     fi
+   fi
    ```
-   If the count is 0 or the directory doesn't exist, STOP and report the copy failure.
 
    Also verify configuration file:
    ```bash
@@ -124,7 +168,16 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
 
 3a. **Incremental Sync (When SETUP_MODE=incremental)**
 
-   Skip Step 3 entirely and use this incremental approach instead:
+   Skip Step 3 entirely and use this incremental approach instead.
+
+   **Check resolution mode from existing config:**
+   ```bash
+   FORCE_LOCAL=$(jq -r '.force_local_skills // empty' "$1/.claude/toolkit-version.json")
+   CURRENT_RESOLUTION=$(jq -r '.skill_resolution // "local"' "$1/.claude/toolkit-version.json")
+   ```
+
+   **Important:** For existing projects with local copies, continue syncing locally
+   to preserve shadowing behavior. Do NOT automatically switch to global resolution.
 
    Load the stored file hashes from `$1/.claude/toolkit-version.json`:
    ```bash
@@ -149,6 +202,7 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
 
    | Condition | Classification | Action |
    |-----------|----------------|--------|
+   | Already using global resolution | `GLOBAL_USABLE` | Skip (resolves via global) |
    | Target doesn't exist | `NEW` | Copy from toolkit |
    | Target hash = Toolkit hash | `CURRENT` | Skip (already up to date) |
    | Target hash = Stored hash | `CLEAN_UPDATE` | Copy from toolkit (no local changes) |
@@ -158,10 +212,11 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
    ```
    INCREMENTAL SYNC
    ================
-   New files:      {count} copied
-   Updated files:  {count} copied
-   Current files:  {count} skipped (already up to date)
-   Modified files: {count} skipped (local changes preserved)
+   Global resolution: {count} skills (via ~/.claude/skills)
+   New files:         {count} copied
+   Updated files:     {count} copied
+   Current files:     {count} skipped (already up to date)
+   Modified files:    {count} skipped (local changes preserved)
    ```
 
    If any files are `LOCAL_MODIFIED`, list them:
@@ -179,24 +234,37 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
 
    **For full setup (SETUP_MODE=full):**
 
-   Create `.claude/toolkit-version.json` in the target to enable future syncs:
+   Create `.claude/toolkit-version.json` in the target to enable future syncs.
+   Determine the resolution mode based on how skills were installed:
 
    ```json
    {
-     "schema_version": "1.0",
+     "schema_version": "1.1",
      "toolkit_location": "{absolute path to this toolkit}",
      "toolkit_commit": "{current git HEAD commit hash}",
      "toolkit_commit_date": "{commit date in ISO format}",
      "last_sync": "{current ISO timestamp}",
+     "force_local_skills": null,
+     "skill_resolution": "{global|local|mixed}",
      "files": {
        ".claude/skills/fresh-start/SKILL.md": {
-         "hash": "{sha256 hash of copied file}",
-         "synced_at": "{ISO timestamp}"
+         "hash": "{sha256 hash of file}",
+         "synced_at": "{ISO timestamp}",
+         "resolution": "{global|local}"
        }
-       // ... entry for each copied skill
+       // ... entry for each skill
      }
    }
    ```
+
+   **Resolution determination:**
+   - If `GLOBAL_COUNT > 0` and `LOCAL_COUNT == 0`: `"skill_resolution": "global"`
+   - If `GLOBAL_COUNT == 0` and `LOCAL_COUNT > 0`: `"skill_resolution": "local"`
+   - If both > 0: `"skill_resolution": "mixed"`
+
+   **Per-file resolution:**
+   - Skills that were skipped (globally available): `"resolution": "global"`
+   - Skills that were copied: `"resolution": "local"`
 
    **For incremental update (SETUP_MODE=incremental):**
 
@@ -204,9 +272,11 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
    - Update `toolkit_commit` to current HEAD
    - Update `toolkit_commit_date` to current commit date
    - Update `last_sync` to current timestamp
+   - Preserve `force_local_skills` setting
    - For each file that was copied (NEW or CLEAN_UPDATE):
-     - Update the file's `hash` and `synced_at`
+     - Update the file's `hash`, `synced_at`, and `resolution`
    - Keep existing entries for files that were skipped (CURRENT or LOCAL_MODIFIED)
+   - Recalculate `skill_resolution` based on all files
 
    **For already current (SETUP_MODE=current):**
 
@@ -333,6 +403,7 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
    TOOLKIT INITIALIZED
    ===================
    Target: $1
+   Skill resolution: {mode} ({details})
 
    Next steps (run from THIS toolkit directory):
    1. /product-spec $1
@@ -346,6 +417,11 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
    7. /phase-prep 1
    8. /phase-start 1
    ```
+
+   **Skill resolution line examples:**
+   - `Skill resolution: global (30 skills via ~/.claude/skills symlinks)`
+   - `Skill resolution: local (30 skills copied to project)`
+   - `Skill resolution: mixed (25 global, 5 local)`
 
    **For SETUP_MODE=full, Feature:**
    ```

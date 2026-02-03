@@ -42,14 +42,17 @@ Update Target Projects Progress:
 - [ ] Phase 1c: Check global skill symlinks (Conductor autocomplete)
 - [ ] Phase 1d: Detect orphaned skills (removed from toolkit)
 - [ ] Phase 1e: Check workstream scripts status
+- [ ] Phase 1f: Check skill resolution mode for each project
 - [ ] Phase 2: Detect activity status for each project
 - [ ] Phase 3: Check sync status (OUTDATED vs CURRENT)
-- [ ] Phase 4: Display status report (including orphans and global status)
+- [ ] Phase 4: Display status report (including orphans, global status, and resolution)
 - [ ] Phase 5: User selection (what to sync)
 - [ ] Phase 6a: Sync Codex skill pack (if selected) — includes deletions
 - [ ] Phase 6b: Sync global skill symlinks (if selected)
 - [ ] Phase 6c: Sync target projects (if selected) — includes deletions
 - [ ] Phase 6d: Sync workstream scripts (if selected)
+- [ ] Phase 6e: Adopt global skills (if selected) — migrate local to global
+- [ ] Phase 6f: Revert to local skills (if selected) — copy from global back to project
 - [ ] Phase 7: Generate summary report
 ```
 
@@ -94,6 +97,68 @@ Status determination:
 - `CURRENT` — all script hashes match toolkit
 - `OUTDATED` — one or more scripts differ from toolkit
 
+### Phase 1f: Check Skill Resolution Mode
+
+For each target project, determine current skill resolution state:
+
+```bash
+check_project_resolution() {
+  local project_path="$1"
+  local version_file="$project_path/.claude/toolkit-version.json"
+  local skills_dir="$project_path/.claude/skills"
+
+  # Read current resolution from config
+  local resolution=$(jq -r '.skill_resolution // "unknown"' "$version_file" 2>/dev/null)
+  local force_local=$(jq -r '.force_local_skills // null' "$version_file" 2>/dev/null)
+
+  # Check actual state: are there local skill directories?
+  local has_local_skills=false
+  local local_count=0
+  if [[ -d "$skills_dir" ]]; then
+    local_count=$(find "$skills_dir" -maxdepth 1 -mindepth 1 -type d 2>/dev/null | wc -l)
+    if [[ "$local_count" -gt 0 ]]; then
+      has_local_skills=true
+    fi
+  fi
+
+  # Check if global symlinks are healthy
+  local globals_healthy=false
+  if all_skills_globally_usable 2>/dev/null; then
+    globals_healthy=true
+  fi
+
+  # Respect force_local_skills override
+  if [[ "$force_local" == "true" ]]; then
+    echo "LOCAL_FORCED"
+    return
+  fi
+
+  # Determine resolution state
+  if [[ "$has_local_skills" == "true" ]]; then
+    if [[ "$globals_healthy" == "true" ]]; then
+      echo "ADOPTABLE"  # Can migrate to global
+    else
+      echo "LOCAL"  # Must stay local (globals not ready)
+    fi
+  else
+    # No local skills
+    if [[ "$globals_healthy" == "true" ]]; then
+      echo "GLOBAL"  # Resolving via global symlinks
+    else
+      echo "MISSING"  # Neither local nor global available!
+    fi
+  fi
+}
+```
+
+| Resolution State | Meaning | Available Actions |
+|------------------|---------|-------------------|
+| `GLOBAL` | Using global symlinks (healthy) | Revert to local (option 9) |
+| `LOCAL` | Local copies, globals not ready | Sync locally |
+| `LOCAL_FORCED` | Local copies, `force_local_skills: true` | Sync locally (override active) |
+| `ADOPTABLE` | Local, but global available | Adopt global (option 8) |
+| `MISSING` | No local, no healthy global | ⚠️ Skills unavailable — run global sync first |
+
 ### Phase 1d: Detect Orphaned Skills
 
 Identify skills that exist in targets but have been removed from toolkit:
@@ -130,10 +195,22 @@ Status:   {status summary}
 
 TARGET PROJECTS
 ───────────────
-  #  Project          Sync Status   Last Sync     Activity
-  ─────────────────────────────────────────────────────────
-  1  ~/Projects/app   OUTDATED      3 days ago    DORMANT
+  #  Project          Sync Status   Resolution   Adoptable   Activity
+  ─────────────────────────────────────────────────────────────────────
+  1  ~/Projects/app   OUTDATED      local        ✓ (30 dirs) DORMANT
+  2  ~/Projects/api   CURRENT       global       —           RECENT
+  3  ~/Projects/lib   CURRENT       local        ⚠️ 2 modified ACTIVE
 ```
+
+**Resolution column values:**
+- `global` — Skills resolve via `~/.claude/skills/` symlinks
+- `local` — Skills copied to project's `.claude/skills/`
+- `mixed` — Some global, some local
+
+**Adoptable column values:**
+- `✓ (N dirs)` — Can adopt global resolution (N skill directories to remove)
+- `⚠️ N modified` — Can adopt, but N skills have local modifications
+- `—` — Already using global resolution (or not applicable)
 
 ### Phase 5: User Selection
 
@@ -145,6 +222,13 @@ Prompt with options:
 5. Select specific items
 6. Include ACTIVE projects too
 7. Skip for now
+8. Adopt global skills (remove local copies, switch to global resolution)
+9. Revert to local skills (copy from global back to project)
+
+**Option 8 visibility:** Only show if at least one project is `ADOPTABLE` (has local
+copies and global symlinks are healthy).
+
+**Option 9 visibility:** Only show if at least one project uses `global` resolution.
 
 ### Phase 6: Execute Sync
 
@@ -163,6 +247,102 @@ Prompt with options:
 3. Update `toolkit-version.json` `"workstream"` key with new hashes
 4. Do NOT copy or overwrite `workstream.json` (project-owned config)
 
+**6e: Adopt Global Skills** — Migrate from local to global resolution:
+
+See [GLOBAL_SYNC.md](GLOBAL_SYNC.md) for state model and helper definitions.
+
+**Pre-flight checks:**
+1. Verify global health: `all_skills_globally_usable()` must return true
+2. If unhealthy: abort with message "Global symlinks not healthy. Run sync first (option 1)."
+
+**For each selected project:**
+
+1. **Detect modified local skills** — skills where current hash ≠ stored hash:
+   ```bash
+   find_modified_skills() {
+     local project_path="$1"
+     local modified=()
+     for skill in $(ls "$project_path/.claude/skills/" 2>/dev/null); do
+       local stored_hash=$(jq -r ".files[\".claude/skills/$skill/SKILL.md\"].hash // empty" \
+         "$project_path/.claude/toolkit-version.json")
+       if [[ -n "$stored_hash" ]]; then
+         local current_hash=$(shasum -a 256 "$project_path/.claude/skills/$skill/SKILL.md" | cut -d' ' -f1)
+         if [[ "$current_hash" != "$stored_hash" ]]; then
+           modified+=("$skill")
+         fi
+       fi
+     done
+     echo "${modified[@]}"
+   }
+   ```
+
+2. **Show migration preview:**
+   ```
+   ADOPT GLOBAL SKILLS: ~/Projects/app
+   ────────────────────────────────────
+   Will remove:     30 skill directories
+   Modified skills: 2 (will be backed up)
+   After migration: Skills resolve via ~/.claude/skills/
+
+   ⚠️  This project will no longer contain .claude/skills/.
+       Collaborators without ~/.claude/skills/ will lose access.
+
+   Proceed? [y/N]
+   ```
+
+3. **If user confirms:**
+   - Back up modified skills to `.claude/skills.bak/{skill}/` (if any)
+   - Delete local skill directories:
+     ```bash
+     # Note: glob must be OUTSIDE quotes to expand
+     if [[ -d "$project_path/.claude/skills" ]]; then
+       rm -rf "$project_path/.claude/skills/"*/
+     fi
+     ```
+   - Update toolkit-version.json:
+     - Set `"skill_resolution": "global"`
+     - Set each file's `"resolution": "global"`
+   - DO NOT use `git rm` — let user review and commit
+
+4. **Report:**
+   ```
+   ✓ Migrated ~/Projects/app to global skill resolution
+     Removed: 30 skill directories
+     Backed up: 2 modified skills → .claude/skills.bak/
+     Skills now resolve via: ~/.claude/skills/
+   ```
+
+**6f: Revert to Local Skills** — Copy from global back to project:
+
+For projects that were migrated to global but need portability:
+
+1. **Show revert preview:**
+   ```
+   REVERT TO LOCAL SKILLS: ~/Projects/app
+   ───────────────────────────────────────
+   Will copy:       30 skills from ~/.claude/skills/
+   Target:          .claude/skills/
+   After revert:    Skills copied locally for portability
+
+   Proceed? [y/N]
+   ```
+
+2. **If user confirms:**
+   - Create `.claude/skills/` directory
+   - For each globally-resolved skill:
+     - Copy from global symlink target to local
+   - Update toolkit-version.json:
+     - Set `"skill_resolution": "local"`
+     - Set each file's `"resolution": "local"`
+     - Update hashes and timestamps
+
+3. **Report:**
+   ```
+   ✓ Reverted ~/Projects/app to local skill resolution
+     Copied: 30 skills to .claude/skills/
+     Skills now resolve via: project-local copies
+   ```
+
 ### Phase 7: Summary Report
 
 ```
@@ -172,6 +352,7 @@ SYNC COMPLETE
 Global Skills (Conductor Autocomplete):
   Symlinks created: 2
   Symlinks removed: 1 (orphaned)
+  Symlinks repaired: 0
   Already current:  28
 
 Codex CLI Skill Pack:
@@ -186,10 +367,30 @@ Target Projects:
     Current: 1
   Skills deleted: 1 (orphaned)
 
+Resolution Changes:
+  Adopted global: 1 project (30 local dirs removed)
+  Reverted local: 0 projects
+  Modified backed up: 2 skills → .claude/skills.bak/
+
 Deleted Skills (removed from toolkit):
   - multi-model-verify
 
 All synced items are now at toolkit commit abc1234
+```
+
+**If projects were migrated:**
+```
+MIGRATION SUMMARY
+─────────────────
+Projects migrated to global resolution:
+  ✓ ~/Projects/app (30 skills)
+  ✓ ~/Projects/api (30 skills)
+
+These projects now use ~/.claude/skills/ symlinks.
+Local skill copies have been removed.
+
+Note: Collaborators need ~/.claude/skills/ symlinks to access skills.
+Run this from their toolkit clone: /update-target-projects → option 2
 ```
 
 ## Edge Cases
@@ -203,4 +404,4 @@ See [EDGE_CASES.md](EDGE_CASES.md) for handling:
 
 ---
 
-**REMINDER**: Always copy skills to target projects, not just update toolkit-version.json. The version file tracks state, but skills must actually be copied for changes to take effect.
+**REMINDER**: For projects using **local resolution**, always copy skills to target projects, not just update toolkit-version.json. The version file tracks state, but skills must actually be copied for changes to take effect. Projects using **global resolution** don't need local copies—they resolve via `~/.claude/skills/` symlinks.
