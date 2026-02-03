@@ -65,6 +65,38 @@ The generated `AGENTS.md` includes test quality standards:
 - **What not to mock** — Code under test, pure functions
 - **Mock hygiene** — Reset between tests, prefer dependency injection
 
+## Test Quality Gate (Optional)
+
+Beyond TDD compliance, `/verify-task` performs a lightweight test-quality gate.
+It checks that tests are meaningful, not just present.
+
+### What It Checks
+
+- Each acceptance criterion has at least one assertion that checks behavior
+- At least one non-happy-path or boundary case is covered when applicable
+- Tests verify state changes or outputs (not just "does not throw")
+- External dependencies are mocked; code under test is not
+
+If any criterion lacks assertions or only smoke-tests behavior, verification
+stops until tests are improved.
+
+### Optional Mutation Testing
+
+If your project uses mutation testing, configure it in
+`.claude/verification-config.json`:
+
+```json
+{
+  "commands": {
+    "mutation_test": "npm run test:mutation"
+  }
+}
+```
+
+When configured, `/verify-task` can run mutation tests on request, and
+`/phase-checkpoint` treats mutation test failures as a local verification
+failure.
+
 ## Automatic Spec Verification
 
 After generating `TECHNICAL_SPEC.md`, `EXECUTION_PLAN.md`, or their feature equivalents, the toolkit automatically runs verification.

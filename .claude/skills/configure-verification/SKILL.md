@@ -6,7 +6,7 @@ allowed-tools: Read, Edit, Grep, Glob, Bash, AskUserQuestion
 ---
 
 Configure `.claude/verification-config.json` with the project's actual commands
-for tests, lint, typecheck, build, coverage, dev server, and authentication.
+for tests, lint, typecheck, build, coverage, mutation testing, dev server, and authentication.
 
 ## Project Directory
 
@@ -99,6 +99,7 @@ fields. Then ask the human to confirm or provide commands for:
 - Typecheck command (if applicable)
 - Build command (if applicable)
 - Coverage command (if applicable)
+- Mutation test command (optional, if used)
 - Dev server command + URL + startup wait
 
 If a command is not applicable, set it to an empty string and note it as

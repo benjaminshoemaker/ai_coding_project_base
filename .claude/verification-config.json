@@ -4,7 +4,8 @@
     "lint": "",
     "typecheck": "",
     "build": "",
-    "coverage": ""
+    "coverage": "",
+    "mutation_test": ""
   },
   "devServer": {
     "command": "",

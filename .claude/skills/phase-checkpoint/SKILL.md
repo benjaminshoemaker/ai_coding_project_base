@@ -79,9 +79,13 @@ Run these using commands from verification-config:
 2. Type Checking (`commands.typecheck`)
 3. Linting (`commands.lint`)
 4. Build (`commands.build`)
-5. Dev Server (`devServer.command`)
-6. Security Scan
-7. Code Quality Metrics
+5. Mutation Tests (`commands.mutation_test`, if configured)
+6. Dev Server (`devServer.command`)
+7. Security Scan
+8. Code Quality Metrics
+
+If `commands.mutation_test` is configured, treat failures as a local verification
+failure (it is part of the quality gate).
 
 ### Optional Checks
 
@@ -191,6 +195,7 @@ After checkpoint passes, update `.claude/phase-state.json`:
       "type_check_passed": true,
       "lint_passed": true,
       "security_passed": true,
+      "mutation_tests_passed": true,
       "coverage_percent": 85,
       "manual_verified": true,
       "codex_review": {
@@ -226,6 +231,7 @@ Automated Checks:
 - Type Check: PASSED | FAILED | SKIPPED
 - Linting: PASSED | FAILED | SKIPPED
 - Build: PASSED | FAILED | SKIPPED
+- Mutation Tests: PASSED | FAILED | SKIPPED
 - Security: PASSED | FAILED
 
 Optional Checks:

@@ -18,6 +18,7 @@ A structured framework for AI agents to build software autonomously—with verif
 
 - **Code verification** — Multi-agent system checks each task against its acceptance criteria
 - **TDD enforcement** — Verifies tests exist, were written first, and have meaningful assertions
+- **Test quality gate** — Optional mutation testing and heuristic checks for weak tests
 - **Security scanning** — Dependency audits, secrets detection, and static analysis at checkpoints
 - **Stuck detection** — Agents escalate to humans instead of spinning on failures
 - **Git workflow** — One branch per phase, one commit per task, human review before push
