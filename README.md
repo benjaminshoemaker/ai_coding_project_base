@@ -45,7 +45,7 @@ cd ~/Projects/my-new-app
 /fresh-start
 ```
 
-`/fresh-start` loads context and auto-advances through `phase-prep → phase-start → phase-checkpoint` for each phase, stopping only when human input is needed.
+`/fresh-start` loads context and auto-advances through `phase-prep → phase-start → phase-checkpoint` for each phase, stopping only when human input is needed. To resume later, run `/go` — it detects where you left off.
 
 For feature development in existing projects, see [Feature Workflow](docs/feature-workflow.md).
 
@@ -99,6 +99,7 @@ For feature development in existing projects, see [Feature Workflow](docs/featur
 | `/product-spec [path]` | Generate product specification |
 | `/technical-spec [path]` | Generate technical specification |
 | `/generate-plan [path]` | Generate execution plan and AGENTS.md |
+| `/go` | Resume execution from wherever you left off |
 | `/fresh-start` | Orient to project, load context, begin execution |
 | `/phase-start N` | Execute phase N (creates branch, commits per task) |
 | `/phase-checkpoint N` | Verify phase: tests, lint, security, then production checks |
