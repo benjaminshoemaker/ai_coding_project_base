@@ -61,7 +61,7 @@ For each acceptance criterion, create a verification item:
 |-------|-------|
 | ID | `V-001`, `V-002`, etc. |
 | Criterion | The acceptance criterion text |
-| Type | `CODE`, `TEST`, `LINT`, `TYPE`, `BUILD`, `SECURITY`, `BROWSER:*`, or `MANUAL` |
+| Type | `CODE`, `TEST`, `LINT`, `TYPE`, `BUILD`, `SECURITY`, `BROWSER:*`, `MANUAL`, or `MANUAL:DEFER` |
 | Verify | The `Verify:` method (test name, command, route/selector, etc.) |
 | Evidence | Where evidence will be stored (log, screenshot, or output path) |
 | Files | Which files to examine |
@@ -204,11 +204,15 @@ Verification method by type:
 - **SECURITY**: Run `/security-scan` (or equivalent for config if defined).
 - **CODE**: Inspect the file, export, or command indicated by `Verify:`.
 - **BROWSER:*:** Use the browser-verification skill with route/selector details.
-- **MANUAL**: Attempt automation using the auto-verify skill before listing for human:
+- **MANUAL / MANUAL:DEFER**: Attempt automation using the auto-verify skill:
   1. Invoke auto-verify skill with criterion text and available tools
   2. If PASS: Mark as verified (automated), record method used
   3. If FAIL: Show error and suggested fix, mark as manual with context
-  4. If TRULY_MANUAL: List in report for human review with reason
+  4. If TRULY_MANUAL and tagged `MANUAL:DEFER`:
+     Enqueue to deferred review queue (`.claude/deferred-reviews.json`).
+     Task continues — this does NOT block. Mark checkbox with `— Deferred: {key}`.
+  5. If TRULY_MANUAL and tagged `MANUAL` (blocking):
+     List in report for human review with reason
 
   Report format for attempted automation:
   ```

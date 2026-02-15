@@ -9,37 +9,57 @@ Read `.claude/settings.local.json` for auto-advance configuration:
 ```json
 {
   "autoAdvance": {
-    "enabled": true      // default: true
+    "enabled": true,
+    "maxDeferredQueue": 20,
+    "drainOnBlocker": true,
+    "drainOnCompletion": true
   }
 }
 ```
 
-If `autoAdvance` is not configured, use defaults (`enabled: true`).
+| Key | Default | Description |
+|-----|---------|-------------|
+| `enabled` | `true` | Enable auto-advance between phases |
+| `maxDeferredQueue` | `20` | Stop auto-advance to drain when queue reaches this size. `0` = no limit. |
+| `drainOnBlocker` | `true` | Drain deferred queue when a blocker stops auto-advance |
+| `drainOnCompletion` | `true` | Drain deferred queue when all phases complete |
+
+If `autoAdvance` is not configured, use defaults (all true, maxDeferredQueue=20).
 
 ## Auto-Advance Conditions
 
 Auto-advance to `/phase-prep {N+1}` ONLY if ALL of these are true:
 
 1. ✓ All automated checks passed (tests, lint, types, security)
-2. ✓ No "truly manual" verification items remain (auto-verify was attempted above)
+2. ✓ No BLOCKING manual verification items remain
+   (MANUAL:DEFER items are queued to `.claude/deferred-reviews.json`, not blocking)
 3. ✓ No production verification items exist
 4. ✓ Phase $1 is not the final phase
 5. ✓ `--pause` flag was NOT passed to this command
 6. ✓ `autoAdvance.enabled` is true (or not configured, defaulting to true)
 
-**Rationale:** Auto-verify (run in Manual Local Verification above) attempts automation before blocking. Only items that genuinely require human judgment block auto-advance. Production verification items always require human presence to confirm deployed behavior.
+**Rationale:** Auto-verify (run in Manual Local Verification above) attempts automation before blocking. Only items tagged `(MANUAL)` that genuinely require human judgment AND affect downstream work block auto-advance. Items tagged `(MANUAL:DEFER)` are enqueued for later review. Production verification items always require human presence to confirm deployed behavior.
 
 ## If Auto-Advance Conditions Met
 
-1. **Show brief notification:**
+1. **Check deferred queue drain trigger:**
+   - Read `.claude/deferred-reviews.json` queue size
+   - Read `autoAdvance.maxDeferredQueue` from settings (default: 20)
+   - If maxDeferredQueue > 0 AND queue size >= maxDeferredQueue: STOP, drain queue via `/review-deferred`, then continue
+   - Otherwise: proceed with auto-advance
+
+2. **Show brief notification:**
    ```
    AUTO-ADVANCE
    ============
-   All Phase $1 criteria verified (no truly manual items remain).
+   All Phase $1 criteria verified (no blocking manual items remain).
+   {If deferred items were queued this checkpoint:}
+   Queued {N} deferred review items (total queue: {M})
+   {/If}
    Proceeding to next phase...
    ```
 
-2. **Execute immediately:**
+3. **Execute immediately:**
    - Track this command in auto-advance session log
    - Invoke `/phase-prep {N+1}` using the Skill tool
    - Continue auto-advance chain (phase-prep will continue if it passes)
@@ -53,19 +73,26 @@ AUTO-ADVANCE STOPPED
 ====================
 
 Reason: {one of below}
-- Truly manual verification items remain (human judgment required)
+- Blocking manual verification items remain (human judgment required for downstream work)
+- Deferred queue safety limit reached ({N} items — review needed)
 - Production verification items exist (human intervention required)
 - Phase $1 is the final phase
 - Auto-advance disabled via --pause flag
 - Auto-advance disabled in settings
 
-{If manual/production items exist:}
-Human verification required:
+{If blocking manual items exist:}
+Blocking items (human judgment affects downstream work):
 - [ ] {item 1}
 - [ ] {item 2}
+{/If}
+
+{If deferred items were queued:}
+Deferred items (queued for later review):
+- {N} items in queue across {P} phases
+{/If}
 
 Next steps:
-1. Complete the verification items above
+1. Complete the blocking verification items above
 2. Run /phase-prep {N+1} manually when ready
 
 Ready to open a PR? Run: /create-pr
@@ -79,7 +106,7 @@ Maintain `.claude/auto-advance-session.json` during auto-advance:
 {
   "started_at": "{ISO timestamp}",
   "commands": [
-    {"command": "/phase-checkpoint 1", "status": "PASS", "timestamp": "{ISO}"},
+    {"command": "/phase-checkpoint 1", "status": "PASS", "deferred": 0, "timestamp": "{ISO}"},
     {"command": "/phase-prep 2", "status": "PASS", "timestamp": "{ISO}"},
     {"command": "/phase-start 2", "status": "PASS", "timestamp": "{ISO}"},
     {"command": "/phase-checkpoint 2", "status": "MANUAL_REQUIRED", "timestamp": "{ISO}"}

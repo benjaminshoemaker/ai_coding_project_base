@@ -43,9 +43,9 @@ Also collect Pre-Phase Setup items and their `Verify:` lines.
 ### Acceptance Criteria Rules
 
 - Every criterion must include a type tag: `(TEST)`, `(CODE)`, `(LINT)`,
-  `(TYPE)`, `(BUILD)`, `(SECURITY)`, `(BROWSER:DOM)` etc.
-- Every criterion must include a `Verify:` line unless it is `MANUAL`.
-- `MANUAL` criteria must include a `Reason:` line.
+  `(TYPE)`, `(BUILD)`, `(SECURITY)`, `(BROWSER:DOM)`, `(MANUAL)`, `(MANUAL:DEFER)` etc.
+- Every criterion must include a `Verify:` line unless it is `MANUAL` or `MANUAL:DEFER`.
+- `MANUAL` and `MANUAL:DEFER` criteria must include a `Reason:` line.
 - Flag ambiguous criteria (vague, subjective, or missing measurable details).
 
 ### Pre-Phase Setup Rules
@@ -64,6 +64,19 @@ If it matches any automatable pattern, it is a **false MANUAL tag**.
 
 Only criteria matching the "Truly Manual Patterns" section (subjective UX/brand/tone
 judgment) should remain as MANUAL.
+
+## Step 3b: Check MANUAL Blocking Classification
+
+For each `(MANUAL)` criterion (not `MANUAL:DEFER`):
+- Check if it references subjective patterns WITH no downstream dependency
+- If the criterion is purely cosmetic/tonal AND the next phase doesn't reference it:
+  → Suggest retagging as `(MANUAL:DEFER)`
+  → Reason: "No downstream dependency detected"
+
+For each `(MANUAL:DEFER)` criterion:
+- Verify it genuinely has no downstream dependency
+- If a later task or phase references this criterion's output:
+  → Flag as "Should be `MANUAL` (blocking) — downstream dependency exists"
 
 ## Step 4: Report
 
@@ -99,8 +112,12 @@ False MANUAL Tags (should be automated):
 
 MANUAL Summary:
   Total MANUAL criteria: {N}
-  Likely false tags: {N} (should be retagged)
+  Likely false tags: {N} (should be retagged to automated)
   Truly manual: {N} (subjective judgment)
+
+DEFER Classification:
+  Total MANUAL: {N} blocking, {M} deferrable
+  Suggested retags: {list of MANUAL → MANUAL:DEFER or vice versa}
 
 Status: PASS | WARN | FAIL
 ```

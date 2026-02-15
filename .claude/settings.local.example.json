@@ -14,6 +14,12 @@
       "Bash(timeout 15 npm run dev:*)"
     ]
   },
+  "autoAdvance": {
+    "enabled": true,
+    "maxDeferredQueue": 20,
+    "drainOnBlocker": true,
+    "drainOnCompletion": true
+  },
   "codexReview": {
     "enabled": true,
     "codeModel": "gpt-5.3-codex",

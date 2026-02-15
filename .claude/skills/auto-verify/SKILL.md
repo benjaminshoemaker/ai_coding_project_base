@@ -1,6 +1,6 @@
 ---
 name: auto-verify
-description: Attempt automated verification of criteria before falling back to manual. Parses criterion text for automation hints and executes appropriate tool (curl, browser, file check). Invoked by verify-task and phase-checkpoint for MANUAL criteria.
+description: Attempt automated verification of criteria before falling back to manual. Parses criterion text for automation hints and executes appropriate tool (curl, browser, file check). Invoked by verify-task and phase-checkpoint for MANUAL and MANUAL:DEFER criteria.
 ---
 
 # Auto-Verify Skill
@@ -11,7 +11,7 @@ executes verification commands before marking items as truly manual.
 
 ## When This Skill Runs
 
-- Invoked by `/verify-task` when processing MANUAL type criteria
+- Invoked by `/verify-task` when processing MANUAL and MANUAL:DEFER type criteria
 - Invoked by `/phase-checkpoint` for Manual Local Verification items
 - Invoked by `code-verification` skill before browser fallback
 - Invoked by `browser-verification` skill for HTTP-first optimization

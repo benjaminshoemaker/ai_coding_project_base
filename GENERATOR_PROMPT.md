@@ -77,13 +77,17 @@ Verification Types:
 - BUILD — Verified by build command
 - SECURITY — Verified by security scan
 - BROWSER:DOM | VISUAL | NETWORK | CONSOLE | PERFORMANCE | ACCESSIBILITY — Verified via MCP
-- MANUAL — Requires human judgment; include a reason. USE SPARINGLY.
+- MANUAL — Requires human judgment that BLOCKS downstream work; include a reason. USE SPARINGLY.
   Before tagging MANUAL, read `~/.claude/skills/auto-verify/PATTERNS.md` and walk
   through the MANUAL Decision Tree. Only subjective UX/brand/tone judgment is
   truly manual. File checks, API calls, DOM selectors, grep, tests — all automated.
   Most tasks should have ZERO manual criteria.
+- MANUAL:DEFER — Requires human judgment but has NO downstream dependency.
+  Deferred items accumulate and are reviewed when a blocker occurs or at project end.
+  Examples: visual polish, copy tone, color choices, "feels intuitive".
+  USE SPARINGLY — prefer automated verification. Most subjective items are DEFER.
 
-IMPORTANT: Every non-MANUAL criterion MUST include a machine-verifiable `Verify:` line.
+IMPORTANT: Every non-MANUAL/non-MANUAL:DEFER criterion MUST include a machine-verifiable `Verify:` line.
 
 # Execution Plan: {Project Name}
 
@@ -141,8 +145,10 @@ Human must complete before agents begin:
   - Verify: route=`{route}`, selector=`{selector}`, expect=`{state}`
 
 Manual criteria (ONLY for true UX judgment — use sparingly):
-- [ ] (MANUAL) {Specific criterion requiring human judgment}
+- [ ] (MANUAL) {Specific criterion requiring human judgment — blocks downstream}
   - Reason: {why automation cannot verify this}
+- [ ] (MANUAL:DEFER) {Subjective criterion with no downstream dependency}
+  - Reason: {why human review is needed but doesn't block}
 
 **Files:**
 - Create: `{path}` — {purpose}
@@ -200,7 +206,7 @@ Before generating:
 Task quality checks:
 ✓ 3-6 specific, testable acceptance criteria
 ✓ Every acceptance criterion includes a verification type
-✓ Every non-MANUAL criterion has a `Verify:` line with executable command
+✓ Every non-MANUAL/non-MANUAL:DEFER criterion has a `Verify:` line with executable command
 ✓ MANUAL criteria are rare (< 10% of total) with clear reasons
 ✓ Concrete files to create/modify (not vague)
 ✓ Dependencies explicitly listed
@@ -255,7 +261,7 @@ Generate:
 **EXECUTION_PLAN.md**
 - [ ] All phases have pre-phase setup sections (with `Verify:` commands)
 - [ ] All tasks have 3-6 testable acceptance criteria
-- [ ] All non-MANUAL criteria have `Verify:` lines with executable commands
+- [ ] All non-MANUAL/non-MANUAL:DEFER criteria have `Verify:` lines with executable commands
 - [ ] MANUAL criteria are rare (< 10%) with clear reasons
 - [ ] All tasks specify files to create/modify
 - [ ] All tasks have dependencies listed

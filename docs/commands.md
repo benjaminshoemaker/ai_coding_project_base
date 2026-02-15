@@ -95,6 +95,7 @@ Run from your **project directory**.
 | `/capture-learning` | Save project patterns and conventions to LEARNINGS.md |
 | `/update-docs` | Sync documentation with recent code changes |
 | `/populate-state` | Regenerate phase-state.json from EXECUTION_PLAN.md and git history |
+| `/review-deferred` | Review and clear deferred verification items from the queue |
 | `/oauth-login <provider>` | Complete OAuth flow (Google/GitHub) for browser verification |
 
 ## Toolkit-Only Commands

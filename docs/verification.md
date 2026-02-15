@@ -242,7 +242,30 @@ Before marking any verification item as "manual," the toolkit attempts automated
 
 The single source of truth for what CAN vs CANNOT be automated lives in `.claude/skills/auto-verify/PATTERNS.md`. Both generation commands (`/feature-plan`, `/generate-plan`) and audit commands (`/criteria-audit`) reference this file to minimize false MANUAL tags at generation time.
 
-The decision tree walks through 9 steps — file checks, grep, tests, curl, DOM selectors, console, env vars — before concluding a criterion is truly manual. Only subjective UX/brand/tone judgments qualify as MANUAL.
+The decision tree walks through 9 steps — file checks, grep, tests, curl, DOM selectors, console, env vars — before concluding a criterion is truly manual. Step 9 splits into two sub-steps:
+
+- **Step 9a (Blocking):** Does the next phase depend on this judgment? Tag as `(MANUAL)` — blocks auto-advance.
+- **Step 9b (Deferrable):** No downstream dependency? Tag as `(MANUAL:DEFER)` — item is queued for later review and does not block execution.
+
+Only subjective UX/brand/tone judgments qualify as MANUAL. The subtype determines whether execution pauses for human input or defers the review.
+
+### MANUAL:DEFER — Deferred Verification
+
+Criteria tagged `(MANUAL:DEFER)` are implemented normally but their subjective review is deferred. These items accumulate in a persistent queue (`.claude/deferred-reviews.json`) and surface when:
+
+1. A blocker forces a human stop (opportunistic drain)
+2. All phases complete (end of project)
+3. Queue exceeds a configurable safety limit
+4. User explicitly runs `/review-deferred`
+
+In EXECUTION_PLAN.md, deferred items are checked off with an annotation:
+```
+- [x] (MANUAL:DEFER) Button color matches brand palette — Deferred: 1:1.2.A:V-003
+```
+
+This means "implemented, review pending." The annotation preserves traceability while allowing execution to continue.
+
+Use `/review-deferred` to inspect and clear the queue at any time.
 
 ### How It Works
 
@@ -311,6 +334,19 @@ These patterns indicate criteria that genuinely require human judgment:
 - `brand`, `tone`, `voice` — Brand consistency
 - `professional`, `polished` — Quality perception
 - `appropriate`, `suitable` — Context-dependent evaluation
+
+### Manual Subtypes
+
+Once a criterion is confirmed as truly manual, classify the subtype:
+
+| Subtype | Tag | When to Use | Blocks Execution? |
+|---------|-----|-------------|-------------------|
+| Blocking | `(MANUAL)` | Next phase depends on this judgment | Yes |
+| Deferrable | `(MANUAL:DEFER)` | No downstream dependency; purely cosmetic/tonal | No (queued) |
+
+Default to `(MANUAL)` if unsure — it's safer to block than to defer something critical.
+
+`/criteria-audit` checks this classification and suggests retags when a `(MANUAL)` criterion has no downstream dependency or a `(MANUAL:DEFER)` criterion does.
 
 ## Phase Checkpoint Verification
 

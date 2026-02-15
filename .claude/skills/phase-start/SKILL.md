@@ -345,20 +345,22 @@ Before evaluating auto-advance conditions, attempt automation on checkpoint manu
 1. Extract manual verification items from "Phase $1 Checkpoint" section in EXECUTION_PLAN.md
 2. For each manual item, invoke auto-verify skill with item text and available tools
 3. Categorize results:
-   - **Automated**: Item can be verified automatically (PASS/FAIL)
-   - **Truly Manual**: No automation possible (subjective criteria like "feels intuitive")
+   - **Automated**: Item verified automatically (PASS/FAIL)
+   - **Truly Manual (blocking)**: No automation, tagged `MANUAL`, downstream dependency
+   - **Truly Manual (deferrable)**: No automation, tagged `MANUAL:DEFER`, no dependency → enqueue to `.claude/deferred-reviews.json`
 
 ### Auto-Advance Conditions
 
 Auto-advance to `/phase-checkpoint $1` ONLY if ALL of these are true:
 
 1. ✓ All tasks in Phase $1 are complete
-2. ✓ No "truly manual" checkpoint items remain (automated items are OK)
+2. ✓ No BLOCKING manual checkpoint items remain
+   (MANUAL:DEFER items are queued to `.claude/deferred-reviews.json`, not blocking)
 3. ✓ No tasks were marked as blocked or skipped
 4. ✓ `--pause` flag was NOT passed to this command
 5. ✓ `autoAdvance.enabled` is true (or not configured, defaulting to true)
 
-**Rationale:** Auto-verify attempts automation before blocking. Only items that genuinely require human judgment (UX, visual aesthetics, brand tone) block auto-advance. Items that can be verified with curl, file checks, or browser automation don't require human presence.
+**Rationale:** Auto-verify attempts automation before blocking. Only items tagged `(MANUAL)` that genuinely require human judgment AND affect downstream work block auto-advance. Items tagged `(MANUAL:DEFER)` are enqueued for later review. Items that can be verified with curl, file checks, or browser automation don't require human presence.
 
 ### If Auto-Advance Conditions Met
 
@@ -386,16 +388,21 @@ PHASE $1 COMPLETE
 All tasks finished.
 
 Cannot auto-advance because:
-- {reason: e.g., "Phase has truly manual verification items"}
+- {reason: e.g., "Phase has blocking manual verification items"}
 
 Checkpoint Verification Preview:
 --------------------------------
 Automatable ({N} items):
 - [auto] "{item}" — can verify with {method}
 
-Truly Manual ({N} items requiring human judgment):
+Blocking Manual ({N} items requiring human judgment):
 - [ ] "{item}"
-  - Reason: {why automation not possible, e.g., "subjective UX assessment"}
+  - Reason: {why this blocks downstream work}
+
+{If deferred items exist:}
+Deferred ({N} items queued for later review):
+- "{item}" — no downstream dependency
+{/If}
 
 Next: Run /phase-checkpoint $1 when ready to verify
 

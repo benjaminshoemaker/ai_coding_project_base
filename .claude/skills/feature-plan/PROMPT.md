@@ -44,11 +44,15 @@ Verification Types:
 - BUILD — Verified by build command
 - SECURITY — Verified by security scan
 - BROWSER:DOM | VISUAL | NETWORK | CONSOLE | PERFORMANCE | ACCESSIBILITY — Verified via MCP
-- MANUAL — Requires human judgment; include a reason. USE SPARINGLY.
+- MANUAL — Requires human judgment that BLOCKS downstream work; include a reason. USE SPARINGLY.
   Before tagging MANUAL, read `~/.claude/skills/auto-verify/PATTERNS.md` and walk
   through the MANUAL Decision Tree. Only subjective UX/brand/tone judgment is
   truly manual. File checks, API calls, DOM selectors, grep, tests — all automated.
   Most tasks should have ZERO manual criteria.
+- MANUAL:DEFER — Requires human judgment but has NO downstream dependency.
+  Deferred items accumulate and are reviewed when a blocker occurs or at project end.
+  Examples: visual polish, copy tone, color choices, "feels intuitive".
+  USE SPARINGLY — prefer automated verification. Most subjective items are DEFER.
 
 # Execution Plan: {Feature Name}
 
@@ -104,8 +108,10 @@ Human must complete before starting:
   - Verify: {route}, {selector}, {expected state}
 
 Manual criteria (only if automation is not feasible):
-- [ ] (MANUAL) {Specific, testable criterion}
+- [ ] (MANUAL) {Specific criterion — blocks downstream work}
   - Reason: {why human review is required}
+- [ ] (MANUAL:DEFER) {Subjective criterion with no downstream dependency}
+  - Reason: {why human review is needed but doesn't block}
 
 **Files to Create:**
 - `{path/to/file}` — {purpose}

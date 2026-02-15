@@ -145,11 +145,31 @@ For each manual item:
 1. Invoke auto-verify skill with item text and available tools
 2. Record attempt result (PASS, FAIL, or MANUAL)
 
-**Categorize and report results:**
+**Categorize results:**
+
+For items that remain TRULY_MANUAL after auto-verify:
+1. Check if criterion is tagged `(MANUAL:DEFER)` in EXECUTION_PLAN.md
+2. If `MANUAL:DEFER` → enqueue to `.claude/deferred-reviews.json` with context (see [DEFERRED_QUEUE.md](DEFERRED_QUEUE.md))
+3. If `MANUAL` (blocking) → add to Human Confirmation batch
+4. If plain `MANUAL` with no qualifier → treat as blocking (backward compat)
+
+**Report results:**
 
 ```
 Automated Successfully:
 - [x] "{item}" — PASS ({method}, {duration})
+
+{If deferred items were queued:}
+Deferred ({N} items queued for later review):
+- "{criterion}" (Task {id}) — Reason: {reason}
+Total queue: {M} items across {P} phases
+{/If}
+```
+
+**Checkbox representation:** When a `MANUAL:DEFER` item is enqueued, mark it checked
+in EXECUTION_PLAN.md with an inline annotation:
+```
+- [x] (MANUAL:DEFER) Button color matches brand palette — Deferred: 1:1.2.A:V-003
 ```
 
 ### Manual Verification Checklist
@@ -183,12 +203,18 @@ or troubleshooting tables — just the actions and what to check.
 
 ### Human Confirmation (Batch)
 
+Only present BLOCKING manual items (not deferred). If zero blocking items remain
+after deferral, skip human confirmation entirely.
+
 After presenting the checklist, ask ONE question using AskUserQuestion:
 - "All verified" → Update ALL checkboxes at once
 - "Some verified" → Follow up asking which ones
 - "None yet" → Leave unchecked, continue
 
 Update checkboxes in EXECUTION_PLAN.md based on response.
+
+After confirmation (or skip), check drain triggers on the deferred queue
+(see [DEFERRED_QUEUE.md](DEFERRED_QUEUE.md)).
 
 ---
 

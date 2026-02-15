@@ -97,9 +97,12 @@ failure (it is part of the quality gate).
 
 1. Extract manual items from "Phase $1 Checkpoint" in EXECUTION_PLAN.md
 2. Attempt automation using auto-verify skill
-3. Generate detailed verification guide for remaining items
-4. Ask human for batch confirmation
-5. Update checkboxes in EXECUTION_PLAN.md
+3. Classify remaining items:
+   - `MANUAL:DEFER` → enqueue to deferred review queue (see [DEFERRED_QUEUE.md](DEFERRED_QUEUE.md))
+   - `MANUAL` (blocking) → generate verification guide for human
+4. If blocking items exist: ask human for batch confirmation
+5. If only deferred items: skip human confirmation, report queue status
+6. Update checkboxes in EXECUTION_PLAN.md
 
 For external integrations, follow [DOCS_PROTOCOL.md](DOCS_PROTOCOL.md) to fetch latest documentation.
 
@@ -241,7 +244,9 @@ Optional Checks:
 
 Manual Checks:
 - Automated: {X} items
-- Truly manual: {Y} items
+- Blocking manual: {Y} items
+- Deferred: {Z} items (queued for later review)
+- Total deferred queue: {M} items across {P} phases
 
 Local Verification: ✓ PASSED | ✗ FAILED
 
@@ -278,7 +283,7 @@ Overall: Ready to proceed | Issues to address
 
 See [AUTO_ADVANCE.md](AUTO_ADVANCE.md) for auto-advance logic.
 
-**Summary:** If all checks pass and no manual items remain, automatically invoke `/phase-prep {N+1}`.
+**Summary:** If all checks pass and no blocking manual items remain, automatically invoke `/phase-prep {N+1}`. `MANUAL:DEFER` items are queued and do not block.
 
 **Codex review and auto-advance:** Codex findings do NOT block auto-advance unless user explicitly chooses to address them. The review is advisory.
 

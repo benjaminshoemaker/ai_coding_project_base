@@ -150,12 +150,56 @@ Phase {CURRENT_PHASE} checkpointed. Preparing Phase {CURRENT_PHASE + 1}...
 
 **Condition:** State exists. CURRENT_PHASE >= TOTAL_PHASES. Current phase status is `CHECKPOINTED` or `COMPLETE`.
 
-**Action:** Report completion. Do NOT invoke any skill.
+**Action:** Check deferred review queue, then report completion.
+
+1. Read `.claude/deferred-reviews.json`
+2. Read `autoAdvance.drainOnCompletion` from `.claude/settings.local.json` (default: true)
+3. If queue is non-empty (has `reviewed: false` items) AND `drainOnCompletion` is true:
+
+```
+PROJECT COMPLETE — DEFERRED REVIEW
+===================================
+All {TOTAL_PHASES} phases finished.
+
+{N} items were deferred during execution.
+These are non-blocking items that need human review:
+
+Phase 1:
+- [ ] "{criterion}" (Task {id})
+  Context: {file}:{line} — {summary}
+
+Phase 3:
+- [ ] "{criterion}" (Task {id})
+  Context: {file}:{line} — {summary}
+```
+
+Use AskUserQuestion:
+- "All look good" → Clear queue (set all `reviewed: true`, remove reviewed items, update `last_drained`/`last_drain_reason`)
+- "Review individually" → Invoke `/review-deferred`
+- "Skip for now" → Keep queue, note in session
+
+4. If queue is non-empty but `drainOnCompletion` is false:
 
 ```
 EXECUTION COMPLETE
 ==================
 All {TOTAL_PHASES} phases finished.
+
+Note: {N} deferred review items remain in queue.
+Use /review-deferred to review them when ready.
+
+Summary:
+- Phases completed: {TOTAL_PHASES}/{TOTAL_PHASES}
+- Total tasks: {count from EXECUTION_PLAN.md}
+- Deferred items: {N} pending review
+```
+
+5. If queue is empty or file doesn't exist:
+
+```
+EXECUTION COMPLETE
+==================
+All {TOTAL_PHASES} phases finished. All criteria verified. No deferred items.
 
 Summary:
 - Phases completed: {TOTAL_PHASES}/{TOTAL_PHASES}
@@ -163,7 +207,7 @@ Summary:
 
 Consider:
 - /progress              — Full completion report
-- Review DEFERRED.md     — Any deferred items
+- Review DEFERRED.md     — Any deferred requirements
 - Review TODOS.md        — Follow-up work
 ```
 
@@ -171,7 +215,11 @@ Consider:
 
 **Condition:** State exists. Current phase has a task with status `BLOCKED`, or the phase itself is `BLOCKED`.
 
-Check failure tracking in phase-state.json for blocked tasks:
+Check failure tracking in phase-state.json for blocked tasks.
+
+Also check `.claude/deferred-reviews.json` — if the deferred queue has items and
+`autoAdvance.drainOnBlocker` is true, present them: "While you're here, {N} deferred
+items are pending review."
 
 ```
 EXECUTION BLOCKED
@@ -184,6 +232,12 @@ Task {id}: {task subject from EXECUTION_PLAN.md}
   Last errors:
     - {error 1}
     - {error 2}
+
+{If deferred queue has items:}
+While you're here, {N} deferred review items are pending:
+- "{criterion}" (Task {id}) — {reason}
+Use /review-deferred to review them now.
+{/If}
 
 Options:
   1. Fix the issue and run /go again

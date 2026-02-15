@@ -15,9 +15,12 @@ Walk through this BEFORE tagging any acceptance criterion as MANUAL:
 6. Can it be verified by checking DOM elements or visible text? → **(BROWSER:DOM)** `Verify: route + selector`
 7. Can it be verified by checking browser console for errors? → **(BROWSER:CONSOLE)** `Verify: route`
 8. Can it be verified by checking an environment variable? → **(CODE)** `Verify: test -n "$VAR"`
-9. Does it require subjective human judgment? → **(MANUAL)** with `Reason:`
+9. Does it require subjective human judgment?
+   → 9a. Does the NEXT phase depend on this judgment? → **(MANUAL)** with `Reason:`
+   → 9b. No downstream dependency? → **(MANUAL:DEFER)** with `Reason:`
 
 **If you reach step 9, it is truly manual. Otherwise, use the automated type.**
+Choose 9a (blocking) or 9b (deferrable) based on whether downstream work depends on this judgment. See "Manual Subtypes" below.
 
 Most tasks should have **ZERO** manual criteria. Maximum 1-2 per task.
 MANUAL criteria exceeding 10% of total in a plan is a red flag.
@@ -96,6 +99,17 @@ test -d "{path}" && echo "PASS:dir_exists" || echo "FAIL:dir_missing"
 ```bash
 test -n "${VAR_NAME}" && echo "PASS:env_set" || echo "FAIL:env_missing"
 ```
+
+## Manual Subtypes: BLOCKING vs DEFER
+
+After the decision tree reaches step 9 (truly manual), classify the subtype:
+
+| Subtype | Tag | When to use | Example |
+|---------|-----|-------------|---------|
+| Blocking | (MANUAL) | Next phase depends on this judgment | "Data model correctly represents domain" |
+| Deferrable | (MANUAL:DEFER) | No downstream dependency; purely cosmetic/tonal | "Button color matches brand palette" |
+
+Default: If unsure, use (MANUAL). It's safer to block than to defer something critical.
 
 ## Truly Manual Patterns
 
