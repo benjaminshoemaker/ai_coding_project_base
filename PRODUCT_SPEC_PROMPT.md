@@ -15,6 +15,18 @@ Before you begin asking questions, plan your questions out to meet the following
 - If you can ask multiple questions at once, do so, and prompt the user to answer all of the questions at once. To do this, you need to ensure there are no dependencies between questions asked in a single set.
 - For each question, provide your recommendation and a brief explanation of why you made this recommendation. Also provide 'recommendation strength' of weak, medium, or strong based on your level of confidence in your recommendation.
 
+### Question Efficiency
+
+Minimize user interruptions. Follow these rules strictly:
+
+1. **Auto-decide strong recommendations.** If your recommendation strength is "strong" AND the question is about an implementation detail (not user-facing behavior), do NOT ask — just use your recommendation. State your assumption in the output so the user can correct if needed.
+
+2. **Batch aggressively.** Use AskUserQuestion with up to 4 questions per call. Present all independent questions in a single batch rather than asking one at a time.
+
+3. **Target 2-3 rounds maximum.** After reading all inputs, identify every ambiguity at once. Categorize as "must ask user" vs "can auto-decide." Only present "must ask" items, batched into 2-3 AskUserQuestion calls.
+
+4. **Only ask about user-facing decisions.** Questions about scope, UX behavior, and user-visible functionality require user input. Questions about internal implementation, data formats, or technical approach can be auto-decided.
+
 We are building an MVP - bias your choices towards simplicity, ease of implementation, and speed. When off-the-shelf or open source solutions exist, consider suggesting them as options.
 
 ## Making Product Choices
@@ -122,3 +134,18 @@ At the end of PRODUCT_SPEC.md, include a requirements summary table:
 ```
 
 This enables downstream traceability from requirements → tasks → commits.
+
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| Contradictory requirements from user answers | List the contradictions and ask the user to clarify before continuing. |
+| Scope too large for a single product spec | Suggest splitting into multiple specs or phasing. Ask the user to confirm scope. |
+| Insufficient input (user gives one-line answers) | Ask follow-up questions to gather enough detail for a complete spec. |
+
+## Review Your Output
+
+Before finalizing PRODUCT_SPEC_PROMPT.md, re-read the spec against the user's original answers to verify:
+- All user-provided requirements are represented
+- No context was lost during synthesis
+- User stories cover the stated use cases completely

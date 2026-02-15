@@ -34,6 +34,18 @@ Before you begin asking questions, plan your questions out to meet the following
 * For each question, provide your recommendation and a brief explanation of why you made this recommendation. Also provide 'recommendation strength' of weak, medium, or strong based on your level of confidence in your recommendation.
 * Focus questions on integration concerns: how this feature fits with existing code, what patterns to follow, what might break.
 
+### Question Efficiency
+
+Minimize user interruptions. Follow these rules strictly:
+
+1. **Auto-decide strong recommendations.** If your recommendation strength is "strong" AND the question is about an implementation detail (not user-facing behavior), do NOT ask — just use your recommendation. State your assumption in the output so the user can correct if needed.
+
+2. **Batch aggressively.** Use AskUserQuestion with up to 4 questions per call. Present all independent questions in a single batch rather than asking one at a time.
+
+3. **Target 2-3 rounds maximum.** After reading all inputs, identify every ambiguity at once. Categorize as "must ask user" vs "can auto-decide." Only present "must ask" items, batched into 2-3 AskUserQuestion calls.
+
+4. **Only ask about user-facing decisions.** Questions about scope, UX behavior, and user-visible functionality require user input. Questions about internal implementation (SQL structure, endpoint design, state management, data formats) can be auto-decided based on existing codebase patterns.
+
 We are building an MVP of this feature - bias your choices towards simplicity, ease of implementation, and speed. Prefer extending existing patterns over introducing new ones. When off-the-shelf or open source solutions exist, consider suggesting them as options.
 
 ## Making Technical Choices
@@ -134,4 +146,11 @@ Once we have enough to generate a strong technical specification document, tell 
 5. Is structured in whatever way best communicates this specific feature's integration
 
 You have latitude to organize the document as appropriate for the feature. A database schema change needs different detail than a UI-only feature. Use your judgment to create a document that gives an AI coding agent everything it needs to implement the feature while maintaining consistency with the existing codebase.
+
+## Review Your Output
+
+Before finalizing FEATURE_TECHNICAL_SPEC.md, verify:
+- Every requirement in FEATURE_SPEC.md has a corresponding technical approach
+- No FEATURE_SPEC.md requirements were dropped or left unaddressed
+- Integration points and data model changes are consistent with the existing architecture
 ```
