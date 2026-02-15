@@ -31,6 +31,7 @@ Run from your **project directory**. These drive the phase-based execution workf
 
 | Command | Description |
 |---------|-------------|
+| `/go` | Resume execution from wherever you left off — detects state and runs the right command |
 | `/fresh-start` | Orient to project, load context, detect resume state |
 | `/phase-prep N` | Check prerequisites for phase N, preview future human items |
 | `/phase-start N` | Execute phase N (creates branch, one commit per task) |
