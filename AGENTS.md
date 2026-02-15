@@ -27,6 +27,18 @@ creates `/review`. The `.claude/commands/` format still works but skills are pre
 - **Avoid speculation:** If requirements are unclear, ask the user rather than
   encoding assumptions into prompts.
 
+## Plan Review Protocol
+
+After writing a plan in plan mode, use AskUserQuestion **before** calling
+ExitPlanMode:
+
+- "Ready to implement (Recommended)" → Call ExitPlanMode
+- "Review with /codex-consult first" → Exit plan mode to run Bash, then
+  run /codex-consult on the plan and present findings before implementing
+- "I want to modify the plan" → Stay in plan mode, ask what to change
+
+Do NOT call ExitPlanMode without offering these options first.
+
 ## Editing Rules (Markdown / Prompts)
 
 - Preserve existing structure, headings, and code fences unless intentionally changing

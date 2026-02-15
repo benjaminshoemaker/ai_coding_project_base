@@ -541,6 +541,20 @@ Steps are logical groupings within the branch—not separate branches.
 
 ---
 
+## Plan Review Protocol
+
+After writing a plan in plan mode, use AskUserQuestion **before** calling
+ExitPlanMode:
+
+- "Ready to implement (Recommended)" → Call ExitPlanMode
+- "Review with /codex-consult first" → Exit plan mode to run Bash, then
+  run /codex-consult on the plan and present findings before implementing
+- "I want to modify the plan" → Stay in plan mode, ask what to change
+
+Do NOT call ExitPlanMode without offering these options first.
+
+---
+
 ## Guardrails
 
 - Make the smallest change that satisfies acceptance criteria
