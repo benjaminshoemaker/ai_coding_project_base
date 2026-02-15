@@ -44,7 +44,11 @@ Verification Types:
 - BUILD — Verified by build command
 - SECURITY — Verified by security scan
 - BROWSER:DOM | VISUAL | NETWORK | CONSOLE | PERFORMANCE | ACCESSIBILITY — Verified via MCP
-- MANUAL — Requires human judgment; include a reason
+- MANUAL — Requires human judgment; include a reason. USE SPARINGLY.
+  Before tagging MANUAL, read `~/.claude/skills/auto-verify/PATTERNS.md` and walk
+  through the MANUAL Decision Tree. Only subjective UX/brand/tone judgment is
+  truly manual. File checks, API calls, DOM selectors, grep, tests — all automated.
+  Most tasks should have ZERO manual criteria.
 
 # Execution Plan: {Feature Name}
 
@@ -224,7 +228,9 @@ For each task, verify:
 Red flags to fix:
 ✗ Vague criteria like "works correctly" or "handles errors properly"
 ✗ Criterion missing verification type or method
-✗ Manual criteria used without a reason or used excessively
+✗ MANUAL used for anything that can be checked by file existence, grep, curl, DOM selector, or test
+✗ MANUAL used without a reason
+✗ More than 1-2 MANUAL criteria per task (most tasks should have ZERO)
 ✗ Too many files (>7) touched in one task
 ✗ Dependencies on parallel tasks in the same step
 ✗ Missing spec reference

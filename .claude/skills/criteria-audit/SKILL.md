@@ -53,7 +53,19 @@ Also collect Pre-Phase Setup items and their `Verify:` lines.
 - Each setup item must include a `Verify:` command.
 - If missing, mark as human-required.
 
-## Step 3: Report
+## Step 3: Check MANUAL Criteria for False Tags
+
+Read `~/.claude/skills/auto-verify/PATTERNS.md` for the full pattern matching table
+and MANUAL decision tree.
+
+For each criterion tagged `(MANUAL)`, check if it contains keywords from the
+Pattern Matching Table that indicate it CAN be automated (priorities 1-10).
+If it matches any automatable pattern, it is a **false MANUAL tag**.
+
+Only criteria matching the "Truly Manual Patterns" section (subjective UX/brand/tone
+judgment) should remain as MANUAL.
+
+## Step 4: Report
 
 Provide a structured report:
 
@@ -77,11 +89,28 @@ Manual Missing Reason:
 Pre-Phase Setup Missing Verify:
 - Phase 1: "{setup item}"
 
+False MANUAL Tags (should be automated):
+- Task 1.2.A: (MANUAL) "{criterion}"
+  → Suggest: (CODE) — Verify: `curl -sf {url} -o /dev/null`
+  → Reason: Contains "endpoint"/"returns" — automatable via curl
+- Task 2.1.B: (MANUAL) "{criterion}"
+  → Suggest: (BROWSER:DOM) — Verify: route=`/page`, selector=`.class`
+  → Reason: Contains "visible"/"displays" — automatable via browser
+
+MANUAL Summary:
+  Total MANUAL criteria: {N}
+  Likely false tags: {N} (should be retagged)
+  Truly manual: {N} (subjective judgment)
+
 Status: PASS | WARN | FAIL
 ```
+
+**FAIL** if any false MANUAL tags are found. **WARN** if MANUAL criteria exceed 10%
+of total criteria. **PASS** otherwise.
 
 ## Resolution Guidance
 
 - If missing metadata is obvious, propose the exact type and `Verify:` line.
+- For false MANUAL tags, propose the specific replacement type and verify command.
 - If ambiguous, recommend asking the human to clarify.
 - Do not edit EXECUTION_PLAN.md automatically unless explicitly requested.

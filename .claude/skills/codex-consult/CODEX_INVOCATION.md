@@ -16,6 +16,24 @@ Detailed instructions for invoking Codex CLI for document consultation.
    rearrange arguments, or substitute subcommands (e.g. do not switch
    from `codex exec` to `codex review`).
 
+## Safety Guard (Prevent Accidental Commits)
+
+Codex runs with `--sandbox danger-full-access` for network access but this also
+grants write access to the working tree. The safety guard prevents Codex from
+making unintended commits during consultation.
+
+```bash
+# Record HEAD before Codex runs
+HEAD_BEFORE=$(git rev-parse HEAD)
+
+# Stash uncommitted changes to protect working tree
+STASHED=false
+if ! git diff --quiet HEAD 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
+  git stash push -m "codex-consult-safety-$(date +%s)" --include-untracked
+  STASHED=true
+fi
+```
+
 ## Build Command
 
 ```bash
@@ -41,6 +59,20 @@ timeout $((TIMEOUT_MINS * 60)) bash -c "cat {prompt_file} | codex exec \
   -o $OUTPUT_FILE \
   -"
 EXIT_CODE=$?
+
+# --- Post-Invocation Safety Check ---
+# Revert any commits Codex may have made
+HEAD_AFTER=$(git rev-parse HEAD)
+if [ "$HEAD_BEFORE" != "$HEAD_AFTER" ]; then
+  echo "WARNING: Codex made commits during consultation. Reverting."
+  git reset --hard "$HEAD_BEFORE"
+fi
+
+# Restore stashed changes
+if [ "$STASHED" = true ]; then
+  git stash pop
+fi
+# --- End Safety Check ---
 
 # Handle exit codes
 if [ $EXIT_CODE -eq 124 ]; then

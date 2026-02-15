@@ -167,6 +167,24 @@ See [CODEX_INVOCATION.md](CODEX_INVOCATION.md) for detailed command building.
 - Use the Bash tool's `timeout` parameter set to `TIMEOUT_MINS * 60 * 1000` (ms)
   instead of the shell `timeout` command or `run_in_background`.
 
+### Safety Guard (prevent accidental commits)
+
+Before invoking Codex, protect the working tree:
+
+```bash
+# Record current HEAD so we can detect if Codex makes commits
+HEAD_BEFORE=$(git rev-parse HEAD)
+
+# Stash uncommitted changes (if any) to protect working tree
+STASHED=false
+if ! git diff --quiet HEAD 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
+  git stash push -m "codex-consult-safety-$(date +%s)" --include-untracked
+  STASHED=true
+fi
+```
+
+### Invoke Codex
+
 ```bash
 OUTPUT_FILE="/tmp/codex-consult-output-$(date +%s).txt"
 
@@ -185,6 +203,22 @@ timeout $((TIMEOUT_MINS * 60)) bash -c "cat {prompt_file} | codex exec \
   -o $OUTPUT_FILE \
   -"
 EXIT_CODE=$?
+```
+
+### Post-Invocation Safety Check
+
+```bash
+# Check if Codex made any commits
+HEAD_AFTER=$(git rev-parse HEAD)
+if [ "$HEAD_BEFORE" != "$HEAD_AFTER" ]; then
+  echo "WARNING: Codex made commits during consultation. Reverting to pre-consult state."
+  git reset --hard "$HEAD_BEFORE"
+fi
+
+# Restore stashed changes
+if [ "$STASHED" = true ]; then
+  git stash pop
+fi
 ```
 
 **Important:** Do NOT use `2>&1` — Codex streams progress to stderr and final output to stdout. Merging them corrupts the parseable response.

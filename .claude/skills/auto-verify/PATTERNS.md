@@ -1,6 +1,26 @@
 # Auto-Verify Patterns Reference
 
-Detailed pattern matching and command generation templates.
+Single source of truth for what CAN vs CANNOT be automated.
+Referenced by: `/feature-plan`, `/generate-plan`, `/criteria-audit`, `/auto-verify`.
+
+## MANUAL Decision Tree
+
+Walk through this BEFORE tagging any acceptance criterion as MANUAL:
+
+1. Can it be verified by checking if a file/directory exists? → **(CODE)** `Verify: test -f {path}`
+2. Can it be verified by checking if a file contains specific text/exports? → **(CODE)** `Verify: grep -q {pattern} {path}`
+3. Can it be verified by running a test? → **(TEST)** `Verify: {test name}`
+4. Can it be verified by hitting an API endpoint? → **(CODE)** `Verify: curl -sf {url}`
+5. Can it be verified by checking if a page loads (HTTP 200)? → **(CODE)** `Verify: curl -sf {url}`
+6. Can it be verified by checking DOM elements or visible text? → **(BROWSER:DOM)** `Verify: route + selector`
+7. Can it be verified by checking browser console for errors? → **(BROWSER:CONSOLE)** `Verify: route`
+8. Can it be verified by checking an environment variable? → **(CODE)** `Verify: test -n "$VAR"`
+9. Does it require subjective human judgment? → **(MANUAL)** with `Reason:`
+
+**If you reach step 9, it is truly manual. Otherwise, use the automated type.**
+
+Most tasks should have **ZERO** manual criteria. Maximum 1-2 per task.
+MANUAL criteria exceeding 10% of total in a plan is a red flag.
 
 ## Pattern Matching Table
 
