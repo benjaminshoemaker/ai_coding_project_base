@@ -133,6 +133,8 @@ When Codex CLI is installed, the toolkit automatically invokes it for second-opi
 
 Codex researches current documentation before reviewing, which helps catch issues where Claude's training data may be outdated. Findings are advisory — they don't block auto-advance.
 
+**Safety guard:** Both `/codex-review` and `/codex-consult` stash uncommitted changes and record the HEAD SHA before invoking Codex. After Codex finishes, any commits it made are reverted and the stash is restored. This prevents accidental modifications to the working tree during review/consultation.
+
 **Configuration** (`.claude/settings.local.json`):
 ```json
 {

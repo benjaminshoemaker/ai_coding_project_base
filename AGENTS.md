@@ -141,6 +141,10 @@ issues where training data may differ between models.
 
 Codex findings are advisory and don't block workflows.
 
+**Safety guard:** `/codex-review` and `/codex-consult` stash uncommitted changes and
+record HEAD before invocation. Any commits Codex makes are reverted afterward and the
+stash is restored, preventing accidental working tree modifications.
+
 ## Workstream Contract (`.workstream/`)
 
 The toolkit includes orchestrator-agnostic scripts for initializing, running, and

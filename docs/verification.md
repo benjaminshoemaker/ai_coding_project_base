@@ -238,12 +238,20 @@ If no browser MCP is configured, browser-based criteria require manual verificat
 
 Before marking any verification item as "manual," the toolkit attempts automated verification using available tools. This reduces unnecessary human interruptions.
 
+### MANUAL Decision Tree
+
+The single source of truth for what CAN vs CANNOT be automated lives in `.claude/skills/auto-verify/PATTERNS.md`. Both generation commands (`/feature-plan`, `/generate-plan`) and audit commands (`/criteria-audit`) reference this file to minimize false MANUAL tags at generation time.
+
+The decision tree walks through 9 steps — file checks, grep, tests, curl, DOM selectors, console, env vars — before concluding a criterion is truly manual. Only subjective UX/brand/tone judgments qualify as MANUAL.
+
 ### How It Works
 
-1. **Pattern Detection** — Criterion text is analyzed for automation hints (keywords like "API," "endpoint," "page loads," "file exists")
-2. **Tool Selection** — Best available tool is chosen (curl is always available; browser MCP conditional)
-3. **Execution** — Verification command runs with appropriate timeout
-4. **Fallback** — Only if automation fails or is genuinely impossible does the item become manual
+1. **Generation-time filtering** — `/feature-plan` and `/generate-plan` consult the MANUAL Decision Tree before tagging any criterion as MANUAL
+2. **Audit-time detection** — `/criteria-audit` scans for false MANUAL tags (criteria tagged MANUAL that match automatable patterns) and reports them
+3. **Pattern Detection** — Criterion text is analyzed for automation hints (keywords like "API," "endpoint," "page loads," "file exists")
+4. **Tool Selection** — Best available tool is chosen (curl is always available; browser MCP conditional)
+5. **Execution** — Verification command runs with appropriate timeout
+6. **Fallback** — Only if automation fails or is genuinely impossible does the item become manual
 
 ### Pattern Matching
 
