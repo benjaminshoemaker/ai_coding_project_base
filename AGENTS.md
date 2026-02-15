@@ -33,8 +33,12 @@ After writing a plan in plan mode, use AskUserQuestion **before** calling
 ExitPlanMode:
 
 - "Ready to implement (Recommended)" → Call ExitPlanMode
-- "Review with /codex-consult first" → Exit plan mode to run Bash, then
-  run /codex-consult on the plan and present findings before implementing
+- "Review with /codex-consult first" → Call ExitPlanMode (Skill/Bash tools
+  are unavailable in plan mode, so you must exit first). After the user
+  approves, **before doing any implementation work**, save the plan to a
+  file if not already on disk, then run `/codex-consult <plan-file>`.
+  Present the findings and use AskUserQuestion to confirm whether to
+  proceed with implementation or revise the plan.
 - "I want to modify the plan" → Stay in plan mode, ask what to change
 
 Do NOT call ExitPlanMode without offering these options first.
