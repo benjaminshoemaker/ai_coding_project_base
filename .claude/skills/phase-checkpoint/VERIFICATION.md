@@ -152,85 +152,43 @@ Automated Successfully:
 - [x] "{item}" — PASS ({method}, {duration})
 ```
 
-### Manual Verification Guide Format
+### Manual Verification Checklist
 
-When ANY items require manual verification, produce a detailed, standalone guide.
+When items remain after auto-verify, present a single consolidated checklist.
 
-**CRITICAL: URL Resolution**
+**URL Resolution:** Before generating steps, resolve BASE_URL from
+`deployment.enabled` in verification-config.json (invoke vercel-preview if
+enabled). All URLs must use BASE_URL.
 
-Before generating instructions, resolve the BASE_URL:
-1. Read `deployment.enabled` from verification-config.json
-2. If deployment enabled: Invoke vercel-preview skill for preview URL
-3. All URLs in the guide MUST use BASE_URL
-
-**Guide Structure:**
+**Format:**
 
 ```
-═══════════════════════════════════════════════════════════════════════════════
-MANUAL VERIFICATION: {criterion title}
-═══════════════════════════════════════════════════════════════════════════════
+MANUAL VERIFICATION
+===================
+Target: {BASE_URL}
 
-## What We're Verifying
-{1-2 sentence explanation of what this tests and why}
+1. {Criterion title}
+   a. Navigate to {BASE_URL}{route}
+   b. {Action — what to do}
+   c. Verify: {what you should see}
 
-## Prerequisites
-- [ ] Dev server/deployment ready at {BASE_URL}
-- [ ] Browser open
-- [ ] {Any test accounts, API keys, or data needed}
-
-## Step-by-Step Verification
-
-### Step 1: {Action title}
-1. Open browser and navigate to: `{BASE_URL}{route}`
-2. You should see: {expected initial state}
-   - If not: {troubleshooting hint}
-
-### Step 2: {Action title}
-1. {Exact action to take}
-2. You should see: {expected result}
-
-{Continue with as many steps as needed}
-
-## Expected Results
-✓ {Specific observable outcome 1}
-✓ {Specific observable outcome 2}
-
-## How to Confirm Success
-The criterion PASSES if ALL of the following are true:
-1. {Concrete, verifiable condition}
-2. {Concrete, verifiable condition}
-
-## Common Issues & Troubleshooting
-| Symptom | Likely Cause | Solution |
-|---------|--------------|----------|
-| {symptom} | {cause} | {solution} |
-
-## If Verification Fails
-1. Check browser console for errors (F12 → Console)
-2. Check terminal for server errors
-3. Try: {specific recovery steps}
-───────────────────────────────────────────────────────────────────────────────
+2. {Criterion title}
+   a. {Step}
+   b. {Step}
+   c. Verify: {expected result}
 ```
+
+Keep each item to 2-5 concrete steps. No preambles, prerequisites sections,
+or troubleshooting tables — just the actions and what to check.
 
 ### Human Confirmation (Batch)
 
-For items in "Automation Failed" or "Truly Manual" categories:
+After presenting the checklist, ask ONE question using AskUserQuestion:
+- "All verified" → Update ALL checkboxes at once
+- "Some verified" → Follow up asking which ones
+- "None yet" → Leave unchecked, continue
 
-1. **List all items needing human verification**
-2. **Ask ONE question using AskUserQuestion:**
-   - "All verified" → Update ALL checkboxes at once
-   - "Some verified" → Follow up asking which ones
-   - "None yet" → Leave unchecked, continue
-3. **Update checkboxes** in EXECUTION_PLAN.md
-
-### Approach Review (Human)
-
-Ask the human to review implementation approach:
-- Solutions use appropriate abstractions
-- New code follows existing patterns
-- No unnecessary dependencies added
-- Error handling is consistent
-- Any AI solutions that need refinement?
+Update checkboxes in EXECUTION_PLAN.md based on response.
 
 ---
 
