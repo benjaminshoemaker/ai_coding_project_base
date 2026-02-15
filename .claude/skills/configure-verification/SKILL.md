@@ -1,6 +1,6 @@
 ---
 name: configure-verification
-description: Auto-detect verification commands for this project from package.json, Makefile, and other sources. Runs silently — no prompts.
+description: Auto-detect test, lint, typecheck, and build commands from package.json, Makefile, and other project config. Use during project setup or when build tooling changes. Runs silently — no prompts.
 argument-hint: [project-directory]
 allowed-tools: Read, Edit, Grep, Glob, Bash
 ---

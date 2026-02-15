@@ -86,8 +86,12 @@ In PROJECT_ROOT (not the feature directory):
    - If yes:
      ```bash
      git add -A
+     ```
+     Verify with `git status` that files are staged correctly.
+     ```bash
      git commit -m "chore: initial commit"
      ```
+     Verify with `git log --oneline -1` that the commit was created.
 
 ## Feature Branch Setup (Feature Mode Only)
 
@@ -106,10 +110,13 @@ If MODE = "feature", create an isolated branch for this feature work:
    ```bash
    # Commit any uncommitted changes first (preserves user work)
    git add -A && git diff --cached --quiet || git commit -m "wip: uncommitted changes before feature/FEATURE_NAME"
-
+   ```
+   Verify with `git status` that files are staged correctly.
+   ```bash
    # Create feature branch from current HEAD
    git checkout -b feature/FEATURE_NAME
    ```
+   Verify with `git branch` that the new branch is active.
 
 5. Report: "Created branch `feature/FEATURE_NAME` for isolated feature development"
 
@@ -176,7 +183,7 @@ Silently auto-detect verification commands if not already configured.
    - File is empty
 
 Invoke `/configure-verification` with PROJECT_ROOT. This runs silently with no
-prompts and prints a one-line summary.
+prompts and prints a one-line summary. If /configure-verification fails, report the error and continue with manual verification setup.
 
 ## Phase State Detection
 
@@ -273,5 +280,13 @@ Check which of these exist and read them:
    - Tech stack and key patterns
    - Key learnings to follow (if LEARNINGS.md exists)
 3. Confirm you're ready to begin execution
+
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| Git init or clone failure | Report the error and stop — cannot proceed without a working repository. |
+| AGENTS_ADDITIONS.md merge failure | Report the conflict. Write the unmerged content to a separate file for manual resolution. |
+| /phase-prep failure | Report which pre-flight check failed and stop. Do not proceed to execution. |
 
 **Important:** If LEARNINGS.md exists, apply those patterns throughout your work. These are project-specific conventions discovered during development that override general defaults.

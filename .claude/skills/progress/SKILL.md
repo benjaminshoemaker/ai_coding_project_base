@@ -19,6 +19,8 @@ Progress Report:
 - [ ] Step 5: Generate progress report
 ```
 
+After parsing EXECUTION_PLAN.md, validate that at least one phase and one task were found. If parsing yields zero phases or zero tasks, report a parse error (e.g., "EXECUTION_PLAN.md found but no phases/tasks detected — file may be malformed") and stop.
+
 ## Directory Guard (Wrong Directory Check)
 
 Before starting, confirm `EXECUTION_PLAN.md` exists in the current working directory.

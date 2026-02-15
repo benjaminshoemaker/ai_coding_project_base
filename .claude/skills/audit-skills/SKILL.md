@@ -24,19 +24,11 @@ Audit Progress:
 
 Find all skill-like files in the repository:
 
-```bash
-# Skills (primary format)
-find .claude/skills -name "SKILL.md" -type f 2>/dev/null
-
-# Legacy commands (same frontmatter, same structure)
-find .claude/commands -name "*.md" -type f 2>/dev/null
-
-# Prompt templates co-located with skills
-find .claude/skills -name "PROMPT.md" -type f 2>/dev/null
-
-# Root-level prompt templates (greenfield flow)
-ls *_PROMPT.md 2>/dev/null
-```
+Use Glob to find files matching these patterns:
+- `.claude/skills/*/SKILL.md` — Skills
+- `.claude/commands/*.md` — Legacy commands
+- `.claude/skills/*/PROMPT.md` — Co-located prompts
+- `*_PROMPT.md` — Root-level prompt templates
 
 Classify each file:
 
@@ -116,6 +108,14 @@ Total findings: <N>
 | C1 | Missing checklist | 5 |
 | ... | ... | ... |
 ```
+
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| CRITERIA.md or SCORING.md not found | Report the missing file and stop — audit cannot proceed without criteria definitions. |
+| No auditable files found (no skills, commands, or prompts) | Report that no files were discovered and stop. |
+| Individual file unreadable | Log the file as "skipped (unreadable)" in the report and continue with remaining files. |
 
 ---
 

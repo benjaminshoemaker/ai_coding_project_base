@@ -354,6 +354,13 @@ If web search is rate-limited:
 
 ---
 
+## Review Your Output
+
+After generating proposals, verify:
+- Each proposal was cross-checked against the design principles filter
+- No SDLC outcomes from VISION.md were missed
+- Proposals are actionable and scoped (not vague aspirations)
+
 ## Output Principles
 
 1. **Actionable** — Each proposal should be implementable

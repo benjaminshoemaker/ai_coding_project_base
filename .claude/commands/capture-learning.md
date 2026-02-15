@@ -1,5 +1,5 @@
 ---
-description: Capture a project learning or pattern to LEARNINGS.md
+description: Capture a project learning or pattern to LEARNINGS.md. Use when you discover a useful pattern or convention during development.
 argument-hint: ["learning description"]
 allowed-tools: Read, Write, Edit, Glob, AskUserQuestion
 ---
@@ -16,6 +16,17 @@ Capture a discovered pattern, convention, or gotcha to the project's LEARNINGS.m
 If no argument provided, prompt for the learning content.
 
 ## Process
+
+Copy this checklist and track progress:
+
+```
+Capture Learning Progress:
+- [ ] Step 1: Get learning content from user
+- [ ] Step 2: Determine category (pattern, convention, pitfall, tool-tip)
+- [ ] Step 3: Gather context (when it applies, why it matters)
+- [ ] Step 4: Write entry to LEARNINGS.md
+- [ ] Step 5: Confirm entry was saved correctly
+```
 
 ### 1. Get Learning Content
 

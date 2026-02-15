@@ -1,5 +1,5 @@
 ---
-description: Generate PRODUCT_SPEC.md through guided Q&A
+description: Generate PRODUCT_SPEC.md through guided Q&A. Use as the first step when starting a new greenfield project.
 argument-hint: [target-directory]
 allowed-tools: Read, Write, AskUserQuestion
 ---
@@ -31,6 +31,19 @@ Before asking any questions, check whether `$1/PRODUCT_SPEC.md` already exists.
 
 ## Process
 
+Copy this checklist and track progress:
+
+```
+Product Spec Progress:
+- [ ] Step 1: Verify correct directory
+- [ ] Step 2: Check for existing PRODUCT_SPEC.md
+- [ ] Step 3: Conduct guided Q&A with user
+- [ ] Step 4: Write PRODUCT_SPEC.md
+- [ ] Step 5: Handle deferred decisions
+- [ ] Step 6: Review and refine with user
+- [ ] Step 7: Suggest next step (/technical-spec)
+```
+
 Read PRODUCT_SPEC_PROMPT.md from this toolkit directory and follow its instructions exactly:
 
 1. Ask the user to describe their idea
@@ -41,6 +54,8 @@ Read PRODUCT_SPEC_PROMPT.md from this toolkit directory and follow its instructi
 ## Output
 
 Write the completed specification to `$1/PRODUCT_SPEC.md`.
+
+After writing PRODUCT_SPEC.md, verify the file exists and is non-empty by reading the first few lines. If the file was not created successfully, report the error and retry.
 
 ## Deferred Requirements Capture (During Q&A)
 

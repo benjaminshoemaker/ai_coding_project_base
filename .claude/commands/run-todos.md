@@ -1,5 +1,5 @@
 ---
-description: Implement [ready]-tagged TODO items with commits
+description: Implement [ready]-tagged TODO items with commits. Use after /list-todos has marked items as [ready] for implementation.
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion, Task
 ---
 
@@ -14,6 +14,20 @@ Before starting, confirm `TODOS.md` exists in the current working directory.
 ## Context Check
 
 **Before starting:** If context is below 40% remaining, run `/compact` first. This ensures the full command instructions remain in context throughout execution. Compaction mid-command loses procedural instructions.
+
+## Workflow
+
+Copy this checklist and track progress:
+
+```
+Run TODOs Progress:
+- [ ] Step 1: Find [ready]-tagged items in TODOS.md
+- [ ] Step 2: Select items to implement
+- [ ] Step 3: Create git branch for changes
+- [ ] Step 4: Implement each selected item
+- [ ] Step 5: Commit changes
+- [ ] Step 6: Generate summary of completed work
+```
 
 ## Find [ready] Items
 

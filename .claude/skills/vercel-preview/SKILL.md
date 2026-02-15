@@ -1,6 +1,6 @@
 ---
 name: vercel-preview
-description: Resolve Vercel preview deployment URL for the current git branch. Invoked by browser-verification when deployment.enabled is true, or directly to check deployment status.
+description: Resolve Vercel preview deployment URL for the current git branch. Invoked by browser-verification when deployment.enabled is true, or directly to check deployment status. Use to check deployment status or when browser verification needs a URL.
 ---
 
 # Vercel Preview URL Resolution Skill

@@ -1,5 +1,5 @@
 ---
-description: Install git hooks for this project
+description: Install git hooks for this project. Use during project setup or after cloning to install automation hooks.
 allowed-tools: Bash, Read, Write, AskUserQuestion
 ---
 
@@ -15,6 +15,16 @@ Install git hooks to enhance the development workflow.
 | `session-end-logger` | Logs all Claude Code sessions for analysis | After every session (user-level) |
 
 ## Steps
+
+Copy this checklist and track progress:
+
+```
+Install Hooks Progress:
+- [ ] Step 1: Verify git repository exists
+- [ ] Step 2: List available hooks
+- [ ] Step 3: Install selected hooks
+- [ ] Step 4: Report installation results
+```
 
 ### 1. Verify Git Repository
 

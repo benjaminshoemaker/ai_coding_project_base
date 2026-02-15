@@ -273,6 +273,20 @@ Parse response for:
 - `refresh_token` (Google only)
 - `expires_in`
 
+After obtaining the token, verify it is valid by making a lightweight test API call (e.g., fetch the user profile endpoint). If the test call fails, report the token as invalid and retry the OAuth flow.
+
+**Google verification:**
+```bash
+curl -s -H "Authorization: Bearer $ACCESS_TOKEN" https://www.googleapis.com/oauth2/v2/userinfo
+```
+
+**GitHub verification:**
+```bash
+curl -s -H "Authorization: Bearer $ACCESS_TOKEN" https://api.github.com/user
+```
+
+If the response indicates an error (HTTP 401 or invalid token), report: "Token verification failed — token appears invalid" and restart the OAuth flow from Step 5.
+
 ### Step 10: Store Tokens
 
 Calculate expiry timestamp and store in `.env`:

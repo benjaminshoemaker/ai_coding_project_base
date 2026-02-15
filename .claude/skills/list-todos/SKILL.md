@@ -219,6 +219,13 @@ The "Suggested Next Action" field must follow these rules:
 
 ---
 
+## Review Your Output
+
+After completing the analysis, verify:
+- TODO count matches the number of items written to TODOS.md
+- Priority assignments are justified by the criteria used
+- No TODO items from the codebase were missed or duplicated
+
 ## Interactive Q&A Phase
 
 After displaying the prioritized list and summary, use `AskUserQuestion` to offer the user an interactive session to clarify requirements. **All user interactions in this phase MUST use the `AskUserQuestion` tool** — never ask questions via plain text output.

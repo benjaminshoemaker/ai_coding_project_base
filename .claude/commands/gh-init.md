@@ -1,5 +1,5 @@
 ---
-description: Initialize git repo and push to GitHub
+description: Initialize git repo and push to GitHub. Use when starting a new project that needs a GitHub repository.
 argument-hint: [target-directory]
 allowed-tools: Bash, Read, Write, Edit, Glob, AskUserQuestion
 ---
@@ -14,6 +14,18 @@ Initialize a git repository with smart project detection and optional GitHub rem
 ```
 
 ## Steps
+
+Copy this checklist and track progress:
+
+```
+GitHub Init Progress:
+- [ ] Step 1: Determine target directory
+- [ ] Step 2: Check existing git status
+- [ ] Step 3: Detect project type
+- [ ] Step 4: Generate .gitignore
+- [ ] Step 5: Initialize git repository
+- [ ] Step 6: Create GitHub remote
+```
 
 ### 1. Determine Target Directory
 

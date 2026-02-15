@@ -1,10 +1,25 @@
 ---
-description: Synchronize target projects with toolkit updates
+description: Synchronize target projects with toolkit updates. Use after toolkit skills are modified to push updates to target projects.
 argument-hint: [target-or-toolkit-path]
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep, AskUserQuestion
 ---
 
 Synchronize a target project with the latest toolkit skills.
+
+## Workflow
+
+Copy this checklist and track progress:
+
+```
+Sync Progress:
+- [ ] Step 1: Detect sync direction (push/pull)
+- [ ] Step 2: Resolve target project paths
+- [ ] Step 3: Load current sync state
+- [ ] Step 4: Detect changed files
+- [ ] Step 5: Sync files to target
+- [ ] Step 6: Update version tracking
+- [ ] Step 7: Report sync results
+```
 
 ## Direction Detection
 
@@ -286,3 +301,11 @@ Next sync will re-detect and re-apply needed changes (safe).
 For skill directories, compare the `SKILL.md` file as the primary indicator:
 - If `SKILL.md` changed → sync entire skill directory
 - Use `cp -r` to copy skill directories
+
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| `shasum` command unavailable | Fall back to `md5` or file modification time for change detection. Report the fallback. |
+| File copy failure (permissions, disk space) | Report the specific file and error. Continue syncing remaining files. |
+| Git command failure in target project | Report the error. Do not force git operations — let the user resolve. |

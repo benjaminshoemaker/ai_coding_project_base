@@ -1,5 +1,5 @@
 ---
-description: Generate EXECUTION_PLAN.md and AGENTS.md
+description: Generate EXECUTION_PLAN.md and AGENTS.md. Use after /technical-spec to create the phased task breakdown.
 argument-hint: [target-directory]
 allowed-tools: Read, Write, Edit, AskUserQuestion, Grep, Glob, Bash
 ---
@@ -36,6 +36,19 @@ Before generating anything, check whether either output file already exists:
   3. **Abort**: do not write anything; suggest they rename/move the existing file(s) first
 
 ## Process
+
+Copy this checklist and track progress:
+
+```
+Generate Plan Progress:
+- [ ] Step 1: Verify correct directory
+- [ ] Step 2: Check for existing EXECUTION_PLAN.md
+- [ ] Step 3: Process specs into task breakdown
+- [ ] Step 4: Set up environment (AGENTS.md, phase state)
+- [ ] Step 5: Verify plan completeness
+- [ ] Step 6: Review and refine with user
+- [ ] Step 7: Suggest next step (/phase-prep)
+```
 
 Read GENERATOR_PROMPT.md from this toolkit directory and follow its instructions exactly:
 

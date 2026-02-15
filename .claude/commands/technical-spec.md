@@ -1,5 +1,5 @@
 ---
-description: Generate TECHNICAL_SPEC.md through guided Q&A
+description: Generate TECHNICAL_SPEC.md through guided Q&A. Use after /product-spec to define the technical architecture.
 argument-hint: [target-directory]
 allowed-tools: Read, Write, Edit, AskUserQuestion, Grep, Glob
 ---
@@ -32,6 +32,19 @@ Before asking any questions, check whether `$1/TECHNICAL_SPEC.md` already exists
   3. **Abort**: do not write anything; suggest they rename/move the existing file first
 
 ## Process
+
+Copy this checklist and track progress:
+
+```
+Technical Spec Progress:
+- [ ] Step 1: Verify correct directory
+- [ ] Step 2: Check for existing TECHNICAL_SPEC.md
+- [ ] Step 3: Conduct guided Q&A with user
+- [ ] Step 4: Cross-verify against PRODUCT_SPEC.md
+- [ ] Step 5: Handle deferred decisions
+- [ ] Step 6: Review and refine with user
+- [ ] Step 7: Suggest next step (/generate-plan)
+```
 
 Read TECHNICAL_SPEC_PROMPT.md from this toolkit directory and follow its instructions exactly:
 

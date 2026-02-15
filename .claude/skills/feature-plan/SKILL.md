@@ -1,6 +1,6 @@
 ---
 name: feature-plan
-description: Generate EXECUTION_PLAN.md and AGENTS_ADDITIONS.md for a feature
+description: Generate EXECUTION_PLAN.md and AGENTS_ADDITIONS.md for a feature. Use after /feature-technical-spec to create the task breakdown.
 argument-hint: <feature-name>
 allowed-tools: Bash, Read, Write, Edit, AskUserQuestion, Glob, Grep
 ---

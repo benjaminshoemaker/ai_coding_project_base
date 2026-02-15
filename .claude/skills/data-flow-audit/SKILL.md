@@ -1,6 +1,6 @@
 ---
 name: data-flow-audit
-description: Detect split data source anti-patterns and scattered business rule duplication where the same logic is reimplemented across multiple files and languages. Catches semantic duplication that syntactic tools like jscpd miss.
+description: Detect split data source anti-patterns and scattered business rule duplication where the same logic is reimplemented across multiple files and languages. Catches semantic duplication that syntactic tools like jscpd miss. Use at phase checkpoints or when investigating data consistency issues.
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep, AskUserQuestion
 ---
 
@@ -143,6 +143,8 @@ An aggregation cascade occurs when an overview endpoint computes `SUM(metric)` u
 
 See [DETECTION_PATTERNS.md](DETECTION_PATTERNS.md) for the full fingerprint matching methodology.
 
+Read DETECTION_PATTERNS.md for the full detection procedure. The summary below is for quick reference only — always defer to the full document.
+
 **Summary**: Extract filter predicates from all files in scope, build column-name fingerprints per file, cluster files sharing 3+ field names, validate candidates (eliminate type defs, SELECT lists, comments), and assess severity based on location count and language spread.
 
 ## Step 3: Detect Duplicated Types and Helpers
@@ -245,6 +247,13 @@ When a split data source or scattered business rule is found:
 
 **If MEMORY.md has no documented rules (Step 0):**
 - Skip known rule validation, rely on Step 2.5 fingerprint matching
+
+## Review Your Output
+
+After generating the audit report, verify:
+- All scanned files are represented in the findings
+- Each finding includes actionable remediation steps
+- No false positives from template or test files
 
 ## Limitations
 

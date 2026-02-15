@@ -1,5 +1,5 @@
 ---
-description: Verify a specification document for context preservation and quality issues
+description: Verify that a generated spec document preserves all upstream requirements and has no structural quality issues. Use after generating any spec document.
 argument-hint: <document-type> [project-directory]
 allowed-tools: Read, Edit, Grep, Glob, AskUserQuestion
 ---

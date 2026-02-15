@@ -1,6 +1,6 @@
 ---
 name: merge-prs
-description: Merge multiple PRs with conflict resolution and CI failure auto-patching. Analyzes optimal merge order, resolves conflicts, pulls CI logs on failure, and fixes issues.
+description: Merge multiple PRs with conflict resolution and CI failure auto-patching. Analyzes optimal merge order, resolves conflicts, pulls CI logs on failure, and fixes issues. Use when multiple feature branches need merging into the base branch.
 argument-hint: "[PR numbers] [--base BRANCH] [--strategy rebase|merge] [--dry-run] [--no-fix] [--no-security] [--force]"
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep, Task, AskUserQuestion
 ---

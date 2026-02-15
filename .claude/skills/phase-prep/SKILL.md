@@ -7,6 +7,20 @@ allowed-tools: Bash, Read, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
 
 I want to execute Phase $1 from EXECUTION_PLAN.md. Before starting, read EXECUTION_PLAN.md and check:
 
+## Workflow
+
+Copy this checklist and track progress:
+
+```
+Phase Prep Progress:
+- [ ] Step 1: Run pre-flight checks 1-7
+- [ ] Step 2: Verify all prerequisites pass
+- [ ] Step 3: Load phase context and task list
+- [ ] Step 4: Check for blocking dependencies
+- [ ] Step 5: Make auto-advance decision
+- [ ] Step 6: Report readiness status
+```
+
 ## External Tool Documentation Protocol
 
 **CRITICAL:** Before providing setup instructions for any external service (Supabase, Stripe, Firebase, Auth0, Vercel, etc.), you MUST read the latest official documentation first.

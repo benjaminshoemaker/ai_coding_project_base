@@ -1,6 +1,6 @@
 ---
 name: feature-technical-spec
-description: Generate FEATURE_TECHNICAL_SPEC.md through guided Q&A
+description: Define technical approach (architecture, integration points, data model) for a feature through guided Q&A and write FEATURE_TECHNICAL_SPEC.md. Use after /feature-spec.
 argument-hint: <feature-name>
 allowed-tools: Bash, Read, Write, Edit, AskUserQuestion, Glob, Grep
 ---

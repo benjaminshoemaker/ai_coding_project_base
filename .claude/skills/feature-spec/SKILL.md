@@ -1,6 +1,6 @@
 ---
 name: feature-spec
-description: Generate FEATURE_SPEC.md through guided Q&A
+description: Define feature requirements (problem, users, scope, acceptance criteria) through guided Q&A and write FEATURE_SPEC.md. Use when starting a new feature.
 argument-hint: <feature-name>
 allowed-tools: Bash, Read, Write, AskUserQuestion
 ---

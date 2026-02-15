@@ -56,7 +56,7 @@ Also collect Pre-Phase Setup items and their `Verify:` lines.
 ## Step 3: Check MANUAL Criteria for False Tags
 
 Read `~/.claude/skills/auto-verify/PATTERNS.md` for the full pattern matching table
-and MANUAL decision tree.
+and MANUAL decision tree. If PATTERNS.md is not found, skip the false-MANUAL check and note the limitation in the report output (e.g., "PATTERNS.md not found — false-MANUAL detection skipped").
 
 For each criterion tagged `(MANUAL)`, check if it contains keywords from the
 Pattern Matching Table that indicate it CAN be automated (priorities 1-10).
