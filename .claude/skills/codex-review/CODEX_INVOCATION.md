@@ -50,14 +50,14 @@ if [ -n "$CODEX_MODEL" ]; then
   MODEL_FLAG="--model $CODEX_MODEL"
 fi
 
-# Execute with timeout
-timeout $((TIMEOUT_MINS * 60)) bash -c "cat {prompt_file} | codex exec \
+# Execute (use Bash tool's timeout parameter for timeout — NOT shell `timeout`)
+cat {prompt_file} | codex exec \
   --sandbox danger-full-access \
-  -c 'approval_policy=\"never\"' \
+  -c 'approval_policy="never"' \
   -c 'features.search=true' \
   $MODEL_FLAG \
   -o $OUTPUT_FILE \
-  -"
+  -
 EXIT_CODE=$?
 
 # --- Post-Invocation Safety Check ---

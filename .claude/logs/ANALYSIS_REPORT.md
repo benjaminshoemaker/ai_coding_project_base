@@ -1,251 +1,231 @@
-# Session Analysis Report — KineticBI
+# Session Analysis Report
 
 Generated: 2026-02-15
-Sessions analyzed: 125 (119 transcripts accessible, 6 missing)
-Date range: 2026-01-30 to 2026-02-14
-Filter: `--project KineticBI`
+Sessions analyzed: 295
+Date range: 2026-01-23 to 2026-02-15 (23 days)
 
 ## Summary
 
-- Total sessions: 125
-- Transcripts accessible: 119 (95%)
-- Project type: Target (toolkit-managed)
-- Common patterns identified: 12
-- Automation opportunities: 7
+- Total sessions: 295 (283 unique, ~12 duplicates from reconnects)
+- Projects: 26
+- Common patterns identified: 8 high-impact
+- Focus: Reducing human intervention
 
 ## Per-Project Breakdown
 
-### KineticBI (125 sessions)
+### KineticBI (104 sessions)
 
 **Type:** Target
 **Date range:** 2026-01-30 – 2026-02-14
-**Stack:** Astro, React/TSX, Supabase, AG Grid, Tailwind CSS, Netlify, Trigger.dev
-**Domain:** Real estate valuation — comp matching, property diagnostics, What-If scenarios
-
 **Key patterns:**
-- Comp pipeline is the central domain (~80% of sessions)
-- Linear-driven development emerged mid-project (session ~55 onward)
-- Plan-then-implement workflow: planning sessions produce structured markdown plans executed in follow-up sessions
-- Heavy cross-model verification via Codex CLI
+- 19.8% context overflow rate (38 sessions, 54 continuation markers)
+- 10 sessions with multiple context overflows (up to 6 in one session)
+- 18 sessions hit `psql: command not found` — database access confusion
+- 103 user rejections across 51 sessions
+- 21 rejections specifically redirecting to /codex-consult
+- 142 AskUserQuestion calls
+- 37 sessions hit `timeout` command not found
+- `supabase db reset` mentioned 399 times — recurring forbidden operation
 
-## Raw Statistics
+### ai_coding_project_base (80 sessions)
 
-### Tool Usage (aggregate across 119 sessions)
+**Type:** Toolkit
+**Date range:** 2026-01-23 – 2026-02-15
+**Key patterns:**
+- 5.1 average user interventions per session
+- 30% of interventions are questions, 30% are directional corrections
+- 38% of AskUserQuestion calls are sync-related
+- 56% of AskUserQuestion calls are automatable
+- 5 sessions hit context overflow
 
-| Tool | Batch 1 (1-40) | Batch 2 (41-80) | Batch 3 (81-119) | Total | Avg/Session |
-|------|----------------|-----------------|-------------------|-------|-------------|
-| Read | 1,264 | 1,353 | 1,692 | 4,309 | 36.2 |
-| Bash | 1,096 | 1,085 | 1,194 | 3,375 | 28.4 |
-| Edit | 243 | 599 | 461 | 1,303 | 11.0 |
-| Grep | 312 | 372 | 501 | 1,185 | 10.0 |
-| Glob | 356 | 274 | 269 | 899 | 7.6 |
-| Write | 93 | 69 | 113 | 275 | 2.3 |
-| Task | 96 | 81 | 93 | 270 | 2.3 |
-| WebSearch | 4 | 54 | 107 | 165 | 1.4 |
-| WebFetch | 12 | 21 | 36 | 69 | 0.6 |
-| Skill | 34 | 33 | — | 67+ | 0.6 |
+### Conductor Workstreams (36 sessions across 11 city-named worktrees)
 
-**Read:Edit ratio = 3.3:1** — The agent spends ~3x as much effort understanding code as modifying it.
+**Type:** Parallel worktrees
+**Date range:** 2026-02-02 (burst)
+**Key patterns:**
+- 40 sessions on Feb 2 alone — conductor orchestration testing
+- Short-lived sessions with rapid restarts
 
-### Skill Invocations (across all sessions)
+### Other Target Projects
 
-| Skill | Sessions Used | Notes |
-|-------|---------------|-------|
-| /codex-review | 28+ | Cross-model code review before merging |
-| /codex-consult | 18+ | Document and spec consultation |
-| /phase-checkpoint | 14 | Verification at phase boundaries |
-| /list-todos | 5 | TODO management |
-| /update-docs | 5+ | Post-commit documentation sync |
-| /mls-match-report | 7 | Custom project skill for data coverage |
-| /code-verification | 7 | Automated quality checks |
-| /data-flow-audit | 5 | Detecting data duplication patterns |
-| /merge-prs | 4 | Multi-PR merge with conflict resolution |
-| /feature-spec | 3+ | Feature specification generation |
-| /feature-plan | 4 | Execution plan generation |
-| /add-todo | 4 | Adding TODO items |
-| /create-pr | 3 | PR creation with Codex review |
-| /tech-debt-check | 3 | Tech debt analysis |
-| /frontend-design | 1 | Comprehensive UI audit |
+| Project | Sessions | User Msgs | AskUser Calls | Msgs/Session |
+|---------|----------|-----------|---------------|--------------|
+| fast_pr_analytics | 21 | 73 | 2 | 3.5 |
+| personal_site | 13 | 141 | 11 | 10.8 |
+| qr_code | 14 | 89 | 2 | 6.4 |
+| notes_brain | 5 | 114 | 7 | 22.8 |
+| letgo | 4 | 53 | 10 | 13.3 |
+| aoe4 | 5 | 25 | 5 | 5.0 |
+| my-new-calculator | 2 | 7 | 5 | 3.5 |
+| PDQ_DSV | 2 | 4 | 0 | 2.0 |
+| spidey | 2 | 2 | 0 | 1.0 |
 
-### MCP Tool Usage
+## Cross-Project Insights
 
-| MCP Server | Sessions | Tools Used |
-|------------|----------|------------|
-| Linear | 14 | get_issue, list_issues, update_issue, create_issue, create_comment |
-| Chrome DevTools | 24+ | navigate_page, take_screenshot, take_snapshot, evaluate_script |
-| Playwright | 20+ | browser_navigate, browser_snapshot, browser_take_screenshot |
-| Trigger.dev | 2 | list_projects |
+### Autonomy Levels
 
-### Build/Test Execution (Batch 1 sample, 40 sessions)
+| Project | Sessions | Interventions/Session | Autonomy |
+|---------|----------|-----------------------|----------|
+| spidey | 2 | 1.0 | High |
+| PDQ_DSV | 2 | 2.0 | High |
+| fast_pr_analytics | 21 | 3.5 | High |
+| my-new-calculator | 2 | 3.5 | High |
+| aoe4-game-analyzer | 5 | 5.0 | Med |
+| toolkit | 80 | 5.1 | Med |
+| qr_code | 14 | 6.4 | Med |
+| personal_site | 13 | 10.8 | Low |
+| letgo | 4 | 13.3 | Low |
+| notes_brain | 5 | 22.8 | Low |
 
-| Command | Invocations |
-|---------|-------------|
-| typecheck | 2,189 |
-| npm run test | 1,547 |
-| vitest | 1,498 |
-| npm run build | 1,344 |
-| npm run lint | 1,214 |
+### Shared Patterns Across Projects
 
-### Questions Asked (AskUserQuestion)
-
-| Question Category | Count | % of Total |
-|-------------------|-------|------------|
-| Permission to proceed | ~45 | 46% |
-| Design/preference decision | ~15 | 15% |
-| Priority/effort estimation | ~12 | 12% |
-| Git workflow decision | ~10 | 10% |
-| Mode-switch requests | ~7 | 7% |
-| Feature scoping | ~5 | 5% |
-| Other | ~5 | 5% |
-
-**Total AskUserQuestion calls: ~99 across 119 sessions (0.83 per session)**
-
-### Blockers Encountered
-
-| Blocker Type | Count | Resolution |
-|--------------|-------|------------|
-| Plan mode blocks execution | 7+ sessions | User switches to non-plan mode |
-| External data dependency ("waiting for David") | 4+ sessions | Unresolved — persistent blocker |
-| Git merge conflicts | 3+ sessions | Manual conflict resolution |
-| Codex model availability | 2 sessions | Retry with different model |
-| Missing cost/GP data | 3+ sessions | Metrics marked as blocked |
-| Tool rejections by user | ~29 rejections | Agent adjusts approach |
-| URL/WebFetch blocked | 1 session | Alternate approach used |
-
-### Session Characteristics
-
-| Metric | Value |
-|--------|-------|
-| Avg user messages/session | ~105 |
-| Short sessions (< 3 msgs) | ~8 (6%) |
-| Medium sessions (4-10 msgs) | ~18 (15%) |
-| Long sessions (11+ msgs) | ~93 (78%) |
-| User-interrupted sessions | ~56 (47%) |
-| Sessions with git commits | ~50 (42%) |
-| Sessions referencing Linear issues | ~40 (34%) |
-| Sessions using Codex | ~77 (65%) |
-
-### Most Referenced Source Files
-
-| File | References | Domain |
-|------|------------|--------|
-| src/components/what-if/WhatIfAnalysis.tsx | 226+ | What-If scenarios |
-| supabase/migrations/*_find_property_comps.sql | 154+ | Comp matching |
-| src/pages/api/what-if/predict.ts | 150+ | What-If API |
-| src/components/communities/PropertyComps.tsx | 149+ | Community comps |
-| supabase/migrations/*_compute_property_comp_medians.sql | 143+ | Comp medians |
-| AGENTS.md | 115+ | Project guidance |
-| src/lib/importers/mlsDivisionalExportParser.ts | 114+ | MLS data import |
-| src/components/communities/CommunityProperties.tsx | 108+ | Community dashboard |
-| src/components/communities/CommunitiesList.tsx | 99+ | Communities list |
-| src/components/diagnostic/DiagnosticTab.tsx | 90+ | Diagnostics |
-
-### Session Categories (across all 119)
-
-| Category | Count | % |
-|----------|-------|---|
-| Heavy implementation | ~38 | 32% |
-| Analysis/review/planning | ~38 | 32% |
-| Moderate edits | ~20 | 17% |
-| Git operations (commit/push/merge) | ~12 | 10% |
-| Minimal/quick check-in | ~11 | 9% |
-
-### Session Timeline by Feature Area
-
-| Period | Primary Focus |
-|--------|---------------|
-| Jan 30 – Feb 1 | Deep comp analysis, What-If widget design |
-| Feb 2 – Feb 4 | Properties tab, DataTable migration, comp filtering |
-| Feb 5 – Feb 7 | Linear issue-driven: KIN-14 through KIN-22 (comp refactors) |
-| Feb 8 – Feb 10 | Carry cost model, DataGrid migration, scenario analysis |
-| Feb 11 – Feb 13 | Overview feature, MLS matching, community health scoring |
-| Feb 14 | Session wrap-up, toolkit sync |
+1. **`timeout` command not found** — affects KineticBI (37 sessions), calculator, spidey, and any project using /codex-review or /codex-consult
+2. **Browser MCP not connected** — affects notes_brain, calculator, qr_code during verification
+3. **file:// URL blocked** — Playwright can't verify local HTML files; affects calculator, static sites
+4. **Context overflow in spec pipelines** — affects any project running spec + tech spec + plan in one session
+5. **Sync prompt fatigue** — toolkit users asked about sync after every commit
 
 ## Automation Opportunities
 
-### High Priority
+### HIGH PRIORITY
 
-#### 1. Reduce "Permission to Proceed" Questions
-**Occurrences:** ~45 questions across 30+ sessions (46% of all questions)
+#### 1. Document Database Access in KineticBI AGENTS.md
+**Occurrences:** 18 sessions, 40+ failed commands per session
 **Projects:** KineticBI
-**Pattern:** Agent asks "Should I proceed?", "Is this the right approach?", "Want me to continue?" after every non-trivial step. The /list-todos and /add-todo skills are especially chatty, asking priority/effort for each item.
+**Pattern:** Agent tries `psql` (not installed), then `supabase db execute` (wrong syntax), then docker exec with wrong connection strings. After context overflow, loses the working approach and starts over.
 **Suggested Automation:**
-- Add AGENTS.md guidance: "Proceed without asking unless the action is destructive or ambiguous. Batch decisions rather than asking one at a time."
-- Add explicit "autonomous mode" flag in feature plan headers: `<!-- autonomous: true -->`
-- Reduce /list-todos and /add-todo chattiness by pre-setting priority defaults
+- Add to KineticBI's AGENTS.md:
+  ```
+  ## Database Access
+  - Local: `docker exec -i supabase_db_KineticBI psql -U postgres -d postgres`
+  - Remote: Use Supabase JS client through the app's API, NOT direct psql
+  - NEVER use `psql` directly (not installed)
+  - NEVER run `supabase db reset`
+  ```
+- **Estimated intervention reduction: 18+ sessions saved**
 
-#### 2. Plan Mode Friction
-**Occurrences:** 7+ sessions with explicit plan-mode blockers
+#### 2. Fix `timeout` Command for macOS
+**Occurrences:** 37+ sessions (19.3%)
+**Projects:** All projects using /codex-review or /codex-consult
+**Pattern:** `command not found: timeout` — macOS doesn't have GNU `timeout`
+**Suggested Automation:**
+- Replace `timeout` with portable alternative in codex skill scripts
+- Use: `gtimeout` (coreutils) with fallback, or `perl -e 'alarm(N); exec @ARGV'`
+- **Estimated intervention reduction: 37+ sessions fixed**
+
+#### 3. Auto-invoke /codex-consult After Plan Generation
+**Occurrences:** 21 user rejections across 10+ sessions
+**Projects:** KineticBI, toolkit, all target projects
+**Pattern:** Agent generates plan, starts implementing. User rejects with "Review this plan with /codex-consult". This happens so consistently it should be automatic.
+**Suggested Automation:**
+- Update plan generation skills to always run /codex-consult before implementation
+- Remove the manual redirect step
+- **Estimated intervention reduction: 21+ rejections eliminated**
+
+#### 4. Break Spec Pipelines Into Separate Sessions
+**Occurrences:** 38 sessions (19.8%) hit context overflow
+**Projects:** All projects running spec workflows
+**Pattern:** Chaining /feature-spec + /feature-technical-spec + /feature-plan + implementation in one session causes context overflow. Files are re-read 8-12 times after each continuation.
+**Suggested Automation:**
+- Add AGENTS.md directive: "Complete and commit each spec artifact in a separate session"
+- Add warnings in spec skills: "This artifact is complete. Start a new session for the next step."
+- **Estimated intervention reduction: prevents 38+ context overflows**
+
+### MEDIUM PRIORITY
+
+#### 5. Auto-Accept Sync Prompts
+**Occurrences:** 6 of 16 AskUserQuestion calls (38%) in toolkit
+**Projects:** Toolkit
+**Pattern:** After every commit that modifies skills, user is asked "Sync target projects now?" — user skips 43% of the time, accepts 57%.
+**Suggested Automation:**
+- Default to "skip" unless user explicitly requests sync
+- Queue sync requests and batch them at end of session
+- Or: add a `--auto-sync` flag to honor
+- **Estimated intervention reduction: 6+ prompts per batch of sessions**
+
+#### 6. Set Smart Defaults in /add-todo
+**Occurrences:** 142 AskUserQuestion calls in KineticBI
+**Projects:** KineticBI, any project using /add-todo or /list-todos
+**Pattern:** /add-todo asks Priority, Section, Effort, and Description as separate questions for each item. 4+ sequential questions before a single TODO is created.
+**Suggested Automation:**
+- Default Priority=P2, auto-infer Section from context, infer Effort from description
+- Only ask when genuinely ambiguous
+- **Estimated intervention reduction: 3 questions per TODO item**
+
+#### 7. Pre-Push Local Verification
+**Occurrences:** 54 sessions with merge conflicts / CI failures
 **Projects:** KineticBI
-**Pattern:** Agent enters plan mode for investigation, then can't run Bash/Codex commands. User must manually switch modes. The agent asks "I'm in plan mode and can't run X — how should I proceed?" repeatedly.
+**Pattern:** Push to remote, CI fails, fix, push again — 4+ cycles per session
 **Suggested Automation:**
-- Add AGENTS.md guidance: "Use plan mode only for architecture decisions. For investigation or debugging, stay in execution mode."
-- Consider auto-exiting plan mode when the user pastes an implementation plan
-- Skills that need Bash (like /codex-review) should document they require execution mode
+- Add AGENTS.md directive: "Always run `.workstream/verify.sh` before pushing"
+- Consider a pre-push git hook
+- **Estimated intervention reduction: 3-4 CI round-trips per session**
 
-#### 3. Verification Pipeline Batching
-**Occurrences:** 2,000+ individual typecheck/lint/test/build runs in first 40 sessions alone
-**Projects:** KineticBI
-**Pattern:** The agent runs the full quality gate (typecheck -> lint -> test -> build) after nearly every edit, sometimes multiple times per session. Thorough but wasteful for incremental changes.
+### LOW PRIORITY
+
+#### 8. Browser MCP Connection Guide
+**Occurrences:** Affects notes_brain, calculator, qr_code verification
+**Projects:** Any with BROWSER:* criteria
+**Pattern:** Browser MCP extension not connected; Playwright fails on file:// URLs; Chrome conflict
 **Suggested Automation:**
-- Ensure `.workstream/verify.sh` is used consistently instead of ad-hoc individual commands
-- Add AGENTS.md guidance: "Run individual checks (tsc, vitest) during development. Run the full verify pipeline only before commits."
-- Consider a pre-commit hook that runs verify.sh automatically
-
-#### 4. Codex Safety Guard
-**Occurrences:** 1 critical incident (Session 46) — Codex committed directly to main during review
-**Projects:** KineticBI
-**Pattern:** When Codex CLI is invoked for review, it can have write access and make unintended commits to main.
-**Suggested Automation:**
-- Wrap Codex CLI invocations in read-only mode: `codex exec --model MODEL -c 'approval_policy="never"'`
-- Add pre-review git stash or branch checkout to isolate review from working tree
-- Add AGENTS.md warning: "Never run Codex review on a dirty working tree on main"
-
-### Medium Priority
-
-#### 5. External Data Dependency Tracking
-**Occurrences:** 4+ sessions blocked on "waiting for corrected document from David"
-**Projects:** KineticBI
-**Pattern:** Sessions repeatedly discover the same blocker (missing GP data, uncorrected documents) without centralized tracking. The blocker persists across sessions with no resolution mechanism.
-**Suggested Automation:**
-- Add a `BLOCKERS.md` or Linear label for external dependencies
-- Have /fresh-start check for known blockers and warn at session start
-- Track data dependencies in AGENTS.md: "GP metrics require external data — check Linear for status before attempting"
-
-#### 6. Session Length Management
-**Occurrences:** 47% of sessions are user-interrupted; longest sessions have 300+ user turns
-**Projects:** KineticBI
-**Pattern:** Implementation sessions grow very large, leading to context overflow and user abandonment. Sessions starting with "Implement the following plan:" are the longest.
-**Suggested Automation:**
-- Add AGENTS.md guidance: "For large implementation plans, break work into commits after each phase. Summarize progress at each commit point."
-- Auto-checkpoint: after every commit, output progress summary and suggest new session if context is large
-- Ensure phase-based implementation from toolkit is used consistently
-
-#### 7. Git State Check-in Sessions
-**Occurrences:** ~12 sessions (10%) are just quick git status/commit/push operations
-**Projects:** KineticBI
-**Pattern:** User opens Claude Code for 1-3 messages to check git status, commit staged changes, or push.
-**Suggested Automation:**
-- A `/quick-commit` skill could streamline "commit what's staged and push"
-- A "morning check-in" skill could combine: git status + pending blockers + next TODO
-
-### Low Priority
-
-#### 8. Duplicate Code Exploration
-**Occurrences:** Core files (WhatIfAnalysis.tsx, find_property_comps.sql, PropertyComps.tsx) re-read across many sessions
-**Projects:** KineticBI
-**Pattern:** Context doesn't persist, so the agent re-reads the same files every session. The comp pipeline is complex enough that this is significant overhead.
-**Suggested Automation:**
-- Add architecture map to AGENTS.md summarizing key file purposes
-- Create ARCHITECTURE_COMPS.md reference doc for the comp matching system
-- /fresh-start already partially addresses this — ensure it loads comp pipeline context
+- Start a local server automatically when verifying HTML files
+- Add fallback chain documentation to AGENTS.md
+- **Estimated intervention reduction: 1-2 per affected session**
 
 ## Recommended Actions
 
-1. **Update AGENTS.md** — Add comp pipeline architecture summary, autonomous mode guidance, and known blockers section
-2. **Create `/quick-verify` skill** — Single command that runs typecheck -> lint -> test -> build with fail-fast
-3. **Add Codex safety wrapper** — Prevent accidental commits during review by enforcing read-only mode
-4. **Reduce /list-todos chattiness** — Pre-set default priority and effort levels to avoid repeated questions
-5. **Add external dependency tracking** — BLOCKERS.md or Linear label for "waiting on external data" items
-6. **Document plan mode boundaries** — Clarify in AGENTS.md when to use plan mode vs execution mode
-7. **Create comp pipeline reference doc** — ARCHITECTURE_COMPS.md summarizing the comp matching system for faster context loading
+1. **Add database access section to KineticBI AGENTS.md** — eliminates the #1 source of wasted cycles (40+ commands per session)
+2. **Fix `timeout` in codex skills** — one-line fix, 37 sessions affected
+3. **Auto-invoke /codex-consult after plan/spec generation** — eliminates 21+ manual redirections
+4. **Add "commit and start new session" guidance to spec skills** — prevents 19.8% context overflow rate
+5. **Default sync prompts to "skip"** — eliminates 38% of toolkit AskUserQuestion calls
+6. **Smart defaults in /add-todo** — eliminates 3 questions per item
+7. **Pre-push verification directive in AGENTS.md** — prevents CI failure loops
+8. **Auto-start local server for browser verification** — fixes file:// URL blocking
+
+## Raw Statistics
+
+### Session Restart Rate
+| Project | Quick Restarts (within 5 min) | % of Sessions |
+|---------|-------------------------------|---------------|
+| KineticBI | ~25 | 24% |
+| ai_coding_project_base | ~22 | 28% |
+| conductor workstreams | ~7 | 19% |
+| Other | ~6 | 10% |
+| **Total** | **~60** | **20%** |
+
+### Context Overflow Rate
+| Project | Sessions with Overflow | % |
+|---------|-----------------------|---|
+| KineticBI | 38 | 19.8% |
+| ai_coding_project_base | 5 | 6.3% |
+
+### AskUserQuestion Categories (Toolkit)
+| Category | Count | % |
+|----------|-------|---|
+| Sync-related | 6 | 38% |
+| Other (clarifications) | 5 | 31% |
+| Codex-review | 3 | 19% |
+| Docs | 1 | 6% |
+| Plan-mode | 1 | 6% |
+
+### User Intervention Types (Toolkit, 15 sessions)
+| Type | Count | % |
+|------|-------|---|
+| Questions | 23 | 30% |
+| Directional corrections | 23 | 30% |
+| Git actions (commit/push) | 10 | 13% |
+| Rubber-stamp (yes/ok) | 8 | 11% |
+| Skill invocations | 7 | 9% |
+| Interrupts | 5 | 7% |
+
+### Blockers Encountered
+| Blocker Type | Count | Resolution |
+|--------------|-------|------------|
+| Context overflow | 54 | Session continuation (lossy) |
+| `timeout` not found | 37+ | Manual workaround or skip |
+| `psql` not found | 18 | Docker exec after many attempts |
+| Browser MCP not connected | 5+ | Fallback to Playwright or skip |
+| file:// URL blocked | 2+ | Start local HTTP server |
+| `supabase db reset` attempted | Multiple | User rejection/correction |
+| File write before read | 17 | Re-read file first |
