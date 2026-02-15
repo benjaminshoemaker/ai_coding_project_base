@@ -1,11 +1,11 @@
 ---
 name: audit-skills
-description: Audits skills for best practice violations including length, checklists, verification steps, and progressive disclosure. Use after creating skills, during reviews, or to improve existing skills. Produces prioritized improvement suggestions.
+description: Audits skills, commands, and prompt templates for best practice violations including length, checklists, verification steps, and progressive disclosure. Use after creating or modifying skills, during reviews, or to improve existing prompt files. Produces prioritized improvement suggestions.
 ---
 
 # Audit Skills
 
-Analyze skills in this repository against best practices and produce prioritized improvements.
+Analyze skills, legacy commands, and prompt templates in this repository against best practices and produce prioritized improvements.
 
 ## Workflow
 
@@ -13,22 +13,40 @@ Copy this checklist and track progress:
 
 ```
 Audit Progress:
-- [ ] Step 1: Discover skills
+- [ ] Step 1: Discover all auditable files (skills, commands, prompts)
 - [ ] Step 2: Load criteria
-- [ ] Step 3: Audit each skill
+- [ ] Step 3: Audit each file
 - [ ] Step 4: Score and prioritize
 - [ ] Step 5: Output report
 ```
 
-### Step 1: Discover Skills
+### Step 1: Discover All Auditable Files
 
-Find all skills in the repository:
+Find all skill-like files in the repository:
 
 ```bash
+# Skills (primary format)
 find .claude/skills -name "SKILL.md" -type f 2>/dev/null
+
+# Legacy commands (same frontmatter, same structure)
+find .claude/commands -name "*.md" -type f 2>/dev/null
+
+# Prompt templates co-located with skills
+find .claude/skills -name "PROMPT.md" -type f 2>/dev/null
+
+# Root-level prompt templates (greenfield flow)
+ls *_PROMPT.md 2>/dev/null
 ```
 
-Record the count for verification later.
+Classify each file:
+
+| Type | Example | Criteria Applied |
+|------|---------|-----------------|
+| **Skill** | `.claude/skills/*/SKILL.md` | All criteria (L, C, S, E, D) |
+| **Command** | `.claude/commands/*.md` | All criteria (L, C, S, E, D) — same frontmatter as skills |
+| **Prompt** | `PROMPT.md`, `*_PROMPT.md` | L, C, S, E only — no frontmatter, so skip D1-D3 |
+
+Record the total count across all types for verification later.
 
 ### Step 2: Load Criteria
 
@@ -36,19 +54,21 @@ Read [CRITERIA.md](CRITERIA.md) for the full audit checklist.
 
 Read [SCORING.md](SCORING.md) for severity definitions.
 
-### Step 3: Audit Each Skill
+### Step 3: Audit Each File
 
-For each discovered SKILL.md:
+For each discovered file:
 
-1. **Read the file** - Note line count immediately
-2. **Check each criterion** from CRITERIA.md
-3. **Record violations** with criterion ID and evidence
+1. **Read the file** — note line count immediately
+2. **Check applicable criteria** from CRITERIA.md (see type table in Step 1)
+3. **For skills with co-located PROMPT.md** — audit the PROMPT.md too and report alongside the SKILL.md (they function as a unit)
+4. **Record violations** with criterion ID and evidence
 
-Use this template per skill:
+Use this template per file:
 
 ```
-Skill: <name>
-Lines: <count>
+File: <path>
+Type: Skill | Command | Prompt
+Lines: <count> (+ <N> in PROMPT.md if applicable)
 Violations:
 - <ID>: <brief evidence>
 ```
@@ -99,4 +119,4 @@ Total findings: <N>
 
 ---
 
-**REMINDER**: After completing the audit, verify your report includes all discovered skills. Missing skills indicates incomplete analysis.
+**REMINDER**: After completing the audit, verify your report includes all discovered files (skills, commands, and prompts). Missing files indicates incomplete analysis.
