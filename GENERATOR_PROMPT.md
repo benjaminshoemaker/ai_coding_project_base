@@ -16,31 +16,13 @@ Generate two documents:
 1. EXECUTION_PLAN.md — Task breakdown with acceptance criteria
 2. AGENTS.md — Workflow guidelines for AI agents
 
+Read `~/.claude/skills/shared/EXECUTION_PLAN_FORMAT.md` for the execution hierarchy definitions,
+verification types, EXECUTION_PLAN.md template structure, task quality checks, red flags, and
+post-generation checklist. Use those definitions verbatim — do not redefine or paraphrase them.
+
 ══════════════════════════════════════════════════════════════════════════════
-PART 1: CORE CONCEPTS
-══════════════════════════════════════════════════════════════════════════════
-
-EXECUTION HIERARCHY
-
-┌─────────┬────────────────────────────────────────────────────────────────┐
-│ Level   │ Definition                                                     │
-├─────────┼────────────────────────────────────────────────────────────────┤
-│ PHASE   │ Major milestone ending with human checkpoint                   │
-│         │ - Represents demonstrable functionality                        │
-│         │ - Requires manual testing and approval before proceeding       │
-│         │ - Includes pre-phase setup (env vars, external services)       │
-├─────────┼────────────────────────────────────────────────────────────────┤
-│ STEP    │ Ordered group of related tasks                                 │
-│         │ - All tasks in a step complete before next step begins         │
-│         │ - Tasks within a step may run in parallel                      │
-├─────────┼────────────────────────────────────────────────────────────────┤
-│ TASK    │ Atomic unit of work for a single agent session                 │
-│         │ - Has specific, testable acceptance criteria                   │
-│         │ - Creates or modifies a focused set of files                   │
-│         │ - Independent from parallel tasks in same step                 │
-└─────────┴────────────────────────────────────────────────────────────────┘
-
 DOCUMENT RESPONSIBILITIES
+══════════════════════════════════════════════════════════════════════════════
 
 EXECUTION_PLAN.md owns:
 - Task definitions and acceptance criteria
@@ -66,136 +48,7 @@ AGENTS.md does NOT include:
 - Detailed file structures (agents explore the repo)
 
 ══════════════════════════════════════════════════════════════════════════════
-PART 2: EXECUTION_PLAN.md FORMAT
-══════════════════════════════════════════════════════════════════════════════
-
-Verification Types:
-- TEST — Verified by running a test (name or file path)
-- CODE — Verified by code inspection or file existence
-- LINT — Verified by lint command
-- TYPE — Verified by typecheck command
-- BUILD — Verified by build command
-- SECURITY — Verified by security scan
-- BROWSER:DOM | VISUAL | NETWORK | CONSOLE | PERFORMANCE | ACCESSIBILITY — Verified via MCP
-- MANUAL — Requires human judgment that BLOCKS downstream work; include a reason. USE SPARINGLY.
-  Before tagging MANUAL, read `~/.claude/skills/auto-verify/PATTERNS.md` and walk
-  through the MANUAL Decision Tree. Only subjective UX/brand/tone judgment is
-  truly manual. File checks, API calls, DOM selectors, grep, tests — all automated.
-  Most tasks should have ZERO manual criteria.
-- MANUAL:DEFER — Requires human judgment but has NO downstream dependency.
-  Deferred items accumulate and are reviewed when a blocker occurs or at project end.
-  Examples: visual polish, copy tone, color choices, "feels intuitive".
-  USE SPARINGLY — prefer automated verification. Most subjective items are DEFER.
-
-IMPORTANT: Every non-MANUAL/non-MANUAL:DEFER criterion MUST include a machine-verifiable `Verify:` line.
-
-# Execution Plan: {Project Name}
-
-## Overview
-
-| Metric | Value |
-|--------|-------|
-| Phases | {N} |
-| Steps  | {N} |
-| Tasks  | {N} |
-
-## Phase Flow
-
-```
-Phase 1: {Name}
-    ↓
-Phase 2: {Name}
-    ↓
-...
-```
-
----
-
-## Phase 1: {Phase Name}
-
-**Goal:** {What this phase accomplishes}
-
-### Pre-Phase Setup
-
-Human must complete before agents begin:
-
-- [ ] {Environment variable or secret}
-  - Verify: `{command}`
-- [ ] {External service setup}
-  - Verify: `{command}`
-- [ ] {Other prerequisite}
-  - Verify: `{command}`
-
----
-
-### Step 1.1: {Step Name}
-
-#### Task 1.1.A: {Task Name}
-
-**What:** {1-2 sentence description}
-
-**Requirement:** {REQ-XXX from PRODUCT_SPEC.md, or "None" if no direct mapping}
-
-**Acceptance Criteria:**
-- [ ] (TEST) {Specific, testable criterion}
-  - Verify: `{test command or test name}`
-- [ ] (CODE) {Specific, testable criterion}
-  - Verify: `{command to check file/export exists}`
-- [ ] (BROWSER:DOM) {Specific, testable criterion}
-  - Verify: route=`{route}`, selector=`{selector}`, expect=`{state}`
-
-Manual criteria (ONLY for true UX judgment — use sparingly):
-- [ ] (MANUAL) {Specific criterion requiring human judgment — blocks downstream}
-  - Reason: {why automation cannot verify this}
-- [ ] (MANUAL:DEFER) {Subjective criterion with no downstream dependency}
-  - Reason: {why human review is needed but doesn't block}
-
-**Files:**
-- Create: `{path}` — {purpose}
-- Modify: `{path}` — {what change}
-
-**Depends On:** {Prior task IDs, or "None"}
-
-**Spec Reference:** {Section name from technical spec}
-
----
-
-#### Task 1.1.B: {Task Name}
-{Same structure}
-
----
-
-### Step 1.2: {Step Name}
-{Continue pattern}
-
----
-
-### Phase 1 Checkpoint
-
-**Automated:**
-- [ ] All tests pass
-- [ ] Type checking passes
-- [ ] Linting passes
-
-**Human Required:**
-{OMIT this section entirely if no items require subjective human judgment.
-Most phases should have ZERO human-required checkpoint items.
-Only include items that CANNOT be verified by tests, typechecks, linting,
-code inspection, DOM selectors, curl, or grep. "Review X API/interface for
-consistency" is NOT human-required — compare interfaces via CODE instead.}
-
-- [ ] (MANUAL) {Specific thing requiring subjective judgment — e.g., "visual design matches brand"}
-  - Reason: {why no automated tool can verify this}
-
----
-
-## Phase 2: {Phase Name}
-{Continue pattern}
-
-Read the local file `AGENTS_TEMPLATE.md` and use its contents as the AGENTS.md template (do not paraphrase or summarize — use the template verbatim, filling in project-specific values).
-
-══════════════════════════════════════════════════════════════════════════════
-PART 3: GENERATION INSTRUCTIONS
+GENERATION INSTRUCTIONS
 ══════════════════════════════════════════════════════════════════════════════
 
 Before generating:
@@ -207,34 +60,8 @@ Before generating:
 5. **Identify setup** — External services, env vars, manual prerequisites per phase
 6. **Define checkpoints** — What demonstrates each phase is complete
 
-Task quality checks:
-✓ 3-6 specific, testable acceptance criteria
-✓ Every acceptance criterion includes a verification type
-✓ Every non-MANUAL/non-MANUAL:DEFER criterion has a `Verify:` line with executable command
-✓ MANUAL criteria are rare (< 10% of total) with clear reasons
-✓ Concrete files to create/modify (not vague)
-✓ Dependencies explicitly listed
-✓ References spec section
-✓ Independent from parallel tasks in same step
+Additional greenfield task quality check:
 ✓ Requirement field links to REQ-XXX from PRODUCT_SPEC.md (or "None" for infrastructure tasks)
-
-Red flags to fix:
-✗ Vague criteria like "works correctly" or "handles errors properly"
-✗ Non-MANUAL criterion missing `Verify:` command
-✗ MANUAL used for anything checkable by file existence, grep, curl, DOM selector, or test
-✗ MANUAL criteria without a reason
-✗ More than 1-2 MANUAL criteria per task (most tasks should have ZERO)
-✗ Too many files (>7) in one task
-✗ Dependencies on parallel tasks
-✗ Missing spec reference
-
-Phase Checkpoint red flags:
-✗ "Human Required" section present when all items are automatable
-✗ "Review X API/interface" in Human Required (compare interfaces via CODE, not human review)
-✗ "Review X for consistency with Y" in Human Required (pattern-matching is CODE, not human)
-✗ "Verify error handling" in Human Required (write a TEST)
-✗ Any checkpoint item that can be expressed as "check that X exists / has attribute Y / contains Z"
-✗ Most phases should have NO Human Required items — omit the section entirely if empty
 
 ══════════════════════════════════════════════════════════════════════════════
 SPECIFICATION DOCUMENTS
@@ -250,11 +77,12 @@ SPECIFICATION DOCUMENTS
 
 ══════════════════════════════════════════════════════════════════════════════
 
+Read the local file `AGENTS_TEMPLATE.md` and use its contents as the AGENTS.md template (do not paraphrase or summarize — use the template verbatim, filling in project-specific values).
+
 Generate:
 1. EXECUTION_PLAN.md
 2. AGENTS.md
 ```
-
 
 ---
 
@@ -271,14 +99,8 @@ Generate:
 ## Post-Generation Checklist
 
 **EXECUTION_PLAN.md**
-- [ ] All phases have pre-phase setup sections (with `Verify:` commands)
-- [ ] All tasks have 3-6 testable acceptance criteria
-- [ ] All non-MANUAL/non-MANUAL:DEFER criteria have `Verify:` lines with executable commands
-- [ ] MANUAL criteria are rare (< 10%) with clear reasons
-- [ ] All tasks specify files to create/modify
-- [ ] All tasks have dependencies listed
-- [ ] All phases have checkpoint criteria
-- [ ] No task depends on a parallel task in the same step
+(Run the checklist from EXECUTION_PLAN_FORMAT.md, then also check:)
+- [ ] Requirement fields link to REQ-XXX from PRODUCT_SPEC.md where applicable
 
 **AGENTS.md**
 - [ ] Project context filled in (tech stack, dev server)
