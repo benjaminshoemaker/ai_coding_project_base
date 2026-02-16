@@ -5,6 +5,16 @@ PART 6: AGENTS_ADDITIONS.md FORMAT
 AGENTS.md contains **workflow and process instructions** for AI agents—HOW to work.
 It does NOT contain feature-specific business logic, domain rules, or implementation details—WHAT to build.
 
+**Default assumption: No additions are needed.** Most features can be built using
+the workflows already in AGENTS.md. Additions should be rare and small.
+
+### Litmus Test (apply to EVERY proposed addition)
+
+> "Would this addition be useful for a DIFFERENT feature in a DIFFERENT project?"
+
+- **YES** → It might be a legitimate workflow addition (e.g., "how to run database migrations")
+- **NO** → It's feature-specific knowledge and does NOT belong (e.g., "the Drawer component uses AbortController for cleanup")
+
 ### What Belongs in AGENTS.md (and additions)
 - Workflow procedures (how to run tests, migrations, deployments)
 - Process policies (commit formats, branch strategies, verification steps)
@@ -15,8 +25,11 @@ It does NOT contain feature-specific business logic, domain rules, or implementa
 - Business logic ("price threshold is ±5%", "filter by MLS area")
 - Domain-specific rules (these belong in specs)
 - Feature-specific commit examples (commit FORMAT is ok, specific commits are not)
-- Acceptance criteria details (these belong in EXECUTION_PLAN.md)
+- Acceptance criteria details (those belong in EXECUTION_PLAN.md)
 - Implementation details for this specific feature
+- **Component or pattern documentation** ("Drawer uses X pattern", "AbortController cleanup", "MetricCard drill-down behavior") — these belong in code comments or the feature spec, not AGENTS.md
+- **Architecture descriptions of what you're building** ("the new sidebar has three sections") — AGENTS.md is about HOW to work, not WHAT the feature looks like
+- **"Context notes"** or **"development notes"** that summarize the feature for the agent — the agent reads the spec and code directly
 
 ---
 
@@ -33,11 +46,26 @@ No additions required. The existing AGENTS.md covers all workflows needed for th
 - ...
 ```
 
-Do NOT add "feature context notes" or "testing notes" as filler—this is noise that doesn't belong in AGENTS.md.
+Do NOT add "feature context notes", "development notes", "testing notes", or
+component/pattern documentation as filler—this is noise that doesn't belong in AGENTS.md.
+
+**"No additions required" is the EXPECTED outcome for most features.**
 
 ---
 
 ### When Additions ARE Needed
+
+Additions are justified ONLY when the feature introduces a **new category of workflow**
+that the existing AGENTS.md has never needed before. Examples of legitimate gaps:
+- First feature with database migrations → add migration workflow
+- First feature with browser UI → add browser verification workflow
+- No testing guidance exists at all → add test quality standards
+
+Examples of things that are NOT workflow gaps (do NOT add these):
+- "This feature uses AbortController" → implementation detail, not workflow
+- "The Drawer component has drill-down behavior" → domain knowledge, not workflow
+- "API responses should include pagination" → feature requirement, not workflow
+- "Use React.memo for performance" → code pattern, not workflow
 
 If the feature requires workflow elements not present in the existing AGENTS.md,
 output suggested additions in this format:
@@ -63,7 +91,12 @@ output suggested additions in this format:
 
 ### Common Workflow Additions
 
-Only add these if they're MISSING from the existing AGENTS.md:
+**IMPORTANT: Most features need ZERO of these.** Only add one if:
+1. The existing AGENTS.md has NO coverage of that workflow category at all
+2. The feature genuinely requires that workflow (e.g., don't add "Database Migrations" if there are no migrations)
+3. The addition passes the litmus test ("useful for a different feature in a different project?")
+
+Reference templates (only add if MISSING from the existing AGENTS.md):
 
 **Git Branch Strategy** — If not already defined in AGENTS.md
 ```
@@ -225,7 +258,7 @@ For tasks involving database changes:
 4. Document rollback procedure
 ```
 
-**Follow-Up Items Workflow** — Always include this section
+**Follow-Up Items Workflow** — If not already defined in AGENTS.md
 ```
 ## Follow-Up Items (TODOS.md)
 

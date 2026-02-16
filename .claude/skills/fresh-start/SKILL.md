@@ -129,7 +129,13 @@ If MODE = "feature", check for and offer to merge workflow additions:
 
 2. Read AGENTS_ADDITIONS.md and determine if merge is needed:
    - If it contains "No additions required" or similar, report: "No AGENTS.md additions needed for this feature" and skip
-   - If it contains actual additions, continue to step 3
+   - If it contains actual additions, **validate each section** before presenting:
+     - Apply the litmus test: "Would this be useful for a DIFFERENT feature in a DIFFERENT project?"
+     - Reject sections that describe specific components, patterns, or architecture of this feature
+     - Reject sections that are implementation details or domain knowledge (e.g., "Drawer uses AbortController", "MetricCard drill-down behavior")
+     - Only present sections that are genuine workflow/process additions
+   - If all sections fail validation, report: "AGENTS_ADDITIONS.md contains feature-specific content, not workflow additions. Skipping." and skip
+   - If some sections pass, continue to step 3 with only the valid sections
 
 3. Summarize the additions for the user:
    ```

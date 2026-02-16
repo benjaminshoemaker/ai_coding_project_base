@@ -402,6 +402,9 @@ AGENTS_ADDITIONS.md Quality
 □ Does NOT include feature-specific commit examples
 □ Does NOT include acceptance criteria details (those are in EXECUTION_PLAN.md)
 □ Does NOT include implementation details or domain knowledge
+□ Does NOT document specific components, patterns, or architecture of this feature
+□ Every addition passes the litmus test: "Would this be useful for a DIFFERENT feature in a DIFFERENT project?"
+□ "No additions required" is the expected outcome — additions are the exception, not the default
 
 AGENTS.md Compatibility (check for gaps)
 □ All verification methods in EXECUTION_PLAN.md are defined in AGENTS.md
