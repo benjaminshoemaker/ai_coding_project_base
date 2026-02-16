@@ -156,10 +156,21 @@ Manual criteria (only if automation is not feasible):
 - [ ] No breaking changes to public APIs
 
 **Human Required:**
-- [ ] {Specific thing human should verify}
-  - Reason: {why human review is required}
-- [ ] {Another manual check}
-  - Reason: {why human review is required}
+{OMIT this section entirely if no items require subjective human judgment.
+Most phases should have ZERO human-required checkpoint items.
+Only include items that CANNOT be verified by tests, typechecks, linting,
+code inspection, DOM selectors, curl, or grep. Walk through the MANUAL
+Decision Tree in auto-verify/PATTERNS.md for each proposed item.}
+
+- [ ] (MANUAL) {Specific thing requiring subjective judgment — e.g., "visual design matches brand"}
+  - Reason: {why no automated tool can verify this}
+
+{WRONG — do NOT put these in Human Required:
+- "Review component API for consistency" → CODE: grep prop types and compare
+- "Verify props match existing patterns" → CODE: diff interfaces
+- "Check error handling is appropriate" → TEST: write a test
+- "Review data model design" → CODE: inspect schema file
+These are all automatable. Tag them CODE or TEST instead.}
 
 **Browser Verification (if applicable):**
 - [ ] All UI acceptance criteria verified via browser MCP tools
@@ -242,6 +253,14 @@ Red flags to fix:
 ✗ Missing spec reference
 ✗ No consideration of existing code patterns
 ✗ Changes to existing files without clear rationale
+
+Phase Checkpoint red flags:
+✗ "Human Required" section present when all items are automatable
+✗ "Review X API/interface" in Human Required (compare interfaces via CODE, not human review)
+✗ "Review X for consistency with Y" in Human Required (pattern-matching is CODE, not human)
+✗ "Verify error handling" in Human Required (write a TEST)
+✗ Any checkpoint item that can be expressed as "check that X exists / has attribute Y / contains Z"
+✗ Most phases should have NO Human Required items — omit the section entirely if empty
 
 ═══════════════════════════════════════════════════════════════════
 PART 5: FEATURE-SPECIFIC CONSIDERATIONS
@@ -391,6 +410,8 @@ EXECUTION_PLAN.md
 □ All tasks specify files to create/modify
 □ All tasks have dependencies listed
 □ All phases have checkpoint criteria including regression checks
+□ Phase checkpoints have NO "Human Required" items unless truly subjective (walk decision tree for each)
+□ "Review X API/interface for consistency" is NOT human-required — it's CODE (grep + compare)
 □ No task depends on a parallel task in the same step
 □ Tasks with UI criteria marked as `BROWSER:*`
 □ Existing test suites accounted for in checkpoints

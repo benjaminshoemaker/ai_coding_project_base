@@ -178,10 +178,14 @@ Manual criteria (ONLY for true UX judgment — use sparingly):
 - [ ] Linting passes
 
 **Human Required:**
-- [ ] {What human should verify}
-  - Reason: {why human review is required}
-- [ ] {Another manual check}
-  - Reason: {why human review is required}
+{OMIT this section entirely if no items require subjective human judgment.
+Most phases should have ZERO human-required checkpoint items.
+Only include items that CANNOT be verified by tests, typechecks, linting,
+code inspection, DOM selectors, curl, or grep. "Review X API/interface for
+consistency" is NOT human-required — compare interfaces via CODE instead.}
+
+- [ ] (MANUAL) {Specific thing requiring subjective judgment — e.g., "visual design matches brand"}
+  - Reason: {why no automated tool can verify this}
 
 ---
 
@@ -223,6 +227,14 @@ Red flags to fix:
 ✗ Too many files (>7) in one task
 ✗ Dependencies on parallel tasks
 ✗ Missing spec reference
+
+Phase Checkpoint red flags:
+✗ "Human Required" section present when all items are automatable
+✗ "Review X API/interface" in Human Required (compare interfaces via CODE, not human review)
+✗ "Review X for consistency with Y" in Human Required (pattern-matching is CODE, not human)
+✗ "Verify error handling" in Human Required (write a TEST)
+✗ Any checkpoint item that can be expressed as "check that X exists / has attribute Y / contains Z"
+✗ Most phases should have NO Human Required items — omit the section entirely if empty
 
 ══════════════════════════════════════════════════════════════════════════════
 SPECIFICATION DOCUMENTS
