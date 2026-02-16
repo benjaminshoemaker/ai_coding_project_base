@@ -20,6 +20,11 @@ Read `~/.claude/skills/shared/EXECUTION_PLAN_FORMAT.md` for the execution hierar
 verification types, EXECUTION_PLAN.md template structure, task quality checks, red flags, and
 post-generation checklist. Use those definitions verbatim — do not redefine or paraphrase them.
 
+Before assigning any (MANUAL) or (MANUAL:DEFER) tag to an acceptance criterion or checkpoint item,
+read `~/.claude/skills/auto-verify/PATTERNS.md` and walk through the MANUAL Decision Tree (steps 1-9).
+Only assign MANUAL if you reach step 9 (subjective judgment). If any earlier step matches, use the
+automated verification type instead.
+
 ══════════════════════════════════════════════════════════════════════════════
 DOCUMENT RESPONSIBILITIES
 ══════════════════════════════════════════════════════════════════════════════

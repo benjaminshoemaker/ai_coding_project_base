@@ -227,3 +227,10 @@ When local verification passes, extract PRODUCTION items from EXECUTION_PLAN.md:
 1. **Staging/Production Deployment Verification**
 2. **External Integration Verification**
 3. **Production-Only Manual Checks**
+
+For each production item, walk through the MANUAL Decision Tree in
+`~/.claude/skills/auto-verify/PATTERNS.md` before classifying as manual:
+- Health checks → automate via `curl -sf {prod_url}/health`
+- API response checks → automate via `curl` + `jq`
+- Page loads → automate via `curl` status code check
+- Only items requiring subjective judgment (UX, brand, tone) are truly manual

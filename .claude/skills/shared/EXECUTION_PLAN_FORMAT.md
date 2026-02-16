@@ -99,9 +99,11 @@ Human must complete before starting:
 - [ ] (BROWSER:DOM) {Specific, testable criterion}
   - Verify: route=`{route}`, selector=`{selector}`, expect=`{state}`
 
-Manual criteria (ONLY for true UX judgment — use sparingly):
-- [ ] (MANUAL) {Specific criterion requiring human judgment — blocks downstream}
-  - Reason: {why automation cannot verify this}
+Manual criteria (ONLY after walking through ~/.claude/skills/auto-verify/PATTERNS.md
+decision tree steps 1-9. If ANY step 1-8 matches, use that automated type instead.
+Only step 9 — subjective UX/brand/tone judgment — qualifies as MANUAL):
+- [ ] (MANUAL) {Specific criterion requiring subjective judgment — blocks downstream}
+  - Reason: {why no automated tool can verify this}
 - [ ] (MANUAL:DEFER) {Subjective criterion with no downstream dependency}
   - Reason: {why human review is needed but doesn't block}
 
