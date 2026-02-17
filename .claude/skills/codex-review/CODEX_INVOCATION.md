@@ -23,16 +23,13 @@ grants write access to the working tree. The safety guard prevents Codex from
 making unintended commits during review.
 
 ```bash
-# Record HEAD before Codex runs
+# Record HEAD before Codex runs (to detect/revert accidental commits)
 HEAD_BEFORE=$(git rev-parse HEAD)
-
-# Stash uncommitted changes to protect working tree
-STASHED=false
-if ! git diff --quiet HEAD 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
-  git stash push -m "codex-review-safety-$(date +%s)" --include-untracked
-  STASHED=true
-fi
 ```
+
+**Note:** Do NOT stash uncommitted changes. Stash/pop triggers file-system events
+that confuse IDE watchers, hot-reload, and other processes. The HEAD check alone
+catches the only real risk (accidental commits by Codex).
 
 ## Build Command
 
@@ -68,10 +65,6 @@ if [ "$HEAD_BEFORE" != "$HEAD_AFTER" ]; then
   git reset --hard "$HEAD_BEFORE"
 fi
 
-# Restore stashed changes
-if [ "$STASHED" = true ]; then
-  git stash pop
-fi
 # --- End Safety Check ---
 
 # Handle exit codes

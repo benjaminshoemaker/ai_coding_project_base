@@ -178,14 +178,10 @@ Before invoking Codex, protect the working tree:
 ```bash
 # Record current HEAD so we can detect if Codex makes commits
 HEAD_BEFORE=$(git rev-parse HEAD)
-
-# Stash uncommitted changes (if any) to protect working tree
-STASHED=false
-if ! git diff --quiet HEAD 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
-  git stash push -m "codex-review-safety-$(date +%s)" --include-untracked
-  STASHED=true
-fi
 ```
+
+**Note:** Do NOT stash uncommitted changes — stash/pop triggers file-system events
+that confuse IDE watchers, hot-reload, and other processes. The HEAD check alone is sufficient.
 
 ### Invoke Codex
 
@@ -217,11 +213,6 @@ HEAD_AFTER=$(git rev-parse HEAD)
 if [ "$HEAD_BEFORE" != "$HEAD_AFTER" ]; then
   echo "WARNING: Codex made commits during review. Reverting to pre-review state."
   git reset --hard "$HEAD_BEFORE"
-fi
-
-# Restore stashed changes
-if [ "$STASHED" = true ]; then
-  git stash pop
 fi
 ```
 
