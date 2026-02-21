@@ -2,10 +2,15 @@
 name: phase-checkpoint
 description: Run checkpoint criteria after completing a phase. Use after /phase-start completes all tasks to verify quality gates before proceeding.
 argument-hint: [phase-number]
-allowed-tools: Bash, Read, Edit, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
+allowed-tools: Bash, Read, Edit, Glob, Grep, Task, AskUserQuestion, WebFetch, WebSearch
 ---
 
 Phase $1 is complete. Run the checkpoint criteria from EXECUTION_PLAN.md.
+
+**AUTONOMY RULE:** Never invoke skills via the Skill tool mid-checkpoint — it creates
+a turn boundary that breaks procedural flow. Use the **Task tool** (subagent) for any
+delegated work. Do NOT use AskUserQuestion during the checkpoint — it pauses the
+auto-advance chain. If something is ambiguous, use a deterministic default and report it.
 
 ## Workflow
 
@@ -96,12 +101,13 @@ failure (it is part of the quality gate).
 ### Manual Verification
 
 1. Extract manual items from "Phase $1 Checkpoint" in EXECUTION_PLAN.md
-2. Attempt automation using auto-verify skill
+2. Attempt automation using auto-verify skill (via Task tool, not Skill tool)
 3. Classify remaining items:
    - `MANUAL:DEFER` → enqueue to deferred review queue (see [DEFERRED_QUEUE.md](DEFERRED_QUEUE.md))
-   - `MANUAL` (blocking) → generate verification guide for human
-4. If blocking items exist: ask human for batch confirmation
-5. If only deferred items: skip human confirmation, report queue status
+   - `MANUAL` (blocking) → stop checkpoint and stop auto-advance
+4. If blocking items exist: report them in the checkpoint output and stop.
+   Do NOT use AskUserQuestion — just list the items and halt auto-advance.
+5. If only deferred items: continue, report queue status
 6. Update checkboxes in EXECUTION_PLAN.md
 
 For external integrations, follow [DOCS_PROTOCOL.md](DOCS_PROTOCOL.md) to fetch latest documentation.
@@ -119,50 +125,82 @@ This step runs if ALL of these conditions are true:
 
 ### Execution
 
+**IMPORTANT — Invocation Method:** Do NOT invoke `/codex-review` via the Skill tool.
+The Skill tool creates a turn boundary that breaks the checkpoint's procedural flow
+and prevents auto-advance from continuing. Use the **Task tool** instead.
+
 1. **Gather phase context:**
    ```bash
    # Identify technologies from changed files for --research flag
    # Check package.json, imports in changed files
    ```
 
-2. **Invoke `/codex-review`** with appropriate flags:
-   ```
-   /codex-review --research "{technologies}" security
-   ```
+2. **Launch Task subagent** to perform the Codex review inline:
+   - `subagent_type`: `general-purpose`
+   - Include in the prompt:
+     - The technologies/research topics identified in step 1
+     - Any focus area (e.g., `security`)
+     - The base branch and model from config
+   - Instruct the subagent to:
+     a. Read `.claude/skills/codex-review/SKILL.md` and follow Steps 1-5
+     b. Read supporting files as needed (CODEX_INVOCATION.md, PROMPT_TEMPLATE.md, EVALUATION_PRACTICES.md)
+     c. Return structured JSON with `status`, `critical_issues`, `recommendations`, `positive_findings`
 
-   The `/codex-review` skill handles:
-   - Branch diff gathering
-   - Prompt generation with research instructions
-   - Codex CLI invocation
-   - Result parsing
+   The Task tool returns results to the current turn, preserving checkpoint state.
 
-3. **Process results:**
+3. **Process results** from the Task subagent:
 
    | Codex Status | Checkpoint Action |
    |--------------|-------------------|
    | `pass` | Continue, note in report |
-   | `pass_with_notes` | Show recommendations, continue |
-   | `needs_attention` | Show critical issues, ask user how to proceed |
+   | `pass_with_notes` | Auto-implement recommendations, continue |
+   | `needs_attention` | Auto-implement all findings, continue |
    | `skipped` | Note unavailable, continue |
    | `error` | Note error, continue |
 
-4. **For `needs_attention` status:**
-   - Display critical issues from Codex
-   - Ask user: "Address Codex findings before proceeding?"
-     - Yes → List issues to fix, pause checkpoint
-     - No → Continue, note as accepted risk
-   - Critical issues do NOT auto-block (user decides)
+### Auto-Implement Findings
+
+When Codex returns findings (`pass_with_notes` or `needs_attention`), implement
+them automatically. Do NOT ask the user — this keeps the auto-advance chain flowing.
+
+1. **Launch Task subagent** to implement all findings:
+   - `subagent_type`: `general-purpose`
+   - Include in the prompt:
+     - All critical issues with file:line locations and suggestions
+     - All recommendations with file:line locations and suggestions
+     - Instruct: "Implement each fix. If a suggestion is too vague to act on
+       (no specific file/line or actionable change), skip it and note why.
+       Do NOT use AskUserQuestion — if anything is ambiguous, skip it.
+       Do NOT create new files unless a fix explicitly requires it."
+   - The subagent edits files and returns a summary of what it changed
+
+3. **Re-run automated verification** (same commands from Step 3):
+   - Tests, typecheck, lint, build — whatever is configured in verification-config
+   - This confirms the fixes don't break anything
+
+4. **Handle re-verification results:**
+
+   | Outcome | Action |
+   |---------|--------|
+   | All checks pass | Commit: `git add -u && git commit -m "fix: address Codex review findings (phase $1 checkpoint)"`, note "{N} findings auto-fixed" in report |
+   | Any check fails | Revert: `git checkout -- .`, note "fixes reverted — broke verification" in report, log findings to deferred queue |
+
+   **Git safety notes:**
+   - Use `git add -u` (tracked files only) — never `git add -A` which can stage untracked artifacts
+   - Commit only after verification passes — no commit to undo on failure
+   - `git checkout -- .` reverts working tree changes without needing `git reset --hard`
+   - If pre-commit hooks fail the commit, treat as "skip auto-commit" and continue
+
+5. **Continue to Step 5** regardless of outcome — Codex findings never block.
 
 ### Output
 
 ```
 Cross-Model Review (Codex):
 - Status: PASS | PASS WITH NOTES | NEEDS ATTENTION | SKIPPED
-- Critical Issues: {N}
-- Recommendations: {N}
-{If issues}
-- Top Issue: {description}
-{/If}
+- Findings: {N} critical, {M} recommendations
+- Auto-implemented: {X} fixes applied, {Y} skipped (too vague)
+- Verification: PASSED | REVERTED (logged to deferred queue)
 ```
 
 ### Skip Conditions
@@ -205,7 +243,9 @@ After checkpoint passes, update `.claude/phase-state.json`:
         "status": "pass | pass_with_notes | needs_attention | skipped",
         "critical_issues": 0,
         "recommendations": 2,
-        "user_accepted_risks": []
+        "auto_fixed": 2,
+        "fix_skipped": 0,
+        "fix_reverted": false
       }
     }
   }]
@@ -256,17 +296,12 @@ Local Verification: ✓ PASSED | ✗ FAILED
 
 Status: PASS | PASS WITH NOTES | NEEDS ATTENTION | SKIPPED
 {If not skipped}
-- Critical Issues: {N}
-- Recommendations: {N}
-{If needs_attention}
-- User Action: Addressed | Accepted as risk
+- Findings: {N} critical, {M} recommendations
+- Auto-implemented: {X} fixes applied, {Y} skipped (too vague)
+- Verification: PASSED | REVERTED (logged to deferred queue)
+{If reverted}
+- Reverted fixes logged to deferred queue for later review
 {/If}
-{/If}
-
-{If has recommendations}
-Top Recommendations:
-1. {recommendation}
-2. {recommendation}
 {/If}
 
 ---
@@ -285,7 +320,7 @@ See [AUTO_ADVANCE.md](AUTO_ADVANCE.md) for auto-advance logic.
 
 **Summary:** If all checks pass and no blocking manual items remain, automatically invoke `/phase-prep {N+1}`. `MANUAL:DEFER` items are queued and do not block.
 
-**Codex review and auto-advance:** Codex findings do NOT block auto-advance unless user explicitly chooses to address them. The review is advisory.
+**Codex review and auto-advance:** Codex findings are auto-implemented inline. If fixes pass re-verification they are committed; if they fail, they are reverted and logged to the deferred queue. Either way, auto-advance is never blocked.
 
 ---
 
@@ -297,10 +332,11 @@ See [AUTO_ADVANCE.md](AUTO_ADVANCE.md) for auto-advance logic.
 - Prioritize: Fix local failures first (they often cause production failures)
 - Suggest: Run `/phase-start $1` to address failing tasks before re-running checkpoint
 
-**If manual verification items cannot be completed:**
-- Ask user: "Skip this item and document reason?" vs "Block until complete"
-- If skipping: Record in DEFERRED.md with reason and timestamp
-- Note: Skipped items don't count as PASSED for auto-advance
+**If blocking manual verification items remain after auto-verify:**
+- Stop the checkpoint and report which items blocked it
+- Do NOT use AskUserQuestion — just halt and list the items
+- The user can re-run `/phase-checkpoint $1` after manual resolution
+- Note: Blocking items prevent auto-advance (this is by design)
 
 **If verification config file is missing entirely:**
 - Run `/configure-verification` to auto-detect
@@ -324,10 +360,11 @@ See [AUTO_ADVANCE.md](AUTO_ADVANCE.md) for auto-advance logic.
 - Suggest: Re-run `/codex-review` manually after checkpoint if desired
 
 **If Codex finds critical issues:**
-- Present issues to user with context
-- Ask: "Address before proceeding or accept as noted risk?"
-- If user chooses to proceed: Log as "accepted risk" in state
-- Do NOT auto-block — cross-model review is advisory
+- Auto-implement all findings (see "Auto-Implement Findings" in Step 4)
+- If fixes pass re-verification, commit with `git add -u` and continue
+- If fixes break re-verification, revert with `git checkout -- .` and log to deferred queue
+- Continue without pausing — cross-model review never blocks
+- Do NOT use AskUserQuestion — this breaks auto-advance
 
 ---
 
