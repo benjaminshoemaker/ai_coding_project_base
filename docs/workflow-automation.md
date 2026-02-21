@@ -42,7 +42,9 @@ Auto-advance executes immediately when conditions are met. Use `--pause` on any 
 }
 ```
 
-When auto-advance stops (manual items exist, a check fails, or the final phase completes), a session report shows all completed steps and what caused it to stop.
+Codex cross-model review findings are auto-implemented during checkpoints — a Task subagent applies fixes, re-runs verification, and commits if all checks pass (or reverts and logs to the deferred queue if not). Blocking manual items halt the checkpoint deterministically without prompting.
+
+When auto-advance stops (blocking manual items exist, a check fails, or the final phase completes), a session report shows all completed steps and what caused it to stop.
 
 ## Git Workflow
 

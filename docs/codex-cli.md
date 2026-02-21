@@ -131,9 +131,11 @@ When Codex CLI is installed, the toolkit automatically invokes it for second-opi
 - **Phase checkpoints** — `/phase-checkpoint` reviews completed phase code via `/codex-review`
 - **Pull requests** — `/create-pr` runs Codex review before creating the PR, includes findings in the PR body, and blocks on critical issues
 
-Codex researches current documentation before reviewing, which helps catch issues where Claude's training data may be outdated. Findings are advisory — they don't block auto-advance.
+Codex researches current documentation before reviewing, which helps catch issues where Claude's training data may be outdated.
+Findings are auto-implemented during checkpoints: a Task subagent applies fixes, re-runs verification, and commits if passing (or reverts if not).
+This keeps the auto-advance chain flowing without human intervention.
 
-**Safety guard:** Both `/codex-review` and `/codex-consult` stash uncommitted changes and record the HEAD SHA before invoking Codex. After Codex finishes, any commits it made are reverted and the stash is restored. This prevents accidental modifications to the working tree during review/consultation.
+**Safety guard:** `/codex-review` and `/codex-consult` record the HEAD SHA before invoking Codex. After Codex finishes, any commits it made are reverted. This prevents accidental modifications to the working tree during review/consultation.
 
 **Configuration** (`.claude/settings.local.json`):
 ```json
