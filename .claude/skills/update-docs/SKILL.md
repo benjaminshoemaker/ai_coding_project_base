@@ -426,6 +426,16 @@ When triggered by hook:
 
 ---
 
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| `README.md` does not exist in the project root | Skip README updates; route all changes to `docs/` files and suggest creating a README |
+| `git diff` returns no changes (nothing to analyze) | Report "No changes detected" and clean up any marker file; do not create an empty docs commit |
+| Target `docs/` file cannot be created (permissions or missing parent directory) | Create `docs/` directory if missing; if permissions block creation, report the error and suggest manual resolution |
+| Marker file (`.claude/doc-update-pending.json`) references a commit that no longer exists | Warn user that the referenced commit is unreachable, fall back to analyzing HEAD, and clean up the stale marker |
+| Migration would move content but the destination file already has conflicting sections | Append new content below existing sections rather than overwriting; warn about potential duplication for manual review |
+
 ## Final Cleanup
 
 **Always run at the end:**

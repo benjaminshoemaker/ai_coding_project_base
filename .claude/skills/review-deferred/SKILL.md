@@ -135,6 +135,16 @@ FOLLOW-UP NEEDED
 These items remain in the queue and will surface again at the next drain trigger.
 ```
 
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| `.claude/deferred-reviews.json` does not exist or is empty | Report "No deferred items" and stop; do not create an empty queue file |
+| `.claude/deferred-reviews.json` fails to parse (corrupt JSON) | Back up to `.claude/deferred-reviews.json.bak`, report the corruption, and stop |
+| Atomic write (temp file rename) fails during queue update | Report the write failure, output the intended changes to terminal so data is not lost, and suggest manual edit |
+| All items in queue are already `reviewed: true` | Report "No unreviewed items remaining" and stop; do not re-present already-reviewed items |
+| Referenced file or line in a deferred item no longer exists | Present the item with a warning that the original context may have changed; suggest the user verify manually |
+
 ## Drain Reasons
 
 When invoked by other skills, the drain reason is passed as context:

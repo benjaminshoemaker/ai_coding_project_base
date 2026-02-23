@@ -302,6 +302,16 @@ Action: USE_PREVIEW | USE_FALLBACK | BLOCK
 2. Review build logs: `vercel logs <deployment-url>`
 3. Increase `deploymentTimeout` in verification-config.json
 
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| Vercel CLI not installed (`vercel` command not found) | Report "Vercel CLI unavailable", suggest `npm i -g vercel`, fall back to local dev server if enabled |
+| `.vercel/project.json` missing (project not linked) | Stop and instruct user to run `vercel link`; do not attempt deployment queries |
+| `vercel ls` returns invalid JSON or empty response | Report parse error, skip deployment matching, return error response with troubleshooting steps |
+| Authentication failure (expired token or missing credentials) | Report auth error, suggest `vercel login` (local) or check `VERCEL_TOKEN` (CI); do not retry |
+| Deployment wait timeout exceeded | Stop waiting, report current deployment state, ask user whether to use local fallback or abort |
+
 ## When Preview Cannot Be Resolved
 
 **If Vercel CLI is not installed and cannot be installed:**

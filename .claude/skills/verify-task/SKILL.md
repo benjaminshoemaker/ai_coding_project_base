@@ -276,6 +276,16 @@ Append a JSON line to `.claude/verification-log.jsonl` for each criterion:
 
 Ensure `.claude/verification/` exists before writing evidence files.
 
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| EXECUTION_PLAN.md not found in working directory | Stop and tell user to `cd` into the project/feature directory containing EXECUTION_PLAN.md |
+| Task ID `$1` not found in EXECUTION_PLAN.md | Stop and report "Task $1 not found"; list available task IDs for the user |
+| `.claude/verification-config.json` missing or has empty commands | Run `/configure-verification` automatically; if still missing, report and mark checks as SKIPPED |
+| Test runner command fails with non-zero exit (not test failures) | Distinguish execution errors from test failures; report the execution error and mark criterion as BLOCKED |
+| No browser MCP tools available for BROWSER:* criteria | Prompt user to continue with manual verification or stop to configure browser tools |
+
 ## On Success
 
 - Check off completed criteria in EXECUTION_PLAN.md: `- [ ]` → `- [x]`

@@ -145,6 +145,16 @@ Blockers Found: 2
   - Feature improved_metrics Task 2.1.C: Test failures (blocked 1 day)
 ```
 
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| `EXECUTION_PLAN.md` not found in working directory | STOP and tell user to `cd` into the directory containing `EXECUTION_PLAN.md` |
+| `EXECUTION_PLAN.md` has non-standard phase/task headers that cannot be parsed | Report which headers were unrecognized, generate state for parseable phases, and warn about skipped sections |
+| Git history is unavailable (not a git repo or shallow clone) | Skip git-based timestamp and commit detection; derive status solely from checkbox state in EXECUTION_PLAN.md |
+| `.claude/` directory cannot be created (permissions issue) | Report the permission error and suggest running with appropriate permissions or creating the directory manually |
+| Existing `phase-state.json` is malformed or from an incompatible schema version | Overwrite it with freshly generated state and warn user that the previous file was replaced |
+
 ## Notes
 
 - This command is **read-only** for EXECUTION_PLAN.md - it only generates state

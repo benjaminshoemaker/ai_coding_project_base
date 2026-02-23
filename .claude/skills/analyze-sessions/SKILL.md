@@ -281,30 +281,13 @@ Recommended next steps:
 
 ## Error Handling
 
-**If `~/.claude/logs/` directory doesn't exist:**
-- Create the directory structure: `mkdir -p ~/.claude/logs`
-- Report that no sessions have been logged yet
-- Suggest running /install-hooks to set up session logging
-
-**If session log file is malformed:**
-- Skip malformed lines and continue processing valid entries
-- Report the count of skipped entries in the output
-- Note: "X entries skipped due to malformed data"
-
-**If transcript files are inaccessible:**
-- Continue analysis without transcript data
-- Mark transcript-dependent insights as "Limited (transcripts unavailable)"
-- Report which transcripts couldn't be read
-
-**If no patterns are found:**
-- Report "No automation opportunities identified"
-- Suggest that more sessions may be needed for meaningful patterns
-- Provide guidance: "Run /analyze-sessions again after 5+ additional sessions"
-
-**If ANALYSIS_REPORT.md cannot be written:**
-- Output the report to the terminal instead
-- Report the write failure with the specific error
-- Suggest checking directory permissions
+| Situation | Action |
+|-----------|--------|
+| `~/.claude/logs/` directory does not exist | Create it with `mkdir -p ~/.claude/logs`, report no sessions logged yet, suggest running `/install-hooks` |
+| Session log file is malformed | Skip malformed lines, continue processing valid entries, note "X entries skipped due to malformed data" |
+| Transcript files are inaccessible | Continue analysis without transcript data, mark transcript-dependent insights as "Limited (transcripts unavailable)" |
+| No patterns found after analysis | Report "No automation opportunities identified", suggest running again after 5+ additional sessions |
+| ANALYSIS_REPORT.md cannot be written | Output the report to the terminal instead, report the write failure with the specific error |
 
 ## Limitations
 

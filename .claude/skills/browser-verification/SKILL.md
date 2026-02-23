@@ -65,6 +65,8 @@ Read `.claude/verification-config.json` for:
 
 If config is missing or incomplete, ask the human to run `/configure-verification`.
 
+Verify the config file was read successfully by confirming all required fields are present. If any field is `null` or missing, log which fields are absent before proceeding.
+
 ## Step 1.5: Resolve Base URL
 
 Determine the base URL for browser verification based on deployment configuration.
@@ -97,6 +99,7 @@ When deployment is enabled, invoke the vercel-preview skill:
 2. Query Vercel for ready deployments matching branch
 3. If `waitForDeployment` enabled and deployment building, wait up to timeout
 4. Return URL or null
+5. Verify the resolved URL is reachable with `curl -sf {URL} -o /dev/null` before proceeding. If unreachable, log a warning and fall back to localhost.
 
 ### Output
 
@@ -246,6 +249,8 @@ Browser Tool: ExecuteAutomation Playwright MCP (auto-detected)
 Fallback chain: Browser MCP → Microsoft Playwright → Chrome DevTools → Manual (soft block)
 ```
 
+Verify the selected tool responds by issuing a lightweight probe (e.g., `browser_snapshot` or `list_pages`). If the probe fails, move to the next tool in the chain immediately.
+
 ## Step 3: Authentication
 
 **Skip if `auth.strategy` is `none`.**
@@ -268,6 +273,7 @@ Fallback chain: Browser MCP → Microsoft Playwright → Chrome DevTools → Man
 5. Submit the form
 6. Wait for successful login indicator (redirect, logged-in element)
 7. Save session to `auth.storageState` for reuse
+8. Verify the saved session file exists and is non-empty before proceeding
 
 ### Auth Failure Handling
 
@@ -309,6 +315,8 @@ Capture evidence appropriate to the criterion type using the selected browser MC
 Save evidence under `.claude/verification/` with stable names:
 - `browser-{task-id}-{criterion-id}.png`
 - `browser-{task-id}-{criterion-id}.json`
+
+After saving each evidence file, verify it was written by checking that the file exists and is non-empty (e.g., `ls -la .claude/verification/browser-{task-id}-{criterion-id}.*`). If the file is missing or zero-length, retry the capture once before marking evidence as unavailable.
 
 ## Step 6: Error Recovery
 
@@ -386,6 +394,16 @@ Suggested Fix: [If FAIL]
 | Tool unavailable | Try fallback chain | Continue or BLOCKED |
 | Tool returns undefined | Retry then switch | Continue or BLOCKED |
 | All tools fail | Require manual verification | BLOCKED |
+
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| Config file `.claude/verification-config.json` missing or unparseable | Ask the user to run `/configure-verification` and halt verification |
+| Dev server unreachable after startup timeout | Report the failing command and its stderr output; mark criteria as BLOCKED |
+| Browser MCP tool returns "undefined" or connection error | Retry once after 2 seconds, then fall to the next tool in the fallback chain |
+| Authentication fails after 2 login attempts | Mark criteria as BLOCKED with message; do NOT expose credential values |
+| Evidence file write produces zero-byte file | Retry capture once; if still empty, note "evidence unavailable" in report |
 
 ## Tool-Specific Notes
 

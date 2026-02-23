@@ -41,6 +41,8 @@ If COMPETITORS.md is missing, proposals will lack competitive context but audit 
 
 ## Workflow
 
+Copy this checklist and track progress:
+
 ```
 Vision Audit Progress:
 - [ ] Phase 1: Parse direction documents
@@ -353,6 +355,16 @@ If web search is rate-limited:
 - Suggest re-running later for full analysis
 
 ---
+
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| VISION.md is missing | Stop and report "VISION.md not found — cannot run vision audit"; do not proceed |
+| SDLC_REFERENCE.md is missing | Stop and report "SDLC_REFERENCE.md not found — cannot evaluate outcomes"; do not proceed |
+| COMPETITORS.md is missing | Continue without competitive analysis; note in report that proposals lack competitive context |
+| Web search is rate-limited or unavailable | Fall back to COMPETITORS.md analysis only; note that proposals lack current trend research |
+| More than 10 OPPORTUNITY items identified | Generate full proposals only for HIGH priority items; summarize MEDIUM/LOW in a compact list |
 
 ## Review Your Output
 

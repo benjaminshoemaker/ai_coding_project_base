@@ -219,22 +219,13 @@ If TODOS.md doesn't exist, create it:
 
 ## Error Handling
 
-**If TODOS.md cannot be written:**
-- Check file permissions
-- Report the error and suggest: `touch TODOS.md` or check directory permissions
-
-**If existing TODOS.md has unexpected format:**
-- Preserve the original content
-- Add the new TODO at the end of the file
-- Warn user about non-standard format
-
-**If user provides ambiguous priority/effort:**
-- Default to P2 / Medium
-- Note the default in the confirmation message
-
-**If the file is very large (>500 lines):**
-- Warn user that the file is large
-- Suggest archiving completed items to TODOS-ARCHIVE.md
+| Situation | Action |
+|-----------|--------|
+| TODOS.md cannot be written | Check file permissions; report the error and suggest `touch TODOS.md` or check directory permissions |
+| Existing TODOS.md has unexpected format | Preserve original content, add the new TODO at the end of the file, warn user about non-standard format |
+| User provides ambiguous priority/effort | Default to P2 / Medium and note the default in the confirmation message |
+| File is very large (>500 lines) | Warn user that the file is large; suggest archiving completed items to TODOS-ARCHIVE.md |
+| Target section heading not found in TODOS.md | Create the missing section heading, then insert the TODO beneath it |
 
 ## Notes
 

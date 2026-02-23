@@ -51,6 +51,8 @@ Before the verification loop, confirm each instruction is testable:
 
 Flag untestable instructions immediately rather than attempting verification.
 
+Verify that all referenced files and resources actually exist before entering the verification loop. Log any missing files and mark their associated instructions as BLOCKED.
+
 ### Browser-Specific Pre-Flight
 
 For instructions with `browser: true`:
@@ -81,6 +83,7 @@ For instructions with `browser: true`:
    - If curl returns exit code 7 (connection refused): dev server may not be running
    - If curl returns exit code 28 (timeout): service is slow or unreachable
    - On any curl failure, fall through to browser verification (do not mark as FAIL yet)
+   - Check the curl exit code (`$?`) immediately after execution before interpreting output
 
    **If HTTP check passes AND criterion does NOT explicitly require:**
    - DOM element inspection (selector, visibility)
@@ -201,7 +204,8 @@ When sub-agent reports FAIL:
 1. **Review the finding** - Understand what failed and why
 2. **Check fix history** - Do not repeat a previously attempted fix
 3. **Apply targeted fix** - Make the minimum change to address the issue
-4. **Log the attempt** - Record what was changed
+4. **Verify the fix was applied** - Read back the edited file to confirm the change took effect. If the file is unchanged, retry the edit with corrected context.
+5. **Log the attempt** - Record what was changed
 
 ### Fix attempt tracking
 
@@ -258,7 +262,7 @@ After each fix attempt, verify:
 - The targeted instruction (primary check)
 - Any previously-passing related instructions (regression check)
 
-If a fix breaks something else, revert and note the conflict.
+If a fix breaks something else, revert and note the conflict. After reverting, verify with `git status` or by reading the file that the revert was successful before proceeding.
 
 ### Browser Regression Checks
 
@@ -331,3 +335,13 @@ Workflow execution:
 - **Early exit**: Don't burn attempts on unfixable issues
 - **Regression awareness**: Fixes shouldn't break other things
 - **Audit everything**: The journey matters for debugging
+
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| Verification instructions cannot be parsed from input | Report "Unable to extract testable instructions" and ask the user to clarify the requirements |
+| Referenced source files do not exist | Mark the instruction as BLOCKED and list the missing file paths in the report |
+| Sub-agent returns malformed or empty output | Retry the sub-agent once; if still malformed, mark instruction as BLOCKED with "sub-agent error" |
+| Fix attempt introduces a regression in a previously-passing instruction | Revert the fix immediately and flag the conflict for manual review |
+| Dev server fails to start for browser-based criteria | Report the startup error, mark browser criteria as BLOCKED, continue with non-browser criteria |

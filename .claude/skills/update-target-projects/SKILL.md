@@ -244,8 +244,9 @@ copies and global symlinks are healthy).
    - Copy scripts: `lib.sh`, `setup.sh`, `dev.sh`, `verify.sh`
    - Copy documentation: `README.md`, `workstream.json.example`
    - Run `chmod +x .workstream/*.sh`
+   - Verify with `ls -la .workstream/*.sh` that scripts exist and have executable permissions.
 2. Compare hashes before copying — skip if CURRENT
-3. Update `toolkit-version.json` `"workstream"` key with new hashes
+3. Update `toolkit-version.json` `"workstream"` key with new hashes. Read back the file to confirm valid JSON.
 4. Do NOT copy or overwrite `workstream.json` (project-owned config)
 
 **6g: Codex App Setup Wrapper Sync** — Copy `.codex/setup.sh` to target projects:
@@ -254,6 +255,7 @@ copies and global symlinks are healthy).
    - Create `.codex/` directory if missing
    - Copy `setup.sh` from toolkit `.codex/setup.sh`
    - Run `chmod +x .codex/setup.sh`
+   - Verify with `ls -la .codex/setup.sh` that the file exists and is executable.
 2. Compare hashes before copying — skip if CURRENT
 3. Do NOT overwrite `.codex/environments/` or other Codex App config (project-owned)
 
@@ -302,6 +304,7 @@ See [GLOBAL_SYNC.md](GLOBAL_SYNC.md) for state model and helper definitions.
 
 3. **If user confirms:**
    - Back up modified skills to `.claude/skills.bak/{skill}/` (if any)
+   - Verify with `ls .claude/skills.bak/` that backups were created before proceeding with deletion.
    - Delete local skill directories:
      ```bash
      # Note: glob must be OUTSIDE quotes to expand
@@ -309,9 +312,11 @@ See [GLOBAL_SYNC.md](GLOBAL_SYNC.md) for state model and helper definitions.
        rm -rf "$project_path/.claude/skills/"*/
      fi
      ```
+   - Verify with `ls "$project_path/.claude/skills/"` that skill directories were removed.
    - Update toolkit-version.json:
      - Set `"skill_resolution": "global"`
      - Set each file's `"resolution": "global"`
+   - Read back `toolkit-version.json` to confirm valid JSON and that `skill_resolution` is `"global"`.
    - DO NOT use `git rm` — let user review and commit
 
 4. **Report:**
@@ -341,10 +346,12 @@ For projects that were migrated to global but need portability:
    - Create `.claude/skills/` directory
    - For each globally-resolved skill:
      - Copy from global symlink target to local
+   - Verify with `ls .claude/skills/` that expected skill directories were copied.
    - Update toolkit-version.json:
      - Set `"skill_resolution": "local"`
      - Set each file's `"resolution": "local"`
      - Update hashes and timestamps
+   - Read back `toolkit-version.json` to confirm valid JSON and that `skill_resolution` is `"local"`.
 
 3. **Report:**
    ```
@@ -402,6 +409,16 @@ Local skill copies have been removed.
 Note: Collaborators need ~/.claude/skills/ symlinks to access skills.
 Run this from their toolkit clone: /update-target-projects → option 2
 ```
+
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| No `toolkit-version.json` files found in search paths | Report "No toolkit-using projects found in {search paths}" and list the paths searched; suggest running `/setup` first |
+| `toolkit_location` in a project's `toolkit-version.json` points to a different toolkit | Skip that project with a warning; do not sync skills from a mismatched toolkit |
+| `cp -r` or symlink creation fails during sync | Report the specific failure, continue syncing remaining items, include failures in the summary report |
+| `rm -rf` fails during global adoption (option 8) | STOP adoption for that project, report permission error, do not update `toolkit-version.json` to `"global"` |
+| `gh` or `git` commands fail during discovery | Report the error, skip affected projects, continue with remaining projects |
 
 ## Edge Cases
 

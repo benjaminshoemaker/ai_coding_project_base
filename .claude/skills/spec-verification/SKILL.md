@@ -17,17 +17,7 @@ This skill runs automatically after generating:
 
 Can also be invoked manually via `/verify-spec <document-type>`.
 
-## Workflow Overview
-
-```
-1. Identify document type and locate upstream document(s)
-2. Context Preservation Check: Extract key items from upstream, verify in current
-3. Quality Check: Scan for common specification anti-patterns
-4. Present issues inline with resolution options
-5. Collect user choices for each CRITICAL issue
-6. Apply fixes to document(s)
-7. Re-verify (max 2 iterations, then escalate)
-```
+## Workflow
 
 Copy this checklist and track progress:
 
@@ -40,6 +30,18 @@ Spec Verification Progress:
 - [ ] Step 5: Collect user choices
 - [ ] Step 6: Apply fixes
 - [ ] Step 7: Re-verify
+```
+
+## Workflow Overview
+
+```
+1. Identify document type and locate upstream document(s)
+2. Context Preservation Check: Extract key items from upstream, verify in current
+3. Quality Check: Scan for common specification anti-patterns
+4. Present issues inline with resolution options
+5. Collect user choices for each CRITICAL issue
+6. Apply fixes to document(s)
+7. Re-verify (max 2 iterations, then escalate)
 ```
 
 ## Step 1: Document Type Detection
@@ -79,6 +81,8 @@ Read the upstream document and extract:
 - [ ] Edge cases and boundary conditions
 
 Create a checklist of extracted items with unique IDs (e.g., `CTX-001`, `CTX-002`).
+
+Verify the upstream document was read successfully by confirming at least one key item was extracted. If zero items are extracted, re-read the file and check for formatting issues before proceeding.
 
 ### 2b: Verify Each Item in Downstream Document
 
@@ -293,7 +297,7 @@ Change: Add "Rate limiting: 100 requests/minute per user" to Security Requiremen
 Confirm this upstream change? (This expands project scope)
 ```
 
-Only proceed with explicit confirmation.
+Only proceed with explicit confirmation. After editing an upstream document, re-read the modified section to confirm the change was applied correctly and did not corrupt surrounding content.
 
 ## Step 7: Re-Verification
 
@@ -428,6 +432,16 @@ Verify in TECHNICAL_SPEC:
 - Report: "Proceeding with {N} unresolved CRITICAL issues"
 - List the specific items that remain unresolved
 - Warn about potential downstream impacts
+
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| Upstream document not found at expected path | Skip context preservation check; proceed with quality checks only and note the limitation in the report |
+| Document is not valid Markdown (cannot parse headings/sections) | Report "Unable to parse document structure" and provide manual verification steps as fallback |
+| Edit tool fails to match `old_string` in the document | Re-read the document to get current content, then retry with corrected context |
+| User declines to resolve all CRITICAL issues | Do NOT silently proceed; report unresolved count and warn about downstream impacts |
+| Re-verification loop exceeds 2 iterations | Stop automatic fixes, list remaining issues, and escalate to user for manual resolution |
 
 **If document format prevents parsing:**
 - Report: "Unable to parse document structure"

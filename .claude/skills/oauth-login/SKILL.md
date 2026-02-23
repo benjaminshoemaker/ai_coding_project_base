@@ -125,6 +125,8 @@ OAUTH_{PROVIDER}_CLIENT_ID=<client_id>
 OAUTH_{PROVIDER}_CLIENT_SECRET=<client_secret>
 ```
 
+After writing to `.env`, read back the file to confirm the credentials were stored correctly. If the `.env` file does not exist yet, create it first.
+
 ### Step 5: Start Local Callback Server
 
 Create a temporary callback server to receive the OAuth code.
@@ -177,9 +179,7 @@ sleep 1
 curl -sf http://localhost:3847/ -o /dev/null 2>&1 || echo "WARNING: Callback server may not have started"
 ```
 
-**Verify server is listening** before proceeding. If the server failed to start
-(port in use, Node.js error), check the error output and try an alternate port
-(3848, 3849) before continuing.
+**Verify server is listening** before proceeding by running `curl -sf http://localhost:3847/ -o /dev/null` and checking the exit code. If the server failed to start (port in use, Node.js error), check the error output and try an alternate port (3848, 3849) before continuing.
 
 ### Step 6: Build Authorization URL
 
@@ -268,6 +268,8 @@ curl -s -X POST https://github.com/login/oauth/access_token \
   -d "client_secret=$CLIENT_SECRET"
 ```
 
+Check the HTTP response status code from the token exchange before parsing. If the response contains an `error` field or is not valid JSON, report the error and do not proceed to token storage.
+
 Parse response for:
 - `access_token`
 - `refresh_token` (Google only)
@@ -303,6 +305,8 @@ OAUTH_{PROVIDER}_REFRESH_TOKEN={refresh_token}
 OAUTH_{PROVIDER}_TOKEN_EXPIRY={expiry_timestamp}
 ```
 
+After writing tokens to `.env`, read back the file to verify the token variables are present and non-empty. Do not proceed to the next step if tokens are missing.
+
 ### Step 11: Update verification-config.json
 
 Update `.claude/verification-config.json` to use OAuth:
@@ -318,6 +322,8 @@ Update `.claude/verification-config.json` to use OAuth:
   }
 }
 ```
+
+After updating `verification-config.json`, read the file back to confirm the `auth` section was written correctly and the JSON is valid.
 
 ### Step 12: Cleanup and Report
 

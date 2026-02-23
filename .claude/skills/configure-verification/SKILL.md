@@ -10,6 +10,8 @@ Runs silently with no user prompts — best-effort detection only.
 
 ## Workflow
 
+Copy this checklist and track progress:
+
 ```
 Configure Verification Progress:
 - [ ] Detect project directory and context
@@ -193,6 +195,16 @@ found. Always include `browser.tool: "auto"`.
 
 Do NOT include `auth`, `deployment`, or `devServer` (unless browser criteria
 detected a dev server). These are deferred to `/phase-checkpoint` when needed.
+
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| PROJECT_ROOT does not exist or is not writable | Stop immediately and report the path error to the user |
+| No package.json, Makefile, Taskfile.yml, or justfile found | Write config with empty `commands` object; report "no commands detected" |
+| package.json exists but contains invalid JSON | Report parse error with file path; skip package.json and try next source |
+| Lockfile detected but package manager binary is missing | Record the detected package manager but warn the user it is not installed |
+| `.claude/` directory does not exist for writing config | Create `.claude/` directory before writing `verification-config.json` |
 
 ## Output
 

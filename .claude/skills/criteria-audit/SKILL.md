@@ -125,6 +125,16 @@ Status: PASS | WARN | FAIL
 **FAIL** if any false MANUAL tags are found. **WARN** if MANUAL criteria exceed 10%
 of total criteria. **PASS** otherwise.
 
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| EXECUTION_PLAN.md not found at the resolved path | Report "EXECUTION_PLAN.md not found" with the path checked and stop |
+| PATTERNS.md not found (`~/.claude/skills/auto-verify/PATTERNS.md`) | Skip false-MANUAL detection, note limitation in report output |
+| Plan file is empty or has no parseable phases/tasks | Report "No phases or tasks found" and mark audit as NOT APPLICABLE |
+| A criterion has multiple conflicting type tags | Flag as ambiguous, list all tags found, and recommend the user pick one |
+| Plan file exceeds 2000 lines | Process in chunks, warn user that partial analysis may miss cross-phase dependencies |
+
 ## Resolution Guidance
 
 - If missing metadata is obvious, propose the exact type and `Verify:` line.

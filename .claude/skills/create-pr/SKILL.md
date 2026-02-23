@@ -106,7 +106,7 @@ Options:
     Description: "Stop and handle changes manually"
 ```
 
-If "Commit all changes": stage all, commit with auto-generated message, then continue.
+If "Commit all changes": stage all, commit with auto-generated message, then verify with `git status` that the commit succeeded and the working tree is clean before continuing.
 If "Cancel": stop.
 
 ### Check Commits Ahead
@@ -138,6 +138,8 @@ If unpushed commits (or no upstream):
 ```bash
 git push -u origin $CURRENT_BRANCH
 ```
+
+Verify with `git status` that the branch is tracking the remote. If the push failed, report the error and stop.
 
 ## Step 2: Run Verification
 
@@ -393,6 +395,8 @@ EOF
 Add flags as needed:
 - `--base $BASE_BRANCH` if non-default base
 - `--draft` if draft mode requested
+
+Verify the PR URL was returned successfully in the `gh pr create` output. If the command failed, report the full error output and stop.
 
 ### Report Success
 

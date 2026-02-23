@@ -233,20 +233,13 @@ When a split data source or scattered business rule is found:
 
 ## Error Handling
 
-**If the project has no API routes:**
-- Report: "No API route handlers found" — Mark audit as NOT APPLICABLE
-
-**If a route file is too complex to parse (>500 lines):**
-- Flag the file as tech debt, parse what you can, note: "Partial analysis"
-
-**If no frontend consumers found for a route:**
-- Note as informational, check `trigger/` or `jobs/` for server-side consumers
-
-**If the audit finds >5 split data source patterns:**
-- Present the top 3 by severity, summarize remaining, suggest `/add-todo` for tracking
-
-**If MEMORY.md has no documented rules (Step 0):**
-- Skip known rule validation, rely on Step 2.5 fingerprint matching
+| Situation | Action |
+|-----------|--------|
+| Project has no API routes | Report "No API route handlers found" and mark audit as NOT APPLICABLE |
+| Route file is too complex to parse (>500 lines) | Flag the file as tech debt, parse what you can, note "Partial analysis" |
+| No frontend consumers found for a route | Note as informational, check `trigger/` or `jobs/` for server-side consumers |
+| Audit finds >5 split data source patterns | Present the top 3 by severity, summarize remaining, suggest `/add-todo` for tracking |
+| MEMORY.md has no documented rules (Step 0) | Skip known rule validation, rely on Step 2.5 fingerprint matching |
 
 ## Review Your Output
 

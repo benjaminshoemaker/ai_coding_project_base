@@ -130,6 +130,8 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
    test -f "$1/.claude/verification-config.json" && echo "Config: OK" || echo "Config: MISSING (non-critical)"
    ```
 
+   **Verify skill copy results:** After the copy loop completes, run `ls "$1/.claude/skills/"` and confirm the expected skill directories are present. If any expected local copies are missing, STOP and report the failure before continuing.
+
 3b. **Copy workstream scripts to target**
 
    Copy `.workstream/` scripts from the toolkit to the target project:
@@ -151,6 +153,7 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
    ls -la "$1/.workstream/" 2>/dev/null
    ```
    Confirm `setup.sh`, `dev.sh`, `verify.sh`, and `lib.sh` exist and are executable.
+   Verify with `ls -la` that permissions include `+x` on all `.sh` files. If any script is missing or not executable, report the discrepancy.
 
 3c. **Copy Codex App templates to target**
 
@@ -165,6 +168,10 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
 
    These are recommended defaults for Codex App integration. Users configure
    the setup script in Codex App Settings (Cmd+,) → Local Environments.
+
+   **Verify Codex App copies:**
+   - Verify with `ls -la "$1/.codex/setup.sh"` that the file exists and is executable.
+   - Verify with `ls "$1/.codex/AGENTS.md"` that the file was copied.
 
 3a. **Incremental Sync (When SETUP_MODE=incremental)**
 
@@ -316,12 +323,16 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
    **Skills with `toolkit-only: true` in frontmatter are NOT copied or tracked.**
    These run only from the toolkit directory (e.g., setup, update-target-projects).
 
+   **Verify toolkit-version.json:** Read back the file with `cat "$1/.claude/toolkit-version.json" | python3 -m json.tool` (or `jq .`) to confirm it contains valid JSON and the `toolkit_commit` field matches the expected value.
+
 5. **Create CLAUDE.md if it doesn't exist**
 
    Create a minimal CLAUDE.md that references AGENTS.md:
    ```
    @AGENTS.md
    ```
+
+   **Verify CLAUDE.md:** Read back `$1/CLAUDE.md` to confirm it was written correctly and contains the `@AGENTS.md` reference.
 
 6. **Codex CLI Detection (Optional)**
 
@@ -344,6 +355,7 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
      ```bash
      ./scripts/install-codex-skill-pack.sh --method symlink
      ```
+   - Verify with `ls -la ~/.codex/skills/` that symlinks were created successfully.
    - Report the installation result
 
    If Codex is not detected:
@@ -367,6 +379,7 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
      ```bash
      ./scripts/configure-codex-mcp.sh
      ```
+   - Verify with `cat ~/.codex/config.toml` that the MCP configuration was written correctly.
    - Report the configuration result
 
    **Why this matters:** Both Claude Code and Codex CLI support the same MCP protocol.
@@ -451,6 +464,16 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
 - Execution skills run from target
 - Use `cp -r` for directory copies to preserve structure
 - Do not overwrite existing files without asking
+
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| Target directory does not exist and `mkdir -p` fails | Report permission error, suggest creating manually, exit without partial state |
+| `cp -r` fails when copying skills to target | STOP immediately, report which skills failed to copy, do not write toolkit-version.json |
+| `toolkit-version.json` write fails or produces invalid JSON | Complete file copies (primary goal), warn that incremental syncs will not work, suggest checking `.claude/` directory permissions |
+| Codex CLI skill installation fails | Do NOT fail the entire setup; report the error and continue with remaining steps |
+| Global symlink check fails (broken symlinks in `~/.claude/skills/`) | Fall back to local copy for affected skills, report which symlinks are broken |
 
 ## When Setup Cannot Complete
 

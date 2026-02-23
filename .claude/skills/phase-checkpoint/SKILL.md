@@ -322,6 +322,16 @@ See [AUTO_ADVANCE.md](AUTO_ADVANCE.md) for auto-advance logic.
 
 **Codex review and auto-advance:** Codex findings are auto-implemented inline. If fixes pass re-verification they are committed; if they fail, they are reverted and logged to the deferred queue. Either way, auto-advance is never blocked.
 
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| `EXECUTION_PLAN.md` not found in working directory | STOP and tell user to `cd` into the project directory containing `EXECUTION_PLAN.md` |
+| `verification-config.json` missing entirely | Run `/configure-verification` to auto-detect; omitted keys in an existing config are intentional and should be skipped |
+| Automated check command fails to execute (e.g., `npm` not found) | Mark that specific check as FAILED (not SKIPPED), continue remaining checks, and report tool failure in summary |
+| Codex CLI times out or returns an error | Mark cross-model review as SKIPPED with reason, do NOT block checkpoint, suggest manual `/codex-review` afterward |
+| Auto-implemented Codex fixes break re-verification | Revert changes with `git checkout -- .`, log findings to deferred queue, and continue without blocking |
+
 ---
 
 ## When Checkpoint Cannot Pass

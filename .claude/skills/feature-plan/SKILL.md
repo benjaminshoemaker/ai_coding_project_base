@@ -165,6 +165,16 @@ After verification passes, run cross-model review if Codex CLI is available:
 
 **If Codex unavailable:** Skip silently and proceed to Next Step.
 
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| `FEATURE_SPEC.md` or `FEATURE_TECHNICAL_SPEC.md` missing | STOP with message directing user to run `/feature-spec` or `/feature-technical-spec` first |
+| EXECUTION_PLAN.md generation produces empty or malformed output | Re-read input specs, retry generation once; if still empty, report error and ask user to check spec completeness |
+| `/criteria-audit` returns FAIL | STOP and present failing criteria to user; do not proceed until metadata is fixed |
+| Codex CLI invocation errors or times out | Log the error, mark cross-model review as SKIPPED, and continue to Next Step |
+| Backup file write fails (disk full or permissions) | Report the write failure, do NOT overwrite the original file, and suggest user free disk space or fix permissions |
+
 ## Next Step
 
 When verification is complete, inform the user:

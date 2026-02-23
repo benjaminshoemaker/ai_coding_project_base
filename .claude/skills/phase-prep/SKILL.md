@@ -323,6 +323,16 @@ Example log entry:
 }
 ```
 
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| `EXECUTION_PLAN.md` not found in working directory | STOP and tell user to `cd` into their project or feature directory containing `EXECUTION_PLAN.md` |
+| WebFetch/WebSearch fails when fetching service documentation | Retry with exponential backoff (2-3 attempts); if all retries fail, warn user and proceed with best available info |
+| Pre-Phase Setup `Verify:` command returns unexpected output | Mark item as FAIL, show the raw command output, and include it in the detailed setup instructions |
+| `.claude/verification-config.json` missing entirely | Run `/configure-verification` to auto-detect; do not block on omitted keys in an existing config |
+| Git working tree is in a conflicted or detached-HEAD state | Report the git state clearly, suggest resolution steps, and mark Git check as BLOCKED |
+
 ---
 
 **STOP — READ THIS BEFORE RETURNING:** You are NOT done. You MUST complete

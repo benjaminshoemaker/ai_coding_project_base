@@ -153,6 +153,7 @@ See [CODEX_MODE.md](CODEX_MODE.md) for detailed Codex CLI setup and configuratio
    # Commit any dirty files first (preserves user work)
    git add -A && git diff --cached --quiet || git commit -m "wip: uncommitted changes before phase-$1"
    ```
+   Verify with `git status` that the working tree is clean after the commit.
 
    **Check for unpushed commits before branching:**
    ```bash
@@ -176,13 +177,14 @@ See [CODEX_MODE.md](CODEX_MODE.md) for detailed Codex CLI setup and configuratio
    ```bash
    git branch --show-current
    ```
-   If the output doesn't match `phase-$1`, the checkout failed. Check if branch already exists and append a suffix.
+   If the output does not match `phase-$1`, the checkout failed. Check if the branch already exists (`git branch --list phase-$1`) and append a suffix (e.g., `phase-$1-2`).
 
    After each task completion (sequential commits on same branch):
    ```bash
    git add -A
    git commit -m "task({id}): {description} [REQ-XXX]"
    ```
+   Verify with `git status` that the commit succeeded and the working tree is clean.
 
    **Requirement traceability:** Check the task's `Requirement:` field in EXECUTION_PLAN.md.
    - If a REQ-ID exists (e.g., `REQ-002`), include it: `task(1.2.A): Add auth [REQ-002]`
@@ -241,7 +243,7 @@ See [CODEX_MODE.md](CODEX_MODE.md) for detailed Codex CLI setup and configuratio
    }
    ```
 
-   - **On task failure**: Increment `consecutive`, append to `last_errors` (keep last 3), write to phase-state.json
+   - **On task failure**: Increment `consecutive`, append to `last_errors` (keep last 3), write to phase-state.json. Read back the file to confirm valid JSON.
    - **On task success**: Reset `consecutive` to 0, clear `last_errors`
    - **On verification attempt**: Increment the criterion's count in `verification_attempts`
 
@@ -294,8 +296,8 @@ See [CODEX_MODE.md](CODEX_MODE.md) for detailed Codex CLI setup and configuratio
 Maintain `.claude/phase-state.json` throughout execution. See [STATE_TRACKING.md](STATE_TRACKING.md) for JSON formats.
 
 Key updates:
-1. **At phase start**: Set status to `IN_PROGRESS` with timestamp and execution mode
-2. **After each task**: Update task entry with `COMPLETE` status; reset `failures.consecutive` to 0
+1. **At phase start**: Set status to `IN_PROGRESS` with timestamp and execution mode. Read back `phase-state.json` to confirm valid JSON.
+2. **After each task**: Update task entry with `COMPLETE` status; reset `failures.consecutive` to 0. Read back `phase-state.json` to confirm valid JSON.
 3. **On task failure**: Increment `failures.consecutive`, append error to `failures.last_errors` (max 3)
 4. **On verification attempt**: Increment `failures.verification_attempts[criterion_id]`
 5. **If blocked**: Record blocker type and description

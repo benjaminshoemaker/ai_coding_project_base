@@ -186,6 +186,16 @@ After verification, run cross-model review if Codex CLI is available:
 
 **If Codex unavailable:** Skip silently and proceed to Next Step.
 
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| Feature name argument is empty and user does not provide one | Prompt again with AskUserQuestion; do not proceed without a feature name |
+| FEATURE_SPEC.md already exists and user selects "Abort" | Stop immediately, do not write any files, suggest renaming or moving the existing file |
+| PROMPT.md not found at `.claude/skills/feature-spec/PROMPT.md` | Stop and report "Skill asset missing — reinstall toolkit or run /setup" |
+| DEFERRED.md write fails (permissions or disk) | Output deferred items to terminal, warn user, continue with spec generation |
+| Codex CLI invocation fails or times out | Log the error, skip cross-model review, proceed to Next Step |
+
 ## Next Step
 
 When complete, inform the user:

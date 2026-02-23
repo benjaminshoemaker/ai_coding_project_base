@@ -220,6 +220,16 @@ After verification passes, run cross-model review if Codex CLI is available:
 
 **If Codex unavailable:** Skip silently and proceed to Next Step.
 
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| FEATURE_SPEC.md not found in `features/$1/` | Stop and report "Run `/feature-spec $1` first" |
+| PROMPT.md not found at `.claude/skills/feature-technical-spec/PROMPT.md` | Stop and report "Skill asset missing — reinstall toolkit or run /setup" |
+| Codebase too large for full code analysis (>5000 files) | Limit analysis to `src/`, `lib/`, and `app/` directories; note reduced scope in output |
+| DEFERRED.md write fails (permissions or disk) | Output deferred items to terminal, warn user, continue with spec generation |
+| Codex CLI invocation fails or times out | Log the error, skip cross-model review, proceed to Next Step |
+
 ## Next Step
 
 When verification is complete, inform the user:
