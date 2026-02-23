@@ -2,7 +2,7 @@
 name: fresh-start
 description: Orient to project structure and load context. Use at the start of each new session or after context reset to understand the project state.
 argument-hint: [project-directory]
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Skill, AskUserQuestion
 ---
 
 Orient to a project directory and load context for execution.
@@ -231,6 +231,17 @@ After context reading and verification config, automatically prepare the next ph
      all checks pass (via its existing auto-advance logic).
    - If phase-prep blocks (human setup needed), it will report what's needed
      and the user runs `/phase-start` manually after resolving.
+
+3. **Fallback auto-advance check** — After `/phase-prep` returns, read
+   `.claude/phase-prep-result.json`. If the file does NOT exist, phase-prep
+   dropped its auto-advance step (known issue with nested Skill tool invocations).
+   In this case:
+   - Check if all phase-prep pre-flight checks passed (read the verification log)
+   - If READY: show a warning and invoke `/phase-start {next_phase}` directly
+     ```
+     WARNING: phase-prep did not complete auto-advance. Invoking /phase-start directly.
+     ```
+   - If BLOCKED or unclear: report what's known and stop
 
 ## Branch Context Detection
 

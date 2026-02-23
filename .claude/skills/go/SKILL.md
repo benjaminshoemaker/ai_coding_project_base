@@ -1,7 +1,7 @@
 ---
 name: go
 description: Resume execution from wherever you left off. Detects current state and runs the appropriate next command, or reports what's blocking progress. Use at the start of any session to pick up where you left off.
-allowed-tools: Read, Glob, Grep, Bash, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Bash, Skill, AskUserQuestion
 ---
 
 Determine where execution stands and either continue or report blockers.
