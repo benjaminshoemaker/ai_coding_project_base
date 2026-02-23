@@ -36,7 +36,7 @@ Run from your **project directory**. These drive the phase-based execution workf
 | `/phase-prep N` | Check prerequisites for phase N, preview future human items |
 | `/phase-start N` | Execute phase N (creates branch, one commit per task) |
 | `/phase-checkpoint N` | Run verification gate: tests, lint, security, then production checks |
-| `/progress` | Show progress through execution plan |
+| `/progress` | Report completion status of phases, tasks, and acceptance criteria |
 
 Use `--pause` with any phase command to disable auto-advance. Use `--codex` with `/phase-start` to have Codex CLI execute tasks while Claude orchestrates.
 
@@ -49,8 +49,8 @@ Run from your **project directory**. These verify code, specs, and criteria qual
 | `/verify-task X.Y.Z` | Verify a specific task's acceptance criteria |
 | `/configure-verification` | Auto-detect and set test/lint/build/auth commands for your stack |
 | `/criteria-audit [dir]` | Validate acceptance criteria metadata in EXECUTION_PLAN.md |
-| `/security-scan` | Run security checks (dependencies, secrets, code patterns) |
-| `/tech-debt-check` | Analyze duplication, complexity, file sizes, AI code smells |
+| `/security-scan` | Run dependency audits, secrets detection, and static analysis |
+| `/tech-debt-check` | Identify duplication, complexity, large files, and maintainability anti-patterns |
 | `/data-flow-audit` | Detect scattered business rules and split data sources |
 
 `/security-scan` flags: `--deps` (dependencies only), `--secrets` (secrets only), `--code` (static analysis only), `--fix` (auto-fix where possible)
@@ -104,7 +104,7 @@ Run from the **toolkit directory**. These are not synced to target projects.
 
 | Command | Description |
 |---------|-------------|
-| `/analyze-sessions` | Analyze cross-project session logs for automation opportunities |
+| `/analyze-sessions` | Extract automation patterns from session logs and rank by impact |
 | `/vision-audit` | Audit vision alignment, research trends, generate feature proposals |
 | `/audit-skills` | Audit skills for best practice violations |
 
