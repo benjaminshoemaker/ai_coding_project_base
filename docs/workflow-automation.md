@@ -31,7 +31,7 @@ The chain stops when human input is needed (manual verification, external setup,
 | `/phase-start N` | `/phase-checkpoint N` | All tasks complete, no truly manual checkpoint items |
 | `/phase-checkpoint N` | `/phase-prep N+1` | All checks pass, no truly manual items, more phases exist |
 
-Auto-advance executes immediately when conditions are met. Use `--pause` on any phase command to disable it for that invocation.
+Auto-advance executes immediately when conditions are met. Use `--pause` on any phase command to disable it for that invocation. Each step writes a completion marker (`.claude/phase-prep-result.json`) so parent skills can detect dropped steps and recover automatically.
 
 **Configuration** (`.claude/settings.local.json`):
 ```json
