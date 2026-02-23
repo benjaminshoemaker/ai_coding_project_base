@@ -1,6 +1,6 @@
 ---
 name: tech-debt-check
-description: Detect technical debt patterns in code including duplication, complexity, and maintainability issues. Use at phase checkpoints or on-demand to assess code quality.
+description: Identify code duplication, cyclomatic complexity, large files, and maintainability anti-patterns. Use at phase checkpoints or on-demand to quantify technical debt.
 ---
 
 # Technical Debt Check Skill

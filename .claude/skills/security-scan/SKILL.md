@@ -1,6 +1,6 @@
 ---
 name: security-scan
-description: Scan for security vulnerabilities in dependencies, code patterns, and secrets. Uses project-documented tooling where available. Use at phase checkpoints or before releases to check for vulnerabilities.
+description: Run dependency audits, secrets detection, and static analysis to find CVEs, leaked credentials, and insecure code patterns. Use at phase checkpoints or before releases.
 ---
 
 # Security Scan Skill

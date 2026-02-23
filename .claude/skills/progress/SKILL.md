@@ -1,6 +1,6 @@
 ---
 name: progress
-description: Show progress through EXECUTION_PLAN.md and feature plans. Use to check completion status and identify remaining work.
+description: Report completion status of phases, tasks, and acceptance criteria from EXECUTION_PLAN.md. Use to check how many tasks remain and which phases are done.
 allowed-tools: Read, Grep, Glob
 ---
 
