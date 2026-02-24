@@ -11,8 +11,8 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
 ## Steps
 
 0. **Directory guard (must run from toolkit repo)**
-   - Confirm `START_PROMPTS.md` and `GENERATOR_PROMPT.md` exist in the current working directory
-   - If either is missing, **STOP** and tell the user to `cd` into the `ai_coding_project_base` toolkit repo and re-run `/setup $1`
+   - Confirm `.toolkit-marker` exists in the current working directory
+   - If it is missing, **STOP** and tell the user to `cd` into the `ai_coding_project_base` toolkit repo and re-run `/setup $1`
 
 0.5. **Idempotency Check**
 
@@ -418,13 +418,11 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
    Target: $1
    Skill resolution: {mode} ({details})
 
-   Next steps (run from THIS toolkit directory):
-   1. /product-spec $1
-   2. /technical-spec $1
-   3. /generate-plan $1
-
-   Then switch to your project:
-   4. cd $1
+   Next steps (run from your project directory):
+   1. cd $1
+   2. /product-spec
+   3. /technical-spec
+   4. /generate-plan
    5. /fresh-start
    6. /configure-verification
    7. /phase-prep 1
@@ -459,9 +457,8 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
 ## Important
 
 - This skill must be run from the ai_coding_project_base toolkit directory
-- Project-level generation skills (`/product-spec`, `/technical-spec`, `/generate-plan`) run from toolkit
-- Feature skills (`/feature-spec`, `/feature-technical-spec`, `/feature-plan`) run from the target project
-- Execution skills run from target
+- All other skills (`/product-spec`, `/technical-spec`, `/generate-plan`, `/feature-spec`, `/feature-technical-spec`, `/feature-plan`, and execution skills) run from the target project directory
+- Only `/setup` and `/update-target-projects` run from the toolkit
 - Use `cp -r` for directory copies to preserve structure
 - Do not overwrite existing files without asking
 

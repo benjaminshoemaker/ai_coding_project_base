@@ -27,7 +27,7 @@ Determine sync direction by checking for toolkit markers:
 
 ```bash
 # Check if current directory is the toolkit
-if [[ -f "GENERATOR_PROMPT.md" && -f "START_PROMPTS.md" ]]; then
+if [[ -f ".toolkit-marker" ]]; then
   SYNC_FROM="toolkit"  # Current dir is toolkit, $1 is target
 else
   SYNC_FROM="target"   # Current dir is target, resolve toolkit location
@@ -51,7 +51,7 @@ fi
   5. Ask user if none found
 
 ### Validate Paths
-- Confirm `TOOLKIT_PATH` contains `GENERATOR_PROMPT.md` (toolkit marker)
+- Confirm `TOOLKIT_PATH` contains `.toolkit-marker` (toolkit marker)
 - Confirm `TARGET_PATH` exists and is a directory
 - If validation fails, **STOP** with clear error message
 

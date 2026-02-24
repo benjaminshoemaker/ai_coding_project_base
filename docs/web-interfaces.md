@@ -28,18 +28,18 @@ You can generate specs in a web interface and continue execution in Claude Code.
 
 ```bash
 # 1. In Claude/ChatGPT web interface:
-#    - Paste contents of PRODUCT_SPEC_PROMPT.md
+#    - Paste contents of .claude/skills/product-spec/PROMPT.md
 #    - Complete the Q&A, copy the resulting markdown
 
 # 2. Save to your project:
 #    - Create PRODUCT_SPEC.md in your target directory
 
-# 3. Continue in Claude Code (from toolkit directory):
-/technical-spec ~/Projects/my-app    # Reads your PRODUCT_SPEC.md
-/generate-plan ~/Projects/my-app
+# 3. Continue in Claude Code (from your project directory):
+cd ~/Projects/my-app
+/technical-spec                      # Reads your PRODUCT_SPEC.md
+/generate-plan
 
 # 4. Execute normally:
-cd ~/Projects/my-app
 /fresh-start
 /configure-verification
 /phase-prep 1
@@ -71,9 +71,9 @@ The raw prompts are available for copy-paste into any LLM:
 
 | Document | Prompt File |
 |----------|-------------|
-| PRODUCT_SPEC.md | `PRODUCT_SPEC_PROMPT.md` |
-| TECHNICAL_SPEC.md | `TECHNICAL_SPEC_PROMPT.md` |
+| PRODUCT_SPEC.md | `.claude/skills/product-spec/PROMPT.md` |
+| TECHNICAL_SPEC.md | `.claude/skills/technical-spec/PROMPT.md` |
 | FEATURE_SPEC.md | `.claude/skills/feature-spec/PROMPT.md` |
 | FEATURE_TECHNICAL_SPEC.md | `.claude/skills/feature-technical-spec/PROMPT.md` |
 
-**Note:** EXECUTION_PLAN.md and AGENTS.md generation (`GENERATOR_PROMPT.md`) requires reading the spec files, so these are best done in Claude Code where file access is available.
+**Note:** EXECUTION_PLAN.md and AGENTS.md generation (`.claude/skills/generate-plan/PROMPT.md`) requires reading the spec files, so these are best done in Claude Code where file access is available.

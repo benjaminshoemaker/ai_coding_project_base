@@ -4,14 +4,16 @@ Complete list of slash commands provided by the toolkit.
 
 ## Generation Commands
 
-Run from the **toolkit directory**. These produce specification and planning documents for a target project.
+Run from your **project directory**. These produce specification and planning documents.
 
 | Command | Description |
 |---------|-------------|
-| `/product-spec [path]` | Generate product specification via guided Q&A |
-| `/technical-spec [path]` | Generate technical specification (requires `PRODUCT_SPEC.md`) |
-| `/generate-plan [path]` | Generate execution plan and AGENTS.md (requires both specs) |
+| `/product-spec` | Generate product specification via guided Q&A |
+| `/technical-spec` | Generate technical specification (requires `PRODUCT_SPEC.md`) |
+| `/generate-plan` | Generate execution plan and AGENTS.md (requires both specs) |
 | `/verify-spec <type>` | Verify spec document for quality issues |
+
+> **Migration note:** These commands previously ran from the toolkit directory with a `[path]` argument (e.g., `/product-spec ~/my-project`). They now run from the project directory with no path argument. The old invocation style shows a deprecation message with redirect instructions.
 
 `/verify-spec` types: `technical-spec`, `execution-plan`, `feature-technical`, `feature-plan`, `feature-spec`
 

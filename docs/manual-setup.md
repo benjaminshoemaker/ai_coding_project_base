@@ -15,11 +15,11 @@ If you're not using Claude Code, you can use this toolkit with any LLM by copyin
    ```
 
 3. **Generate specs** by pasting prompt contents into your LLM:
-   - `PRODUCT_SPEC_PROMPT.md` → produces `PRODUCT_SPEC.md`
-   - `TECHNICAL_SPEC_PROMPT.md` → produces `TECHNICAL_SPEC.md`
+   - `.claude/skills/product-spec/PROMPT.md` → produces `PRODUCT_SPEC.md`
+   - `.claude/skills/technical-spec/PROMPT.md` → produces `TECHNICAL_SPEC.md`
 
 4. **Generate execution plan** (requires file access):
-   - If your LLM can read files, use `GENERATOR_PROMPT.md`
+   - If your LLM can read files, use `.claude/skills/generate-plan/PROMPT.md`
    - Otherwise, paste your specs into the prompt context
 
 5. **Execute using START_PROMPTS.md**:
@@ -32,9 +32,9 @@ If you're not using Claude Code, you can use this toolkit with any LLM by copyin
 
 | Output Document | Prompt File |
 |-----------------|-------------|
-| PRODUCT_SPEC.md | `PRODUCT_SPEC_PROMPT.md` |
-| TECHNICAL_SPEC.md | `TECHNICAL_SPEC_PROMPT.md` |
-| EXECUTION_PLAN.md + AGENTS.md | `GENERATOR_PROMPT.md` |
+| PRODUCT_SPEC.md | `.claude/skills/product-spec/PROMPT.md` |
+| TECHNICAL_SPEC.md | `.claude/skills/technical-spec/PROMPT.md` |
+| EXECUTION_PLAN.md + AGENTS.md | `.claude/skills/generate-plan/PROMPT.md` |
 
 ### Feature Development
 

@@ -136,10 +136,10 @@ The toolkit supports cross-model verification using OpenAI Codex CLI:
 
 When Codex CLI is installed and authenticated, phase checkpoints include a second-opinion
 review. Generation commands (`/product-spec`, `/technical-spec`, `/feature-spec`, etc.)
-use `/codex-consult` for document review. Project-level specs (`/product-spec`,
-`/technical-spec`, `/generate-plan`) run from the toolkit; feature commands
-(`/feature-spec`, `/feature-technical-spec`, `/feature-plan`) run from the target project. Codex researches current documentation before reviewing, catching
-issues where training data may differ between models.
+use `/codex-consult` for document review. All generation and feature commands run from the
+target project directory. Only `/setup` and `/update-target-projects` run from the toolkit.
+Codex researches current documentation before reviewing, catching issues where training
+data may differ between models.
 
 **Configuration** (`.claude/settings.local.json`):
 ```json

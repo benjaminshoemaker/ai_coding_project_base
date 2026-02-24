@@ -33,7 +33,7 @@ Populate State Progress:
 ## Directory Guard (Wrong Directory Check)
 
 Before starting:
-- If the current directory appears to be the toolkit repo (e.g., `GENERATOR_PROMPT.md` exists), **STOP** and tell the user to run `/populate-state` from their project directory instead.
+- If the current directory appears to be the toolkit repo (e.g., `.toolkit-marker` exists), **STOP** and tell the user to run `/populate-state` from their project directory instead.
 - Confirm `EXECUTION_PLAN.md` exists in the current working directory. If it does not exist, **STOP** and tell the user to `cd` into the directory containing `EXECUTION_PLAN.md` and re-run `/populate-state`.
 
 ## Instructions

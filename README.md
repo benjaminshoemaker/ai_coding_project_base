@@ -31,17 +31,16 @@ Codex CLI users: see [Codex CLI Setup](docs/codex-cli.md). Not using Claude Code
 ## Quick Start
 
 ```bash
-# 1. Clone the toolkit
+# 1. Clone the toolkit and set up your project (one-time)
 git clone https://github.com/benjaminshoemaker/ai_coding_project_base.git
 cd ai_coding_project_base
+/setup ~/Projects/my-new-app
 
-# 2. Generate specs and plan (from toolkit directory)
-/product-spec ~/Projects/my-new-app
-/technical-spec ~/Projects/my-new-app
-/generate-plan ~/Projects/my-new-app
-
-# 3. Execute (from your project directory)
+# 2. Generate specs, plan, and execute (from your project directory)
 cd ~/Projects/my-new-app
+/product-spec
+/technical-spec
+/generate-plan
 /fresh-start
 ```
 
@@ -96,9 +95,9 @@ For feature development in existing projects, see [Feature Workflow](docs/featur
 
 | Command | Description |
 |---------|-------------|
-| `/product-spec [path]` | Generate product specification |
-| `/technical-spec [path]` | Generate technical specification |
-| `/generate-plan [path]` | Generate execution plan and AGENTS.md |
+| `/product-spec` | Generate product specification |
+| `/technical-spec` | Generate technical specification |
+| `/generate-plan` | Generate execution plan and AGENTS.md |
 | `/go` | Resume execution from wherever you left off |
 | `/fresh-start` | Orient to project, load context, begin execution |
 | `/phase-start N` | Execute phase N (creates branch, commits per task) |

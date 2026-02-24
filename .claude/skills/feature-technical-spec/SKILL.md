@@ -26,7 +26,7 @@ Feature Technical Spec Progress:
 
 ## Directory Guard
 
-1. If `START_PROMPTS.md` or `GENERATOR_PROMPT.md` exists in the current working directory → **STOP**:
+1. If `.toolkit-marker` exists in the current working directory → **STOP**:
    "You're in the toolkit repo. Feature skills run from your project directory.
     Run: `cd ~/Projects/your-project && /feature-technical-spec $1`"
 

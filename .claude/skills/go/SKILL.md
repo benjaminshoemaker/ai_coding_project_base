@@ -38,7 +38,7 @@ Check if `EXECUTION_PLAN.md` exists in the current working directory (or FEATURE
 
 **If no EXECUTION_PLAN.md:**
 
-Check if this is the toolkit repo (e.g., `GENERATOR_PROMPT.md` exists or `.claude/skills/go/SKILL.md` exists in CWD):
+Check if this is the toolkit repo (e.g., `.toolkit-marker` exists in CWD):
 
 ```
 NO EXECUTION PLAN

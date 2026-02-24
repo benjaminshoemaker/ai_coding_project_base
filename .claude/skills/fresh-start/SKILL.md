@@ -9,6 +9,11 @@ Orient to a project directory and load context for execution.
 
 ## Workflow
 
+**Nested skill rule:** When this workflow invokes another skill (e.g.,
+`/configure-verification`, `/phase-prep`, `/phase-start`), you MUST return to
+this checklist after the nested skill completes and continue with the next
+unchecked item. Do not stop or summarize after a nested skill returns.
+
 Copy this checklist and track progress:
 
 ```
@@ -59,8 +64,8 @@ Confirm the required files exist:
 
 - If either is missing:
   - Tell the user this project is not ready for execution yet
-  - If they are in the toolkit repo (e.g., `GENERATOR_PROMPT.md` exists), instruct them to:
-    1. Run `/generate-plan <project-path>` from the toolkit repo (or `/feature-plan` for features)
+  - If they are in the toolkit repo (e.g., `.toolkit-marker` exists), instruct them to:
+    1. Run `/setup <project-path>` from the toolkit repo, then `/generate-plan` from the project (or `/feature-plan` for features)
     2. `cd` into the project/feature directory
     3. Re-run `/fresh-start`
   - Otherwise, ask the user for the correct project directory path and re-run `/fresh-start <project-path>`
@@ -180,16 +185,16 @@ If MODE = "feature", check for and offer to merge workflow additions:
 
 Silently auto-detect verification commands if not already configured.
 
-1. Check if `PROJECT_ROOT/.claude/verification-config.json` exists
-2. **Skip this section if ANY of these are true:**
-   - File exists and contains real config (has a `commands` key)
-   - File exists with only `{"skipped": true}` (user previously opted out)
-3. **Run auto-detection if:**
-   - File does not exist
-   - File is empty
+1. Read `PROJECT_ROOT/.claude/verification-config.json` (use Read tool directly).
+   If the file does not exist (read fails with not found), treat as missing and go to step 4.
+2. **If the file exists and has a `commands` key → SKIP. Do not invoke /configure-verification.**
+   Report "Verification config already exists" and go directly to Phase State Detection.
+3. **If the file exists with `{"skipped": true}` → SKIP.** Same as above.
+4. **If the file is missing, empty, or malformed** (exists but has neither `commands` nor
+   `skipped`), invoke `/configure-verification` with PROJECT_ROOT. This runs silently
+   with no prompts. If it fails, report the error and continue.
 
-Invoke `/configure-verification` with PROJECT_ROOT. This runs silently with no
-prompts and prints a one-line summary. If /configure-verification fails, report the error and continue with manual verification setup.
+**→ CONTINUE to Phase State Detection** (do not stop after this step).
 
 ## Phase State Detection
 
@@ -242,6 +247,8 @@ After context reading and verification config, automatically prepare the next ph
      WARNING: phase-prep did not complete auto-advance. Invoking /phase-start directly.
      ```
    - If BLOCKED or unclear: report what's known and stop
+
+**→ CONTINUE to Branch Context Detection** (do not stop after this step).
 
 ## Branch Context Detection
 

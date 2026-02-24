@@ -50,12 +50,12 @@ Determine what's being verified and its upstream dependencies:
 
 | Document Being Verified | Upstream Document(s) | Generation Prompt |
 |------------------------|---------------------|-------------------|
-| `TECHNICAL_SPEC.md` | `PRODUCT_SPEC.md` | `TECHNICAL_SPEC_PROMPT.md` |
-| `EXECUTION_PLAN.md` (greenfield) | `TECHNICAL_SPEC.md`, `PRODUCT_SPEC.md` | `GENERATOR_PROMPT.md` |
-| `FEATURE_TECHNICAL_SPEC.md` | `FEATURE_SPEC.md` | `FEATURE_TECHNICAL_SPEC_PROMPT.md` |
-| `EXECUTION_PLAN.md` (feature) | `FEATURE_TECHNICAL_SPEC.md`, `FEATURE_SPEC.md` | `FEATURE_EXECUTION_PLAN_GENERATOR_PROMPT.md` |
-| `PRODUCT_SPEC.md` | None (quality check only) | `PRODUCT_SPEC_PROMPT.md` |
-| `FEATURE_SPEC.md` | None (quality check only) | `FEATURE_SPEC_PROMPT.md` |
+| `TECHNICAL_SPEC.md` | `PRODUCT_SPEC.md` | `.claude/skills/technical-spec/PROMPT.md` |
+| `EXECUTION_PLAN.md` (greenfield) | `TECHNICAL_SPEC.md`, `PRODUCT_SPEC.md` | `.claude/skills/generate-plan/PROMPT.md` |
+| `FEATURE_TECHNICAL_SPEC.md` | `FEATURE_SPEC.md` | `.claude/skills/feature-technical-spec/PROMPT.md` |
+| `EXECUTION_PLAN.md` (feature) | `FEATURE_TECHNICAL_SPEC.md`, `FEATURE_SPEC.md` | `.claude/skills/feature-plan/PROMPT.md` |
+| `PRODUCT_SPEC.md` | None (quality check only) | `.claude/skills/product-spec/PROMPT.md` |
+| `FEATURE_SPEC.md` | None (quality check only) | `.claude/skills/feature-spec/PROMPT.md` |
 
 ## Step 2: Context Preservation Check
 
