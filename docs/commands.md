@@ -26,6 +26,7 @@ Run from your **project directory**. These produce feature-scoped documents in `
 | `/feature-spec <name>` | Generate feature specification via guided Q&A |
 | `/feature-technical-spec <name>` | Generate feature technical spec (analyzes existing codebase) |
 | `/feature-plan <name>` | Generate feature execution plan and AGENTS_ADDITIONS.md |
+| `/feature-audit` | Audit shipped feature against specs, vision, UI/UX, and live browser |
 
 ## Execution Commands
 
@@ -98,6 +99,7 @@ Run from your **project directory**.
 | `/update-docs` | Sync documentation with recent code changes |
 | `/populate-state` | Regenerate phase-state.json from EXECUTION_PLAN.md and git history |
 | `/review-deferred` | Review and clear deferred verification items from the queue |
+| `/innovate` | Identify the single smartest, most innovative addition to make to your app |
 | `/oauth-login <provider>` | Complete OAuth flow (Google/GitHub) for browser verification |
 
 ## Toolkit-Only Commands
