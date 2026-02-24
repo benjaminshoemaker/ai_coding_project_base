@@ -86,6 +86,19 @@ Run from the **toolkit directory**. These initialize and sync projects.
 | `/gh-init [path]` | Initialize git repo with smart .gitignore and optional GitHub remote |
 | `/install-hooks [path]` | Install git hooks and session logging for workflow automation |
 
+## UI/UX Commands
+
+Run from your **project directory**. These analyze and improve UI/UX quality.
+
+| Command | Description |
+|---------|-------------|
+| `/ui-ux audit [path]` | Analyze existing UI code against craft principles, accessibility, and industry patterns |
+| `/ui-ux design [description]` | Guide new UI creation with research-backed design direction and implementation |
+| `/ui-ux improve [path]` | Research and suggest UI/UX improvements for existing components |
+| `/ui-ux setup-design-system` | Establish a design system with tokens, MASTER.md, and AGENTS.md integration |
+
+Combines craft principles (Linear/Stripe-level quality), data-driven design intelligence (50+ styles, 97 palettes, 57 font pairings), and industry research. Also recommends design system setup for consistent AI-assisted UI work.
+
 ## Project Utility Commands
 
 Run from your **project directory**.
