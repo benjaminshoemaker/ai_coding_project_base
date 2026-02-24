@@ -289,7 +289,7 @@ TODOS.md updated with completion status.
 Next: Review changes, then run:
   git push origin todo-impl-{date}
 
-Ready to open a PR? Run: /create-pr
+Ready to open a PR? Create one using your preferred workflow.
 ```
 
 ## Archive Completed Items

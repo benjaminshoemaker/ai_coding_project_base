@@ -1,5 +1,6 @@
 node_modules/
 .claude/settings.local.json
+.claude/public-skills-config.json
 tmp/
 
 # Verification credentials (never commit)

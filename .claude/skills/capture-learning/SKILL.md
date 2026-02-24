@@ -1,8 +1,11 @@
 ---
+name: capture-learning
 description: Capture a project learning or pattern to LEARNINGS.md. Use when you discover a useful pattern or convention during development.
 argument-hint: ["learning description"]
 allowed-tools: Read, Write, Edit, Glob, AskUserQuestion
 ---
+
+# Capture Learning
 
 Capture a discovered pattern, convention, or gotcha to the project's LEARNINGS.md file.
 
@@ -64,7 +67,7 @@ If user selects "Other", use their custom category name.
 ### 3. Get Context
 
 Determine the current task context:
-- Check if `.claude/phase-state.json` exists and extract current task ID
+- Check if `.claude/phase-state.json` exists (if available) and extract current task ID
 - If not available, use "Manual capture" as the context
 - Get today's date in YYYY-MM-DD format
 
@@ -76,7 +79,7 @@ Determine the current task context:
 # Discovered Patterns
 
 > Project-specific patterns and conventions discovered during development.
-> This file is read by `/fresh-start` to load context for each task.
+> This file provides context for future sessions.
 > Add learnings with `/capture-learning` or manually.
 
 ## Conventions
@@ -108,7 +111,7 @@ Captured to LEARNINGS.md:
 
 **{Category}:** {learning content}
 
-This pattern will be loaded into context on future /fresh-start runs.
+This pattern will be loaded into context on future sessions.
 ```
 
 ## What Makes a Good Learning

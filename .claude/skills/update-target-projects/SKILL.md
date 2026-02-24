@@ -16,6 +16,7 @@ Use this skill when:
 - You need to check which projects are out of date
 - You want to update the Codex CLI skill pack
 - You want to verify global skill symlinks for Conductor autocomplete
+- You want to sync curated skills to the public skills repo
 
 ## Configuration
 
@@ -31,6 +32,15 @@ Use this skill when:
 
 **Global skills location:** `~/.claude/skills/` (symlinks for Conductor autocomplete)
 
+**Public skills repo** (optional, `.claude/public-skills-config.json`):
+```json
+{
+  "enabled": true,
+  "path": "/path/to/awesome-claude-skills"
+}
+```
+**Public skills manifest:** `.claude/public-skills-manifest.json` (lists curated skills to publish)
+
 ## Workflow
 
 Copy this checklist and track progress:
@@ -43,6 +53,7 @@ Update Target Projects Progress:
 - [ ] Phase 1d: Detect orphaned skills (removed from toolkit)
 - [ ] Phase 1e: Check workstream scripts status
 - [ ] Phase 1f: Check skill resolution mode for each project
+- [ ] Phase 1g: Check public skills repo status (if configured)
 - [ ] Phase 2: Detect activity status for each project
 - [ ] Phase 3: Check sync status (OUTDATED vs CURRENT)
 - [ ] Phase 4: Display status report (including orphans, global status, and resolution)
@@ -54,6 +65,7 @@ Update Target Projects Progress:
 - [ ] Phase 6g: Sync Codex App setup wrapper (if selected)
 - [ ] Phase 6e: Adopt global skills (if selected) — migrate local to global
 - [ ] Phase 6f: Revert to local skills (if selected) — copy from global back to project
+- [ ] Phase 6h: Sync public skills repo (if selected)
 - [ ] Phase 7: Generate summary report
 ```
 
@@ -160,6 +172,17 @@ check_project_resolution() {
 | `ADOPTABLE` | Local, but global available | Adopt global (option 8) |
 | `MISSING` | No local, no healthy global | ⚠️ Skills unavailable — run global sync first |
 
+### Phase 1g: Check Public Skills Repo
+
+See [PUBLIC_REPO_SYNC.md](PUBLIC_REPO_SYNC.md) for detailed public repo sync logic.
+
+1. Read config from `.claude/public-skills-config.json`
+2. If not configured or `enabled` is false, skip with status `NOT CONFIGURED`
+3. Run pre-flight checks (path exists, is git repo, clean working tree)
+4. Read `.claude/public-skills-manifest.json` for the list of curated skills
+5. Validate all skill names match `^[a-z0-9-]+$`
+6. Classify each skill: MISSING, CURRENT, OUTDATED, LOCAL_MODIFIED, UNMANAGED_PRESENT
+
 ### Phase 1d: Detect Orphaned Skills
 
 Identify skills that exist in targets but have been removed from toolkit:
@@ -194,6 +217,12 @@ CODEX CLI SKILL PACK
 Location: ~/.codex/skills
 Status:   {status summary}
 
+PUBLIC SKILLS REPO
+──────────────────
+Location: {path or "NOT CONFIGURED"}
+Status:   {READY|NOT CONFIGURED|DIRTY|NOT A GIT REPO}
+{If READY, show per-skill status table}
+
 TARGET PROJECTS
 ───────────────
   #  Project          Sync Status   Resolution   Adoptable   Activity
@@ -216,7 +245,7 @@ TARGET PROJECTS
 ### Phase 5: User Selection
 
 Prompt with options:
-1. Sync everything (Recommended)
+1. Sync everything (Recommended) — includes public skills repo if configured
 2. Global skill symlinks only
 3. Codex skill pack only
 4. Target projects only
@@ -225,6 +254,7 @@ Prompt with options:
 7. Skip for now
 8. Adopt global skills (remove local copies, switch to global resolution)
 9. Revert to local skills (copy from global back to project)
+10. Public skills repo only (visible only if enabled in `.claude/public-skills-config.json`)
 
 **Option 8 visibility:** Only show if at least one project is `ADOPTABLE` (has local
 copies and global symlinks are healthy).
@@ -360,6 +390,21 @@ For projects that were migrated to global but need portability:
      Skills now resolve via: project-local copies
    ```
 
+### Phase 6h: Sync Public Skills Repo
+
+See [PUBLIC_REPO_SYNC.md](PUBLIC_REPO_SYNC.md) for detailed sync logic.
+
+1. Read manifest from `.claude/public-skills-manifest.json`
+2. For each skill in the manifest:
+   - If MISSING or OUTDATED: wipe destination, `cp -r` from toolkit, remove `.DS_Store` files
+   - If LOCAL_MODIFIED or UNMANAGED_PRESENT: warn and prompt before overwriting
+   - If CURRENT: skip
+3. Detect orphaned skills (tracked in `toolkit-version.json` but removed from manifest)
+4. Update `toolkit-version.json` in public repo with new hashes
+5. Stage managed paths: `git -C "$path" add skills/ toolkit-version.json`
+6. Commit with sync summary
+7. Prompt before push — never auto-push
+
 ### Phase 7: Summary Report
 
 ```
@@ -383,6 +428,14 @@ Target Projects:
     Skipped: 1 (active)
     Current: 1
   Skills deleted: 1 (orphaned)
+
+Public Skills Repo:
+  Skills synced:   3 (2 updated, 1 added)
+  Skills removed:  0
+  Already current: 6
+  Skipped:         0 (local modifications)
+  Committed:       yes
+  Pushed:          no (user declined)
 
 Resolution Changes:
   Adopted global: 1 project (30 local dirs removed)
@@ -419,6 +472,10 @@ Run this from their toolkit clone: /update-target-projects → option 2
 | `cp -r` or symlink creation fails during sync | Report the specific failure, continue syncing remaining items, include failures in the summary report |
 | `rm -rf` fails during global adoption (option 8) | STOP adoption for that project, report permission error, do not update `toolkit-version.json` to `"global"` |
 | `gh` or `git` commands fail during discovery | Report the error, skip affected projects, continue with remaining projects |
+| Public skills repo path missing or not a git repo | Report specific pre-flight failure, skip public repo sync, continue with other sync operations |
+| Public skills repo has dirty working tree | Report "public repo has uncommitted changes", skip public repo sync |
+| Manifest skill name fails `^[a-z0-9-]+$` validation | Abort public repo sync entirely (path traversal risk) |
+| Skill has local modifications in public repo | Warn and prompt before overwriting — never silently replace |
 
 ## Edge Cases
 
@@ -427,6 +484,7 @@ See [EDGE_CASES.md](EDGE_CASES.md) for handling:
 - No projects found
 - Project uses different toolkit
 - Git not available
+- Public skills repo not configured / missing path / dirty / local modifications
 - Sync conflicts
 
 ---

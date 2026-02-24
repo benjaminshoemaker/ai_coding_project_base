@@ -13,7 +13,7 @@ Invoke OpenAI's Codex CLI to review a document or plan, with instructions to res
 
 - You want a second opinion on a generated spec, plan, or document
 - Cross-model consultation on non-code content (specs, plans, configs)
-- Generation commands (`/product-spec`, `/technical-spec`, etc.) invoke this automatically
+- Other skills can invoke this automatically for document review
 - You want Codex to research current documentation before evaluating content
 
 **For code diff reviews**, use `/codex-review` instead.

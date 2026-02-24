@@ -82,7 +82,7 @@ Run from the **toolkit directory**. These initialize and sync projects.
 |---------|-------------|
 | `/setup [path]` | Initialize new project with toolkit skills and structure |
 | `/sync [path]` | Sync a specific project with latest toolkit skills |
-| `/update-target-projects` | Discover and sync all toolkit-using projects at once |
+| `/update-target-projects` | Discover and sync all toolkit-using projects, Codex skill pack, global symlinks, and public skills repo |
 | `/gh-init [path]` | Initialize git repo with smart .gitignore and optional GitHub remote |
 | `/install-hooks [path]` | Install git hooks and session logging for workflow automation |
 

@@ -15,7 +15,7 @@ Invoke OpenAI's Codex CLI to review the current branch, with instructions to res
 - You want cross-verification between different AI models
 - The implementation uses tools/libraries where current docs would help
 - You've completed a feature and want thorough review before merging
-- `/phase-checkpoint` invokes this for cross-model review (Step 4)
+- Can be invoked by other workflow skills for automated cross-model review
 
 ## Prerequisites
 
@@ -256,7 +256,7 @@ Context Preservation: ✓ All 5 items from PRODUCT_SPEC.md preserved
 {/If}
 ```
 
-### Output Format (Programmatic — for /phase-checkpoint)
+### Output Format (Programmatic — when invoked by another skill)
 
 When invoked by another skill, return structured data:
 
@@ -305,7 +305,6 @@ Read from `.claude/settings.local.json`:
 | `reviewTimeoutMinutes` | `20` | Max time for review invocations |
 
 For document consultation (specs, plans), see `/codex-consult` which uses `codexConsult` config.
-For task execution via Codex, see `/phase-start --codex` which uses `codexReview.taskTimeoutMinutes`.
 
 **For CI/headless environments:** Set `CODEX_API_KEY` environment variable for authentication without interactive login.
 
