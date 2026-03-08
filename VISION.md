@@ -11,7 +11,11 @@ This document is organized in layers, from stable to adaptable:
 | **Outcomes** | Sometimes | What success looks like (measurable) |
 | **Practices** | Often | Current tactics (examples, not mandates) |
 
-**Principles are stable; practices evolve.** When evaluating changes, ask: "Does this achieve the outcome?" not "Does this match the current practice?" For example, "code is verified before commit" is an outcome—whether that verification happens locally, on a preview deployment, or via some future approach is a tactical choice that can change.
+**Principles are stable; practices evolve.** When evaluating changes, ask:
+"Does this achieve the outcome?" not "Does this match the current practice?"
+For example, "code is verified before commit" is an outcome. Whether that
+verification happens locally, on a preview deployment, or via some future
+approach is a tactical choice that can change.
 
 Commands, tools, and specific implementations mentioned in this document are *examples* of how we currently achieve outcomes, not prescriptions.
 

@@ -37,7 +37,9 @@ Determine working context:
 
 1. If the working directory matches `*/features/*`:
    - PROJECT_ROOT = parent of parent of working directory
-2. Otherwise:
+2. If the working directory matches `*/plans/greenfield*`:
+   - PROJECT_ROOT = parent of parent of working directory
+3. Otherwise:
    - PROJECT_ROOT = working directory
 
 ## Directory Guard
@@ -89,7 +91,11 @@ the config entirely.
 
 ## Conditional Dev Server Detection
 
-**Only run this section if** `EXECUTION_PLAN.md` contains `BROWSER:` criteria
+**Only run this section if** the active execution plan contains `BROWSER:` criteria.
+
+Resolve the active execution plan in this order:
+1. `EXECUTION_PLAN.md` in the working directory
+2. `plans/greenfield/EXECUTION_PLAN.md` in the working directory
 (e.g., `BROWSER:DOM`, `BROWSER:VISUAL`, etc.).
 
 If browser criteria exist, look for dev server scripts in `package.json`:
@@ -111,7 +117,7 @@ If found, include in config:
 Use port 3000 as default. If the script content in package.json contains a
 different port (e.g., `--port 5173`), use that instead.
 
-If no browser criteria in EXECUTION_PLAN.md, omit `devServer` entirely.
+If no browser criteria in the active execution plan, omit `devServer` entirely.
 
 ## Ensure .gitignore Protection
 

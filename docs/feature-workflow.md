@@ -29,18 +29,24 @@ Each feature gets its own directory with isolated planning documents:
 ```
 your-project/
 ├── AGENTS.md                    # Shared workflow rules
+├── plans/
+│   └── greenfield/
+│       ├── EXECUTION_PLAN.md
+│       └── AGENTS.md
 ├── DEFERRED.md                  # Project-wide deferred requirements
 ├── features/
 │   ├── analytics/
 │   │   ├── FEATURE_SPEC.md
 │   │   ├── FEATURE_TECHNICAL_SPEC.md
 │   │   ├── EXECUTION_PLAN.md
-│   │   └── AGENTS_ADDITIONS.md
+│   │   ├── AGENTS.md
+│   │   └── CLAUDE.md
 │   └── notifications/
 │       ├── FEATURE_SPEC.md
 │       ├── FEATURE_TECHNICAL_SPEC.md
 │       ├── EXECUTION_PLAN.md
-│       └── AGENTS_ADDITIONS.md
+│       ├── AGENTS.md
+│       └── CLAUDE.md
 └── [your code]
 ```
 
@@ -53,7 +59,7 @@ Note: `DEFERRED.md` lives at the project root (not in feature directories) since
 | `FEATURE_SPEC.md` | Defines *what* the feature does and *why* |
 | `FEATURE_TECHNICAL_SPEC.md` | Defines *how* the feature integrates technically |
 | `EXECUTION_PLAN.md` | Breaks feature work into phases, steps, and tasks |
-| `AGENTS_ADDITIONS.md` | Additional workflow guidelines to merge into existing `AGENTS.md` |
+| `AGENTS.md` | Feature-local workflow guidance layered on top of the root `AGENTS.md` |
 
 ## Deferred Requirements
 
@@ -80,15 +86,15 @@ main
               └── task(1.2.A): ...
 ```
 
-## Merging AGENTS_ADDITIONS.md
+## Feature-Local AGENTS.md
 
-When you run `/fresh-start` from the feature directory, it automatically offers to merge `AGENTS_ADDITIONS.md` into your project's `AGENTS.md`:
+`/feature-plan` now writes a complete `features/<name>/AGENTS.md` for scoped execution:
 
-1. Each proposed section is shown with where it would be inserted
-2. You approve, skip, or edit each section individually
-3. Applied sections are marked with `<!-- Added for FEATURE_NAME -->` comments
+1. Root `AGENTS.md` stays durable and project-wide
+2. Feature-local `AGENTS.md` adds only the context and workflow deltas needed inside `features/<name>/`
+3. `features/<name>/CLAUDE.md` loads that local file automatically for Claude Code
 
-If you prefer manual merging, decline the prompt and edit `AGENTS.md` yourself.
+There is no merge step. If a feature discovers a rule that should apply project-wide, promote it to the root `AGENTS.md` deliberately instead of accumulating ad hoc additions there.
 
 ## Workflow Diagram
 
@@ -113,8 +119,7 @@ If you prefer manual merging, decline the prompt and edit `AGENTS.md` yourself.
 │                                                                         │
 │   Inputs: Specs + existing AGENTS.md                                    │
 │       ↓                                                                 │
-│   /feature-plan <name>  ────→  EXECUTION_PLAN.md                        │
-│                                                  AGENTS_ADDITIONS.md    │
+│   /feature-plan <name>  ────→  EXECUTION_PLAN.md + AGENTS.md            │
 │       ↓                                                                 │
 │   [Auto-Verify] ─────────────→  Check context preservation & quality    │
 │                                                                         │
@@ -126,7 +131,7 @@ If you prefer manual merging, decline the prompt and edit `AGENTS.md` yourself.
 │                                                                         │
 │   cd features/<name>/                                                   │
 │       ↓                                                                 │
-│   /fresh-start  ────────→  Merge AGENTS_ADDITIONS, auto-advance         │
+│   /fresh-start  ────────→  Load root + local AGENTS, auto-advance       │
 │                                                                         │
 │   Phase 1 → Checkpoint → Phase 2 → Checkpoint → Phase 3 → ...          │
 │                                                                         │

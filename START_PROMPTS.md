@@ -6,7 +6,7 @@ Copy-paste prompts for executing phases from your EXECUTION_PLAN.md.
 
 ## Greenfield Projects
 
-Use these prompts when working with documents generated from the greenfield workflow (PRODUCT_SPEC.md, TECHNICAL_SPEC.md, EXECUTION_PLAN.md, AGENTS.md).
+Use these prompts when working with documents generated from the greenfield workflow (`AGENTS.md`, `plans/greenfield/PRODUCT_SPEC.md`, `plans/greenfield/TECHNICAL_SPEC.md`, `plans/greenfield/EXECUTION_PLAN.md`, `plans/greenfield/AGENTS.md`).
 
 ### Fresh Start
 
@@ -14,7 +14,8 @@ Use this when beginning work on a new project or onboarding to an existing execu
 
 ```
 Read the following files to understand the structure and purpose of this project:
-- AGENTS.md (workflow guidelines)
+- ../../AGENTS.md or AGENTS.md at project root (workflow guidelines)
+- AGENTS.md in `plans/greenfield/` (scoped execution guidance)
 - PRODUCT_SPEC.md (what we're building and why)
 - TECHNICAL_SPEC.md (how it's built technically)
 - EXECUTION_PLAN.md (tasks and acceptance criteria)
@@ -46,7 +47,7 @@ Use this to execute all tasks in a phase autonomously.
 I have completed all prerequisites for Phase {N}. Execute all steps and tasks in Phase {N} from EXECUTION_PLAN.md, one at a time.
 
 Guidelines:
-- Read AGENTS.md thoroughly for workflow conventions (git branches, TDD, etc.)
+- Read both the root `AGENTS.md` and the scoped `plans/greenfield/AGENTS.md`
 - Use the code-verification skill for every task
 - Do not check back until the phase is complete, unless blocked
 - Report blockers using the format in AGENTS.md
@@ -72,7 +73,7 @@ Report results and confirm ready to proceed to Phase {N+1}.
 
 ## Feature Development
 
-Use these prompts when working with documents generated from the feature workflow (FEATURE_SPEC.md, FEATURE_TECHNICAL_SPEC.md, EXECUTION_PLAN.md, AGENTS_ADDITIONS.md).
+Use these prompts when working with documents generated from the feature workflow (`AGENTS.md` at project root plus `features/<name>/AGENTS.md`, `FEATURE_SPEC.md`, `FEATURE_TECHNICAL_SPEC.md`, and `EXECUTION_PLAN.md`).
 
 ### Fresh Start
 
@@ -80,7 +81,8 @@ Use this when beginning work on a new feature.
 
 ```
 Read the following files to understand this feature and how it integrates:
-- AGENTS.md (workflow guidelines)
+- ../../AGENTS.md (project-wide workflow guidelines)
+- AGENTS.md in this feature directory (scoped workflow guidance)
 - FEATURE_SPEC.md (what the feature does and why)
 - FEATURE_TECHNICAL_SPEC.md (how it integrates technically)
 - EXECUTION_PLAN.md (tasks and acceptance criteria)
@@ -113,7 +115,7 @@ Use this to execute all tasks in a phase autonomously.
 I have completed all prerequisites for Phase {N}. Execute all steps and tasks in Phase {N} from EXECUTION_PLAN.md, one at a time.
 
 Guidelines:
-- Read AGENTS.md thoroughly for workflow conventions (git branches, TDD, etc.)
+- Read both the root `AGENTS.md` and the feature-local `AGENTS.md`
 - Use the code-verification skill for every task
 - Pay attention to "Existing Code to Reference" in each task for patterns to follow
 - Run existing tests after modifications to catch regressions

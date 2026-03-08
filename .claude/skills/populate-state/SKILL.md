@@ -1,12 +1,12 @@
 ---
 name: populate-state
-description: Generate `.claude/phase-state.json` from `EXECUTION_PLAN.md` and git history. Use to recover phase state after context loss or when joining an existing project.
+description: Generate `.claude/phase-state.json` from the main execution plan and git history. Use to recover phase state after context loss or when joining an existing project.
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep, AskUserQuestion
 ---
 
 # Populate Phase State
 
-Generate `.claude/phase-state.json` from existing EXECUTION_PLAN.md and git history.
+Generate `.claude/phase-state.json` from the active greenfield execution plan and git history.
 
 Use this command when:
 - Starting to use the orchestrator on an existing project
@@ -19,9 +19,9 @@ Copy this checklist and track progress:
 
 ```
 Populate State Progress:
-- [ ] Directory guard (verify EXECUTION_PLAN.md exists)
+- [ ] Directory guard (verify main execution plan exists)
 - [ ] Ensure .claude directory exists
-- [ ] Parse EXECUTION_PLAN.md (phases, tasks, criteria)
+- [ ] Parse the main execution plan (phases, tasks, criteria)
 - [ ] Parse git history (commits, branches, timestamps)
 - [ ] Detect features (features/*/EXECUTION_PLAN.md)
 - [ ] Identify blockers (BLOCKED markers, stale tasks)
@@ -34,7 +34,10 @@ Populate State Progress:
 
 Before starting:
 - If the current directory appears to be the toolkit repo (e.g., `.toolkit-marker` exists), **STOP** and tell the user to run `/populate-state` from their project directory instead.
-- Confirm `EXECUTION_PLAN.md` exists in the current working directory. If it does not exist, **STOP** and tell the user to `cd` into the directory containing `EXECUTION_PLAN.md` and re-run `/populate-state`.
+- Resolve the main execution plan in this order:
+  1. `EXECUTION_PLAN.md` in the current working directory
+  2. `plans/greenfield/EXECUTION_PLAN.md` in the current working directory
+- If neither exists, **STOP** and tell the user to `cd` into the directory containing the active `EXECUTION_PLAN.md` and re-run `/populate-state`.
 
 ## Instructions
 
@@ -43,7 +46,7 @@ Before starting:
    mkdir -p .claude
    ```
 
-2. **Parse EXECUTION_PLAN.md** to extract:
+2. **Parse the main execution plan** to extract:
    - Total phases (count `## Phase N` headers)
    - Tasks per phase (count `#### Task X.Y.Z` headers)
    - Completion status per task (count `- [x]` vs `- [ ]` in acceptance criteria)
@@ -58,7 +61,7 @@ Before starting:
    - `features/*/EXECUTION_PLAN.md` files
    - Parse each feature's execution plan the same way
 
-5. **Identify blockers** by scanning EXECUTION_PLAN.md for:
+5. **Identify blockers** by scanning the main execution plan for:
    - Tasks with `**Status:** BLOCKED` marker
    - Tasks with incomplete criteria that have no recent git activity (7+ days)
    - Mark these as potentially blocked
@@ -115,19 +118,19 @@ Before starting:
 }
 ```
 
-7. **Determine task status** using this logic:
+1. **Determine task status** using this logic:
    - `COMPLETE`: All acceptance criteria are `[x]` AND git commit exists for task
    - `IN_PROGRESS`: Some criteria are `[x]` OR git commit exists but not all criteria done
    - `BLOCKED`: Has `**Status:** BLOCKED` marker OR stale (7+ days, incomplete)
    - `NOT_STARTED`: No criteria are `[x]` AND no git commit for task
 
-8. **Determine phase status** using this logic:
+2. **Determine phase status** using this logic:
    - `COMPLETE`: All tasks are COMPLETE
    - `IN_PROGRESS`: At least one task is IN_PROGRESS or COMPLETE, but not all COMPLETE
    - `BLOCKED`: Current task is BLOCKED
    - `NOT_STARTED`: No tasks have any progress
 
-9. **Output summary** after generation:
+3. **Output summary** after generation:
 
 ```
 Phase State Generated: .claude/phase-state.json
@@ -149,15 +152,15 @@ Blockers Found: 2
 
 | Situation | Action |
 |-----------|--------|
-| `EXECUTION_PLAN.md` not found in working directory | STOP and tell user to `cd` into the directory containing `EXECUTION_PLAN.md` |
-| `EXECUTION_PLAN.md` has non-standard phase/task headers that cannot be parsed | Report which headers were unrecognized, generate state for parseable phases, and warn about skipped sections |
-| Git history is unavailable (not a git repo or shallow clone) | Skip git-based timestamp and commit detection; derive status solely from checkbox state in EXECUTION_PLAN.md |
+| No main execution plan found in working directory | STOP and tell user to `cd` into the directory containing the active `EXECUTION_PLAN.md` |
+| Main execution plan has non-standard phase/task headers that cannot be parsed | Report which headers were unrecognized, generate state for parseable phases, and warn about skipped sections |
+| Git history is unavailable (not a git repo or shallow clone) | Skip git-based timestamp and commit detection; derive status solely from checkbox state in the main execution plan |
 | `.claude/` directory cannot be created (permissions issue) | Report the permission error and suggest running with appropriate permissions or creating the directory manually |
 | Existing `phase-state.json` is malformed or from an incompatible schema version | Overwrite it with freshly generated state and warn user that the previous file was replaced |
 
 ## Notes
 
-- This command is **read-only** for EXECUTION_PLAN.md - it only generates state
+- This command is **read-only** for the main execution plan - it only generates state
 - If phase-state.json exists, it will be **overwritten**
-- Run this after manually updating EXECUTION_PLAN.md checkboxes
+- Run this after manually updating execution-plan checkboxes
 - The orchestrator can trigger this command on projects missing phase-state.json

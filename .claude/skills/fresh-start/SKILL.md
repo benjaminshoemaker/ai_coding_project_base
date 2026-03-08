@@ -5,7 +5,7 @@ argument-hint: [project-directory]
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Skill, AskUserQuestion
 ---
 
-Orient to a project directory and load context for execution.
+Orient to a scoped execution directory and load context for execution.
 
 ## Workflow
 
@@ -18,11 +18,11 @@ Copy this checklist and track progress:
 
 ```
 Fresh Start Progress:
-- [ ] Detect context (project root vs feature directory)
+- [ ] Detect context (greenfield plan vs feature directory)
 - [ ] Directory guard (verify AGENTS.md + EXECUTION_PLAN.md exist)
 - [ ] Git initialization (if needed)
 - [ ] Feature branch setup (feature mode only)
-- [ ] AGENTS_ADDITIONS merge (feature mode only)
+- [ ] Scoped AGENTS check
 - [ ] Read context and summarize
 - [ ] Auto-configure verification (first run only)
 - [ ] Phase state detection
@@ -40,29 +40,38 @@ If `$1` is provided, treat `$1` as the working directory and read files under `$
 
 Determine working context before validation.
 
-**Convention:** For feature work, run all execution commands from the feature directory (`features/<name>/`), not the project root. The skills auto-detect feature mode from the path.
+**Convention:** Run execution commands from the scoped directory that contains the active `EXECUTION_PLAN.md`:
+- Greenfield: `plans/greenfield/`
+- Feature work: `features/<name>/`
 
 1. Let WORKING_DIR = `$1` if provided, otherwise current working directory
 
 2. If WORKING_DIR matches pattern `*/features/*` (contains `/features/` followed by a feature name):
    - PROJECT_ROOT = parent of parent of WORKING_DIR (e.g., `/project/features/foo` → `/project`)
-   - FEATURE_DIR = WORKING_DIR
+   - SCOPE_DIR = WORKING_DIR
    - MODE = "feature"
 
-3. Otherwise:
-   - PROJECT_ROOT = WORKING_DIR
-   - FEATURE_DIR = none
+3. If WORKING_DIR matches pattern `*/plans/greenfield*`:
+   - PROJECT_ROOT = parent of parent of WORKING_DIR (e.g., `/project/plans/greenfield` → `/project`)
+   - SCOPE_DIR = WORKING_DIR
    - MODE = "greenfield"
+
+4. Otherwise:
+   - PROJECT_ROOT = WORKING_DIR
+   - SCOPE_DIR = WORKING_DIR
+   - MODE = "greenfield-legacy"
 
 ## Directory Guard (Wrong Directory Check)
 
 Confirm the required files exist:
 - `PROJECT_ROOT/AGENTS.md` must exist
-- `EXECUTION_PLAN.md` must exist in:
-  - FEATURE_DIR (if feature mode)
-  - PROJECT_ROOT (if greenfield mode)
+- `EXECUTION_PLAN.md` must exist in `SCOPE_DIR`
 
 - If either is missing:
+  - If `WORKING_DIR = PROJECT_ROOT` and `PROJECT_ROOT/plans/greenfield/EXECUTION_PLAN.md` exists, tell the user:
+    1. The greenfield execution plan now lives in `plans/greenfield/`
+    2. `cd plans/greenfield`
+    3. Re-run `/fresh-start`
   - Tell the user this project is not ready for execution yet
   - If they are in the toolkit repo (e.g., `.toolkit-marker` exists), instruct them to:
     1. Run `/setup <project-path>` from the toolkit repo, then `/generate-plan` from the project (or `/feature-plan` for features)
@@ -102,7 +111,7 @@ In PROJECT_ROOT (not the feature directory):
 
 If MODE = "feature", create an isolated branch for this feature work:
 
-1. Derive FEATURE_NAME from the feature directory (basename of FEATURE_DIR, e.g., `analytics-dashboard`)
+1. Derive FEATURE_NAME from the feature directory (basename of `SCOPE_DIR`, e.g., `analytics-dashboard`)
 
 2. Check current branch:
    ```bash
@@ -125,61 +134,13 @@ If MODE = "feature", create an isolated branch for this feature work:
 
 5. Report: "Created branch `feature/FEATURE_NAME` for isolated feature development"
 
-## AGENTS_ADDITIONS Merge (Feature Mode Only)
+## Scoped AGENTS Check
 
-If MODE = "feature", check for and offer to merge workflow additions:
+If `SCOPE_DIR/AGENTS.md` exists and `SCOPE_DIR != PROJECT_ROOT`, report:
+- "Scoped AGENTS.md found. Local instructions will layer on top of PROJECT_ROOT/AGENTS.md."
 
-1. Check if `FEATURE_DIR/AGENTS_ADDITIONS.md` exists
-   - If not, skip this section
-
-2. Read AGENTS_ADDITIONS.md and determine if merge is needed:
-   - If it contains "No additions required" or similar, report: "No AGENTS.md additions needed for this feature" and skip
-   - If it contains actual additions, **validate each section** before presenting:
-     - Apply the litmus test: "Would this be useful for a DIFFERENT feature in a DIFFERENT project?"
-     - Reject sections that describe specific components, patterns, or architecture of this feature
-     - Reject sections that are implementation details or domain knowledge (e.g., "Drawer uses AbortController", "MetricCard drill-down behavior")
-     - Only present sections that are genuine workflow/process additions
-   - If all sections fail validation, report: "AGENTS_ADDITIONS.md contains feature-specific content, not workflow additions. Skipping." and skip
-   - If some sections pass, continue to step 3 with only the valid sections
-
-3. Summarize the additions for the user:
-   ```
-   AGENTS_ADDITIONS.md proposes workflow additions:
-
-   - {Section Name 1}: {one-line summary of why it's needed}
-   - {Section Name 2}: {one-line summary of why it's needed}
-   ...
-   ```
-
-4. Ask: "Apply these workflow additions to AGENTS.md now? (recommended before starting work)"
-
-5. **Show diff for each section and collect approvals:**
-
-   For each section/block in AGENTS_ADDITIONS.md:
-   a. Display the section heading and its content
-   b. Show where it would be inserted in AGENTS.md:
-      - If a matching heading exists in AGENTS.md → append under that heading
-      - If no match → append as a new section at end of AGENTS.md
-   c. Ask via AskUserQuestion: "Apply this addition?"
-      - Options: "Yes, apply" / "Skip this section" / "Edit first" (let user modify before applying)
-
-   Apply approved sections using Edit tool:
-   - Insert under matching heading if one exists, otherwise append as new section
-   - Add a comment marker: `<!-- Added for FEATURE_NAME -->`
-   - Preserve existing AGENTS.md formatting and structure
-
-   After all sections processed, prepend a header to AGENTS_ADDITIONS.md:
-   ```
-   <!-- MERGED into PROJECT_ROOT/AGENTS.md on YYYY-MM-DD -->
-   <!-- Applied: {list of applied sections} -->
-   <!-- Skipped: {list of skipped sections} -->
-   ```
-
-   Report: "Applied {N}/{total} workflow additions to AGENTS.md"
-
-6. If user declines all:
-   - Report: "Skipped. You can manually apply AGENTS_ADDITIONS.md changes later."
-   - Continue with fresh-start (don't block)
+If it does not exist and `MODE` is `feature` or `greenfield`, report:
+- "No scoped AGENTS.md found in this directory. Execution will fall back to PROJECT_ROOT/AGENTS.md only."
 
 ## Auto-Configure Verification (First Run Only)
 
@@ -191,7 +152,7 @@ Silently auto-detect verification commands if not already configured.
    Report "Verification config already exists" and go directly to Phase State Detection.
 3. **If the file exists with `{"skipped": true}` → SKIP.** Same as above.
 4. **If the file is missing, empty, or malformed** (exists but has neither `commands` nor
-   `skipped`), invoke `/configure-verification` with PROJECT_ROOT. This runs silently
+   `skipped`), invoke `/configure-verification` with `SCOPE_DIR`. This runs silently
    with no prompts. If it fails, report the error and continue.
 
 **→ CONTINUE to Phase State Detection** (do not stop after this step).
@@ -200,7 +161,9 @@ Silently auto-detect verification commands if not already configured.
 
 Check for existing phase state to determine if this is a resume or first run:
 
-1. Check if `.claude/phase-state.json` exists in PROJECT_ROOT (or FEATURE_DIR if feature mode)
+1. Check if `.claude/phase-state.json` exists in:
+   - `SCOPE_DIR` (if feature mode)
+   - `PROJECT_ROOT` (if greenfield mode)
 
 2. **If valid phase state exists** (file exists, parses correctly, has `current_phase`):
    - This is a **resume**. Skip auto-configure and auto-prep (already done).
@@ -279,19 +242,26 @@ Detect the current git branch and load relevant context:
 ## Required Context
 
 Read these files first:
-- **PROJECT_ROOT/AGENTS.md** — Workflow guidelines
-- **EXECUTION_PLAN.md** — Tasks and acceptance criteria (from FEATURE_DIR if feature mode, else PROJECT_ROOT)
+- **PROJECT_ROOT/AGENTS.md** — Durable project-wide workflow guidelines
+- **SCOPE_DIR/AGENTS.md** — Scoped execution guidance (if `SCOPE_DIR != PROJECT_ROOT`)
+- **SCOPE_DIR/EXECUTION_PLAN.md** — Tasks and acceptance criteria
 
 ## Specification Documents
 
 Check which of these exist and read them:
 
 **From PROJECT_ROOT** (always check):
-- **PRODUCT_SPEC.md** — What we're building (greenfield)
-- **TECHNICAL_SPEC.md** — How it's built (greenfield)
 - **LEARNINGS.md** — Discovered patterns and gotchas (if exists)
 
-**From FEATURE_DIR** (if feature mode):
+**From `plans/greenfield/`** (if greenfield mode):
+- **PRODUCT_SPEC.md** — What we're building
+- **TECHNICAL_SPEC.md** — How it's built
+
+**From PROJECT_ROOT** (if `MODE = "greenfield-legacy"`):
+- **PRODUCT_SPEC.md** — Legacy greenfield product spec
+- **TECHNICAL_SPEC.md** — Legacy greenfield technical spec
+
+**From SCOPE_DIR** (if feature mode):
 - **FEATURE_SPEC.md** — Feature requirements
 - **FEATURE_TECHNICAL_SPEC.md** — Feature technical approach
 
@@ -310,7 +280,7 @@ Check which of these exist and read them:
 | Situation | Action |
 |-----------|--------|
 | Git init or clone failure | Report the error and stop — cannot proceed without a working repository. |
-| AGENTS_ADDITIONS.md merge failure | Report the conflict. Write the unmerged content to a separate file for manual resolution. |
+| Scoped AGENTS.md missing or malformed | Report the issue and continue with root AGENTS.md only. |
 | /phase-prep failure | Report which pre-flight check failed and stop. Do not proceed to execution. |
 
 **Important:** If LEARNINGS.md exists, apply those patterns throughout your work. These are project-specific conventions discovered during development that override general defaults.

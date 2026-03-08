@@ -2,7 +2,7 @@
 
 Use this prompt to generate an execution plan for implementing a **new feature** in an **existing project**:
 - **EXECUTION_PLAN.md** - Detailed phase/step/task breakdown for the feature
-- **AGENTS.md additions** - Suggested workflow additions if the feature requires capabilities not in your current AGENTS.md
+- **Feature-local AGENTS.md** - Scoped workflow guidance for agents working in `features/<name>/`
 
 This prompt requires your existing `AGENTS.md` file as input to ensure compatibility and identify any workflow gaps.
 
@@ -143,13 +143,13 @@ If you can't provide files, describe:
 - Files to create and modify
 - Regression risk assessment
 
-Read the local file `AGENTS_ADDITIONS_TEMPLATE.md` (in this skill's directory) and use its contents as the AGENTS_ADDITIONS.md format template (do not paraphrase or summarize — use the template verbatim, filling in project-specific values).
+Read the local file `AGENTS_TEMPLATE.md` (in this skill's directory) and use its contents as the feature-local `AGENTS.md` format template (do not paraphrase or summarize — use the template verbatim, filling in project-specific values).
 
 ═══════════════════════════════════════════════════════════════════
 
 Generate:
 1. EXECUTION_PLAN.md
-2. Suggested AGENTS.md additions (if needed)
+2. `features/<name>/AGENTS.md`
 
 Note: The execution plan references FEATURE_SPEC.md and FEATURE_TECHNICAL_SPEC.md
 (your feature specification documents) instead of PRODUCT_SPEC.md and TECHNICAL_SPEC.md
@@ -209,24 +209,22 @@ EXECUTION_PLAN.md
 □ Every task in FEATURE_SPEC.md has at least one corresponding task
 □ Every requirement in FEATURE_TECHNICAL_SPEC.md has implementation coverage
 
-AGENTS_ADDITIONS.md Quality
-□ Contains ONLY workflow/process additions (not business logic or domain rules)
-□ If no gaps found, outputs minimal "No additions required" format
+Feature-local AGENTS.md Quality
+□ Contains ONLY workflow/process guidance for work in `features/<name>/`
+□ Defaults to "no additional feature-specific workflow rules" when root AGENTS.md already covers the workflow
 □ Does NOT include feature-specific commit examples
 □ Does NOT include acceptance criteria details (those are in EXECUTION_PLAN.md)
 □ Does NOT include implementation details or domain knowledge
 □ Does NOT document specific components, patterns, or architecture of this feature
-□ Every addition passes the litmus test: "Would this be useful for a DIFFERENT feature in a DIFFERENT project?"
-□ "No additions required" is the expected outcome — additions are the exception, not the default
+□ Every feature-specific addition passes the litmus test: "Would this be useful for a DIFFERENT feature in a DIFFERENT project?"
+□ Keeps durable project rules in the root AGENTS.md instead of duplicating them
 
 AGENTS.md Compatibility (check for gaps)
-□ All verification methods in EXECUTION_PLAN.md are defined in AGENTS.md
-□ If browser verification is used, AGENTS.md has browser verification workflow
-□ If regression checks are needed, AGENTS.md has regression testing policy
-□ If migrations are needed, AGENTS.md has database migration workflow
-□ If external dependencies involved, AGENTS.md has mocking policy
-□ If testing guidance sparse, suggest Test Quality Standards addition
-□ Suggested additions provided ONLY for actual workflow gaps identified
+□ All verification methods in EXECUTION_PLAN.md are covered by root AGENTS.md or feature-local AGENTS.md
+□ If browser verification is used, the applicable instruction file covers browser verification workflow
+□ If regression checks are needed, the applicable instruction file covers regression testing policy
+□ If migrations are needed, the applicable instruction file covers migration workflow
+□ Feature-local additions are provided ONLY for actual workflow gaps identified
 ```
 
 ---

@@ -15,8 +15,8 @@ If you're not using Claude Code, you can use this toolkit with any LLM by copyin
    ```
 
 3. **Generate specs** by pasting prompt contents into your LLM:
-   - `.claude/skills/product-spec/PROMPT.md` → produces `PRODUCT_SPEC.md`
-   - `.claude/skills/technical-spec/PROMPT.md` → produces `TECHNICAL_SPEC.md`
+   - `.claude/skills/product-spec/PROMPT.md` → produces `plans/greenfield/PRODUCT_SPEC.md`
+   - `.claude/skills/technical-spec/PROMPT.md` → produces `plans/greenfield/TECHNICAL_SPEC.md`
 
 4. **Generate execution plan** (requires file access):
    - If your LLM can read files, use `.claude/skills/generate-plan/PROMPT.md`
@@ -32,9 +32,9 @@ If you're not using Claude Code, you can use this toolkit with any LLM by copyin
 
 | Output Document | Prompt File |
 |-----------------|-------------|
-| PRODUCT_SPEC.md | `.claude/skills/product-spec/PROMPT.md` |
-| TECHNICAL_SPEC.md | `.claude/skills/technical-spec/PROMPT.md` |
-| EXECUTION_PLAN.md + AGENTS.md | `.claude/skills/generate-plan/PROMPT.md` |
+| `plans/greenfield/PRODUCT_SPEC.md` | `.claude/skills/product-spec/PROMPT.md` |
+| `plans/greenfield/TECHNICAL_SPEC.md` | `.claude/skills/technical-spec/PROMPT.md` |
+| `AGENTS.md` + `plans/greenfield/EXECUTION_PLAN.md` + `plans/greenfield/AGENTS.md` | `.claude/skills/generate-plan/PROMPT.md` |
 
 ### Feature Development
 
@@ -42,7 +42,7 @@ If you're not using Claude Code, you can use this toolkit with any LLM by copyin
 |-----------------|-------------|
 | FEATURE_SPEC.md | `.claude/skills/feature-spec/PROMPT.md` |
 | FEATURE_TECHNICAL_SPEC.md | `.claude/skills/feature-technical-spec/PROMPT.md` |
-| EXECUTION_PLAN.md + AGENTS_ADDITIONS.md | `.claude/skills/feature-plan/PROMPT.md` |
+| `EXECUTION_PLAN.md` + `AGENTS.md` | `.claude/skills/feature-plan/PROMPT.md` |
 
 ### Execution
 
@@ -64,4 +64,6 @@ The core workflow (specify → plan → execute) still works, but requires more 
 1. Use a web LLM (Claude, ChatGPT) for specification generation
 2. Save the generated docs to your project
 3. Use any code-capable LLM for execution, following `START_PROMPTS.md`
+   - Greenfield execution runs from `plans/greenfield/`
+   - Feature execution runs from `features/<name>/`
 4. Manually run verification between tasks

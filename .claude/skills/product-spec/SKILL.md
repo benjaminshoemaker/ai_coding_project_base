@@ -14,9 +14,9 @@ Copy this checklist and track progress:
 Product Spec Progress:
 - [ ] Step 1: Directory guard
 - [ ] Step 2: Project root confirmation
-- [ ] Step 3: Check for existing PRODUCT_SPEC.md
+- [ ] Step 3: Check for existing plans/greenfield/PRODUCT_SPEC.md
 - [ ] Step 4: Conduct guided Q&A with user
-- [ ] Step 5: Write PRODUCT_SPEC.md
+- [ ] Step 5: Write plans/greenfield/PRODUCT_SPEC.md
 - [ ] Step 6: Handle deferred decisions
 - [ ] Step 7: Review and refine with user
 - [ ] Step 8: Suggest next step (/technical-spec)
@@ -33,7 +33,7 @@ Product Spec Progress:
 Before generating any files, confirm the output location with the user:
 
 ```
-Will write PRODUCT_SPEC.md to: {absolute path of cwd}/
+Will write PRODUCT_SPEC.md to: {absolute path of cwd}/plans/greenfield/
 Continue? (Yes / Change directory)
 ```
 
@@ -41,12 +41,13 @@ If the user says "Change directory", ask for the correct path and instruct them 
 
 ## Existing File Guard (Prevent Overwrite)
 
-Before asking any questions, check whether `PRODUCT_SPEC.md` already exists in the current directory.
+Before asking any questions, ensure `plans/greenfield/` exists, then check whether
+`plans/greenfield/PRODUCT_SPEC.md` already exists.
 
 - If it does not exist: continue normally.
 - If it exists: **STOP** and ask the user what to do:
-  1. **Backup then overwrite (recommended)**: read the existing file and write it to `PRODUCT_SPEC.md.bak.YYYYMMDD-HHMMSS`, then write the new document to `PRODUCT_SPEC.md`
-  2. **Overwrite**: replace `PRODUCT_SPEC.md` with the new document
+  1. **Backup then overwrite (recommended)**: read the existing file and write it to `plans/greenfield/PRODUCT_SPEC.md.bak.YYYYMMDD-HHMMSS`, then write the new document to `plans/greenfield/PRODUCT_SPEC.md`
+  2. **Overwrite**: replace `plans/greenfield/PRODUCT_SPEC.md` with the new document
   3. **Abort**: do not write anything; suggest they rename/move the existing file first
 
 ## Process
@@ -60,9 +61,9 @@ Read `.claude/skills/product-spec/PROMPT.md` and follow its instructions exactly
 
 ## Output
 
-Write the completed specification to `PRODUCT_SPEC.md` in the current directory.
+Write the completed specification to `plans/greenfield/PRODUCT_SPEC.md`.
 
-After writing PRODUCT_SPEC.md, verify the file exists and is non-empty by reading the first few lines. If the file was not created successfully, report the error and retry.
+After writing `plans/greenfield/PRODUCT_SPEC.md`, verify the file exists and is non-empty by reading the first few lines. If the file was not created successfully, report the error and retry.
 
 ## Deferred Requirements Capture (During Q&A)
 
@@ -118,7 +119,7 @@ After collecting answers, append to `DEFERRED.md` right away (don't wait until e
 
 > Captured during specification Q&A. Review when planning future versions.
 
-## From PRODUCT_SPEC.md ({date})
+## From plans/greenfield/PRODUCT_SPEC.md ({date})
 
 | Requirement | Reason | Notes |
 |-------------|--------|-------|
@@ -139,7 +140,7 @@ After capturing (or skipping), continue the spec Q&A where you left off. Don't b
 
 ## Cross-Model Review (Automatic)
 
-After writing PRODUCT_SPEC.md, run cross-model review if Codex CLI is available:
+After writing `plans/greenfield/PRODUCT_SPEC.md`, run cross-model review if Codex CLI is available:
 
 1. Check if Codex CLI is installed: `codex --version`
 2. If available, run `/codex-consult` on the generated document
@@ -147,7 +148,7 @@ After writing PRODUCT_SPEC.md, run cross-model review if Codex CLI is available:
 
 **Consultation invocation:**
 ```
-/codex-consult --research "product requirements, user stories" PRODUCT_SPEC.md
+/codex-consult --research "product requirements, user stories" plans/greenfield/PRODUCT_SPEC.md
 ```
 
 **If Codex finds issues:**
@@ -170,7 +171,7 @@ After writing PRODUCT_SPEC.md, run cross-model review if Codex CLI is available:
 
 When complete, inform the user:
 ```
-PRODUCT_SPEC.md created at ./PRODUCT_SPEC.md
+PRODUCT_SPEC.md created at ./plans/greenfield/PRODUCT_SPEC.md
 Deferred Requirements: {count} items captured to DEFERRED.md
 Cross-Model Review: PASSED | PASSED WITH NOTES | SKIPPED
 

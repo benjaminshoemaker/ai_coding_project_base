@@ -14,8 +14,8 @@ Copy this checklist and track progress:
 Technical Spec Progress:
 - [ ] Step 1: Directory guard
 - [ ] Step 2: Project root confirmation
-- [ ] Step 3: Check prerequisites (PRODUCT_SPEC.md)
-- [ ] Step 4: Check for existing TECHNICAL_SPEC.md
+- [ ] Step 3: Check prerequisites (plans/greenfield/PRODUCT_SPEC.md)
+- [ ] Step 4: Check for existing plans/greenfield/TECHNICAL_SPEC.md
 - [ ] Step 5: Conduct guided Q&A with user
 - [ ] Step 6: Cross-verify against PRODUCT_SPEC.md
 - [ ] Step 7: Handle deferred decisions
@@ -34,7 +34,7 @@ Technical Spec Progress:
 Before generating any files, confirm the output location with the user:
 
 ```
-Will write TECHNICAL_SPEC.md to: {absolute path of cwd}/
+Will write TECHNICAL_SPEC.md to: {absolute path of cwd}/plans/greenfield/
 Continue? (Yes / Change directory)
 ```
 
@@ -42,38 +42,42 @@ If the user says "Change directory", ask for the correct path and instruct them 
 
 ## Prerequisites
 
-- Check that `PRODUCT_SPEC.md` exists in the current directory. If not:
+- Check for `plans/greenfield/PRODUCT_SPEC.md` first.
+- If it does not exist, fall back to legacy `PRODUCT_SPEC.md` in the current directory.
+- If the legacy root file is used, copy it to `plans/greenfield/PRODUCT_SPEC.md` before continuing so the project adopts the canonical layout.
+- If neither exists:
   "PRODUCT_SPEC.md not found. Run `/product-spec` first."
 
 ## Existing File Guard (Prevent Overwrite)
 
-Before asking any questions, check whether `TECHNICAL_SPEC.md` already exists in the current directory.
+Before asking any questions, ensure `plans/greenfield/` exists, then check whether
+`plans/greenfield/TECHNICAL_SPEC.md` already exists.
 
 - If it does not exist: continue normally.
 - If it exists: **STOP** and ask the user what to do:
-  1. **Backup then overwrite (recommended)**: read the existing file and write it to `TECHNICAL_SPEC.md.bak.YYYYMMDD-HHMMSS`, then write the new document to `TECHNICAL_SPEC.md`
-  2. **Overwrite**: replace `TECHNICAL_SPEC.md` with the new document
+  1. **Backup then overwrite (recommended)**: read the existing file and write it to `plans/greenfield/TECHNICAL_SPEC.md.bak.YYYYMMDD-HHMMSS`, then write the new document to `plans/greenfield/TECHNICAL_SPEC.md`
+  2. **Overwrite**: replace `plans/greenfield/TECHNICAL_SPEC.md` with the new document
   3. **Abort**: do not write anything; suggest they rename/move the existing file first
 
 ## Process
 
 Read `.claude/skills/technical-spec/PROMPT.md` and follow its instructions exactly:
 
-1. Read `PRODUCT_SPEC.md` as input
+1. Read `plans/greenfield/PRODUCT_SPEC.md` as input
 2. Work through each question category (Architecture, Stack, Data, APIs, Implementation)
 3. Make recommendations with confidence levels
 4. Generate the final TECHNICAL_SPEC.md document
 
 ## Output
 
-Write the completed specification to `TECHNICAL_SPEC.md` in the current directory.
+Write the completed specification to `plans/greenfield/TECHNICAL_SPEC.md`.
 
 ## Verification (Automatic)
 
-After writing TECHNICAL_SPEC.md, run the spec-verification workflow:
+After writing `plans/greenfield/TECHNICAL_SPEC.md`, run the spec-verification workflow:
 
 1. Read `.claude/skills/spec-verification/SKILL.md` for the verification process
-2. Verify context preservation: Check that all key items from PRODUCT_SPEC.md appear in TECHNICAL_SPEC.md
+2. Verify context preservation: Check that all key items from `PRODUCT_SPEC.md` appear in `TECHNICAL_SPEC.md`
 3. Run quality checks for vague language, missing rationale, undefined contracts
 4. Present any CRITICAL issues to the user with resolution options
 5. Apply fixes based on user choices
@@ -132,7 +136,7 @@ After collecting answers, append to `DEFERRED.md` right away.
 
 ```markdown
 
-## From TECHNICAL_SPEC.md ({date})
+## From plans/greenfield/TECHNICAL_SPEC.md ({date})
 
 | Requirement | Reason | Notes |
 |-------------|--------|-------|
@@ -159,7 +163,7 @@ After verification passes, run cross-model review if Codex CLI is available:
 
 **Consultation invocation:**
 ```
-/codex-consult --upstream PRODUCT_SPEC.md --research "{detected technologies}" TECHNICAL_SPEC.md
+/codex-consult --upstream plans/greenfield/PRODUCT_SPEC.md --research "{detected technologies}" plans/greenfield/TECHNICAL_SPEC.md
 ```
 
 **If Codex finds issues:**
@@ -174,7 +178,7 @@ After verification passes, run cross-model review if Codex CLI is available:
 
 | Situation | Action |
 |-----------|--------|
-| PRODUCT_SPEC.md not found | Stop and report "Run `/product-spec` first" |
+| PRODUCT_SPEC.md not found in `plans/greenfield/` or project root | Stop and report "Run `/product-spec` first" |
 | PROMPT.md not found at `.claude/skills/technical-spec/PROMPT.md` | Stop and report "Skill asset missing — reinstall toolkit or run /setup" |
 | DEFERRED.md write fails (permissions or disk) | Output deferred items to terminal, warn user, continue with spec generation |
 | Codex CLI invocation fails or times out | Log the error, skip cross-model review, proceed to Next Step |
@@ -183,7 +187,7 @@ After verification passes, run cross-model review if Codex CLI is available:
 
 When verification is complete, inform the user:
 ```
-TECHNICAL_SPEC.md created and verified at ./TECHNICAL_SPEC.md
+TECHNICAL_SPEC.md created and verified at ./plans/greenfield/TECHNICAL_SPEC.md
 
 Verification: PASSED | PASSED WITH NOTES | NEEDS REVIEW
 Cross-Model Review: PASSED | PASSED WITH NOTES | SKIPPED

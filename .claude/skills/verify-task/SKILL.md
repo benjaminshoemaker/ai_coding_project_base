@@ -15,15 +15,20 @@ Determine working context:
    - PROJECT_ROOT = parent of parent of CWD (e.g., `/project/features/foo` → `/project`)
    - MODE = "feature"
 
-2. Otherwise:
-   - PROJECT_ROOT = current working directory
+2. If current working directory matches pattern `*/plans/greenfield*`:
+   - PROJECT_ROOT = parent of parent of CWD (e.g., `/project/plans/greenfield` → `/project`)
    - MODE = "greenfield"
+
+3. Otherwise:
+   - PROJECT_ROOT = current working directory
+   - MODE = "greenfield-legacy"
 
 ## Directory Guard (Wrong Directory Check)
 
 Before starting, confirm `EXECUTION_PLAN.md` exists in the current working directory.
 
 - If it does not exist, **STOP** and tell the user to `cd` into their project/feature directory (the one containing `EXECUTION_PLAN.md`) and re-run `/verify-task $1`.
+- If `plans/greenfield/EXECUTION_PLAN.md` exists in the current working directory, tell the user to `cd plans/greenfield` and re-run `/verify-task $1`.
 
 ## Task Context
 

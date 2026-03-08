@@ -9,8 +9,8 @@ Run from your **project directory**. These produce specification and planning do
 | Command | Description |
 |---------|-------------|
 | `/product-spec` | Generate product specification via guided Q&A |
-| `/technical-spec` | Generate technical specification (requires `PRODUCT_SPEC.md`) |
-| `/generate-plan` | Generate execution plan and AGENTS.md (requires both specs) |
+| `/technical-spec` | Generate technical specification (uses `plans/greenfield/PRODUCT_SPEC.md`, or legacy root `PRODUCT_SPEC.md`) |
+| `/generate-plan` | Generate the greenfield execution plan plus root and scoped AGENTS files |
 | `/verify-spec <type>` | Verify spec document for quality issues |
 
 > **Migration note:** These commands previously ran from the toolkit directory with a `[path]` argument (e.g., `/product-spec ~/my-project`). They now run from the project directory with no path argument. The old invocation style shows a deprecation message with redirect instructions.
@@ -25,12 +25,14 @@ Run from your **project directory**. These produce feature-scoped documents in `
 |---------|-------------|
 | `/feature-spec <name>` | Generate feature specification via guided Q&A |
 | `/feature-technical-spec <name>` | Generate feature technical spec (analyzes existing codebase) |
-| `/feature-plan <name>` | Generate feature execution plan and AGENTS_ADDITIONS.md |
+| `/feature-plan <name>` | Generate feature execution plan plus feature-local AGENTS/CLAUDE files |
 | `/feature-audit` | Audit shipped feature against specs, vision, UI/UX, and live browser |
 
 ## Execution Commands
 
-Run from your **project directory**. These drive the phase-based execution workflow.
+Run from the scoped execution directory that contains the active plan:
+- Greenfield: `plans/greenfield/`
+- Feature work: `features/<name>/`
 
 | Command | Description |
 |---------|-------------|
@@ -110,7 +112,7 @@ Run from your **project directory**.
 | `/add-todo` | Add a formatted TODO item to TODOS.md |
 | `/capture-learning` | Save project patterns and conventions to LEARNINGS.md |
 | `/update-docs` | Sync documentation with recent code changes |
-| `/populate-state` | Regenerate phase-state.json from EXECUTION_PLAN.md and git history |
+| `/populate-state` | Regenerate phase-state.json from the main execution plan and git history |
 | `/review-deferred` | Review and clear deferred verification items from the queue |
 | `/innovate` | Identify the single smartest, most innovative addition to make to your app |
 | `/oauth-login <provider>` | Complete OAuth flow (Google/GitHub) for browser verification |

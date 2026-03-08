@@ -16,11 +16,12 @@ cd ~/Projects/my-existing-app
 claude
 
 # 4. Generate specs and plan:
-/product-spec .
-/technical-spec .
-/generate-plan .
+/product-spec
+/technical-spec
+/generate-plan
 
 # 5. Execute:
+cd plans/greenfield
 /fresh-start
 /configure-verification
 /phase-start 1
@@ -63,14 +64,14 @@ Feature specs include a checklist:
 
 ## AGENTS.md Size Limit
 
-Research shows LLMs follow ~150 instructions consistently. Beyond this, instruction-following degrades.
+Keep the root `AGENTS.md` compact and durable. Execution-specific detail should live in scoped directories such as `plans/greenfield/` and `features/<name>/`.
 
 The toolkit enforces this:
-- **≤150 lines**: Optimal
-- **151-200 lines**: Warning with suggestion to split
-- **>200 lines**: Fails validation
+- **≤100 lines**: Optimal for root `AGENTS.md`
+- **101-150 lines**: Warning to move more detail into scoped `AGENTS.md` files
+- **>150 lines**: Fails validation
 
-If your AGENTS.md grows too large, split project-specific rules into subdirectory `.claude/CLAUDE.md` files that load on-demand.
+If your root `AGENTS.md` grows too large, move scoped execution detail into `plans/greenfield/AGENTS.md`, `features/<name>/AGENTS.md`, and matching `CLAUDE.md` files.
 
 ## Optional Ad-Hoc Tools
 

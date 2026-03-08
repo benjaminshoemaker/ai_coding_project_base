@@ -56,13 +56,11 @@ Fetch documentation when ANY of these apply:
 See [SERVICES.md](SERVICES.md) for the full list of service documentation URLs and setup patterns.
 
 ### Integration with Setup Instructions
-
 When generating detailed setup guides (see "Detailed Setup Instructions" section below):
 1. Fetch docs FIRST
 2. Cross-reference fetched content with your instructions
 3. Update any outdated steps (UI changes, renamed fields, new requirements)
 4. Include version/date context: "As of {date}, the Supabase dashboard..."
-
 
 ## Context Detection
 
@@ -72,9 +70,13 @@ Determine working context:
    - PROJECT_ROOT = parent of parent of CWD (e.g., `/project/features/foo` → `/project`)
    - MODE = "feature"
 
-2. Otherwise:
-   - PROJECT_ROOT = current working directory
+2. If current working directory matches pattern `*/plans/greenfield*`:
+   - PROJECT_ROOT = parent of parent of CWD (e.g., `/project/plans/greenfield` → `/project`)
    - MODE = "greenfield"
+
+3. Otherwise:
+   - PROJECT_ROOT = current working directory
+   - MODE = "greenfield-legacy"
 
 ## Directory Guard (Wrong Directory Check)
 
@@ -84,6 +86,7 @@ Before starting, confirm the required files exist:
 
 - If either does not exist, **STOP** and tell the user:
   - They are likely in the toolkit repo (or the wrong folder)
+  - If `plans/greenfield/EXECUTION_PLAN.md` exists in the current working directory, tell them to `cd plans/greenfield` first
   - They should `cd` into their project/feature directory (the one containing `EXECUTION_PLAN.md`) and re-run `/phase-prep $1`
 
 ## Context Check
@@ -202,8 +205,8 @@ PRE-PHASE SETUP GUIDE
 
 Add to `.env`:
 ```
-SUPABASE_URL=<paste Project URL>
-SUPABASE_ANON_KEY=<paste anon public key>
+SUPABASE_URL=PASTE_PROJECT_URL
+SUPABASE_ANON_KEY=PASTE_ANON_PUBLIC_KEY
 ```
 
 ## Verify Setup

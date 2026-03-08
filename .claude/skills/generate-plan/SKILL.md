@@ -1,6 +1,6 @@
 ---
 name: generate-plan
-description: Generate EXECUTION_PLAN.md and AGENTS.md. Use after /technical-spec to create the phased task breakdown.
+description: Generate the greenfield execution plan plus root and scoped AGENTS.md files. Use after /technical-spec to create the phased task breakdown.
 allowed-tools: Read, Write, Edit, AskUserQuestion, Grep, Glob, Bash
 ---
 
@@ -13,11 +13,11 @@ Copy this checklist and track progress:
 ```
 Generate Plan Progress:
 - [ ] Step 1: Directory guard
-- [ ] Step 2: Check prerequisites (PRODUCT_SPEC.md + TECHNICAL_SPEC.md)
+- [ ] Step 2: Check prerequisites (plans/greenfield specs)
 - [ ] Step 3: Check for toolkit setup
-- [ ] Step 4: Check for existing EXECUTION_PLAN.md
+- [ ] Step 4: Check for existing output files
 - [ ] Step 5: Process specs into task breakdown
-- [ ] Step 6: Create CLAUDE.md (if missing)
+- [ ] Step 6: Create root and scoped CLAUDE.md files (if missing)
 - [ ] Step 7: Verify plan completeness
 - [ ] Step 8: Review and refine with user
 - [ ] Step 9: Suggest next step (/fresh-start)
@@ -34,7 +34,9 @@ Generate Plan Progress:
 Before generating any files, confirm the output location with the user:
 
 ```
-Will write EXECUTION_PLAN.md and AGENTS.md to: {absolute path of cwd}/
+Will write:
+- `AGENTS.md` to: {absolute path of cwd}/
+- planning docs to: {absolute path of cwd}/plans/greenfield/
 Continue? (Yes / Change directory)
 ```
 
@@ -42,10 +44,13 @@ If the user says "Change directory", ask for the correct path and instruct them 
 
 ## Prerequisites
 
-- Check that `PRODUCT_SPEC.md` exists in the current directory. If not:
-  "PRODUCT_SPEC.md not found. Run `/product-spec` first."
-- Check that `TECHNICAL_SPEC.md` exists in the current directory. If not:
-  "TECHNICAL_SPEC.md not found. Run `/technical-spec` first."
+- Check for `plans/greenfield/PRODUCT_SPEC.md` first.
+- If it does not exist, fall back to legacy `PRODUCT_SPEC.md` in the current directory.
+- Check for `plans/greenfield/TECHNICAL_SPEC.md` first.
+- If it does not exist, fall back to legacy `TECHNICAL_SPEC.md` in the current directory.
+- If either legacy root file is used, copy it into `plans/greenfield/` before proceeding so the project adopts the canonical layout.
+- If either spec is missing from both locations:
+  "Greenfield specs not found. Run `/product-spec` and `/technical-spec` first."
 
 ## Setup Check
 
@@ -65,12 +70,13 @@ Check if `.claude/toolkit-version.json` exists in the current directory:
 
 ## Existing File Guard (Prevent Overwrite)
 
-Before generating anything, check whether either output file already exists:
-- `EXECUTION_PLAN.md`
+Before generating anything, ensure `plans/greenfield/` exists, then check whether any output files already exist:
 - `AGENTS.md`
+- `plans/greenfield/EXECUTION_PLAN.md`
+- `plans/greenfield/AGENTS.md`
 
-- If neither exists: continue normally.
-- If one or both exist: **STOP** and ask the user what to do for the existing file(s):
+- If none exist: continue normally.
+- If one or more exist: **STOP** and ask the user what to do for the existing file(s):
   1. **Backup then overwrite (recommended)**: for each existing file, read it and write it to `{path}.bak.YYYYMMDD-HHMMSS`, then write the new document(s) to the original path(s)
   2. **Overwrite**: replace the existing file(s) with the new document(s)
   3. **Abort**: do not write anything; suggest they rename/move the existing file(s) first
@@ -79,17 +85,19 @@ Before generating anything, check whether either output file already exists:
 
 Read `.claude/skills/generate-plan/PROMPT.md` and follow its instructions exactly:
 
-1. Read `PRODUCT_SPEC.md` and `TECHNICAL_SPEC.md` as inputs
+1. Read greenfield specs from `plans/greenfield/`
 2. Generate EXECUTION_PLAN.md with phases, steps, and tasks
-3. Generate AGENTS.md with workflow guidelines
+3. Generate root `AGENTS.md` with durable project-wide workflow guidelines
+4. Generate `plans/greenfield/AGENTS.md` with greenfield execution-specific guidance
 
 ## Output
 
-Write both documents to the current directory:
-- `EXECUTION_PLAN.md`
+Write these files:
 - `AGENTS.md`
+- `plans/greenfield/EXECUTION_PLAN.md`
+- `plans/greenfield/AGENTS.md`
 
-## Create CLAUDE.md
+## Create CLAUDE.md Files
 
 If `CLAUDE.md` does not exist in the current directory, create it with:
 
@@ -99,20 +107,26 @@ If `CLAUDE.md` does not exist in the current directory, create it with:
 
 If it already exists, do not overwrite it.
 
+If `plans/greenfield/CLAUDE.md` does not exist, create it with:
+
+```
+@AGENTS.md
+```
+
+If it already exists, do not overwrite it.
+
 ## Verification (Automatic)
 
-After writing EXECUTION_PLAN.md and AGENTS.md:
+After writing the root and scoped files:
 
 ### 1. AGENTS.md Size Check
 
-Count the lines in the generated AGENTS.md:
+Count the lines in the generated root `AGENTS.md`:
 
 **Thresholds:**
-- **≤150 lines**: PASS — Optimal for LLM instruction-following
-- **151-200 lines**: WARN — "AGENTS.md is {N} lines. Research shows LLMs follow ~150 instructions consistently. Consider splitting project-specific rules into subdirectory CLAUDE.md files."
-- **>200 lines**: FAIL — "AGENTS.md exceeds 200 lines ({N} lines). This will degrade agent performance. Split into:
-  - AGENTS.md (core workflow, ≤100 lines)
-  - `.claude/CLAUDE.md` files in subdirectories for context-specific rules"
+- **≤100 lines**: PASS — Optimal for root `AGENTS.md`
+- **101-150 lines**: WARN — "Root AGENTS.md is {N} lines. Keep durable project rules compact and push execution-specific detail into scoped plan directories."
+- **>150 lines**: FAIL — "Root AGENTS.md exceeds 150 lines ({N} lines). Split durable rules from scoped execution guidance before proceeding."
 
 If WARN or FAIL, offer to help split the file before proceeding.
 
@@ -121,7 +135,7 @@ If WARN or FAIL, offer to help split the file before proceeding.
 Run the spec-verification workflow:
 
 1. Read `.claude/skills/spec-verification/SKILL.md` for the verification process
-2. Verify context preservation: Check that all key items from TECHNICAL_SPEC.md and PRODUCT_SPEC.md appear as tasks or acceptance criteria
+2. Verify context preservation: Check that all key items from `TECHNICAL_SPEC.md` and `PRODUCT_SPEC.md` appear as tasks or acceptance criteria
 3. Run quality checks for untestable criteria, missing dependencies, vague language
 4. Present any CRITICAL issues to the user with resolution options
 5. Apply fixes based on user choices
@@ -131,7 +145,7 @@ Run the spec-verification workflow:
 
 ### 3. Criteria Audit
 
-Run `/criteria-audit` to validate verification metadata in EXECUTION_PLAN.md.
+Run `/criteria-audit plans/greenfield` to validate verification metadata in `plans/greenfield/EXECUTION_PLAN.md`.
 
 - If FAIL: stop and ask the user to resolve missing metadata before proceeding.
 - If WARN: report and continue.
@@ -146,7 +160,7 @@ After verification passes, run cross-model review if Codex CLI is available:
 
 **Consultation invocation:**
 ```
-/codex-consult --upstream TECHNICAL_SPEC.md --research "execution planning, task breakdown" EXECUTION_PLAN.md
+/codex-consult --upstream plans/greenfield/TECHNICAL_SPEC.md --research "execution planning, task breakdown" plans/greenfield/EXECUTION_PLAN.md
 ```
 
 **If Codex finds issues:**
@@ -161,9 +175,10 @@ After verification passes, run cross-model review if Codex CLI is available:
 
 | Situation | Action |
 |-----------|--------|
-| PRODUCT_SPEC.md or TECHNICAL_SPEC.md not found | Stop and report which file is missing with instructions to generate it |
+| PRODUCT_SPEC.md or TECHNICAL_SPEC.md not found in `plans/greenfield/` or project root | Stop and report which file is missing with instructions to generate it |
 | PROMPT.md not found at `.claude/skills/generate-plan/PROMPT.md` | Stop and report "Skill asset missing — reinstall toolkit or run /setup" |
 | AGENTS_TEMPLATE.md not found at `.claude/skills/generate-plan/AGENTS_TEMPLATE.md` | Stop and report "Skill asset missing — reinstall toolkit or run /setup" |
+| PLAN_AGENTS_TEMPLATE.md not found at `.claude/skills/generate-plan/PLAN_AGENTS_TEMPLATE.md` | Stop and report "Skill asset missing — reinstall toolkit or run /setup" |
 | Contradictions between specs | Stop and list contradictions. Ask user to resolve before continuing |
 | Codex CLI invocation fails or times out | Log the error, skip cross-model review, proceed to Next Step |
 
@@ -171,14 +186,15 @@ After verification passes, run cross-model review if Codex CLI is available:
 
 When verification is complete, inform the user:
 ```
-EXECUTION_PLAN.md and AGENTS.md created and verified.
+Root AGENTS.md plus greenfield plan files created and verified.
 
 Verification: PASSED | PASSED WITH NOTES | NEEDS REVIEW
 Cross-Model Review: PASSED | PASSED WITH NOTES | SKIPPED
 
 Your project is ready for execution:
-1. /fresh-start
-2. /configure-verification
-3. /phase-prep 1
-4. /phase-start 1
+1. cd plans/greenfield
+2. /fresh-start
+3. /configure-verification
+4. /phase-prep 1
+5. /phase-start 1
 ```

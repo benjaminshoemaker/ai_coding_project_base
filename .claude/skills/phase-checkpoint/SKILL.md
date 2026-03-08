@@ -35,11 +35,16 @@ Determine working context:
 1. If CWD matches `*/features/*`:
    - PROJECT_ROOT = parent of parent of CWD
    - MODE = "feature"
-2. Otherwise:
-   - PROJECT_ROOT = current working directory
+
+2. If CWD matches `*/plans/greenfield*`:
+   - PROJECT_ROOT = parent of parent of CWD
    - MODE = "greenfield"
 
-**Directory Guard:** Confirm `EXECUTION_PLAN.md` exists. If not, STOP and tell user to `cd` into their project directory.
+3. Otherwise:
+   - PROJECT_ROOT = current working directory
+   - MODE = "greenfield-legacy"
+
+**Directory Guard:** Confirm `EXECUTION_PLAN.md` exists. If not, STOP and tell user to `cd` into the scoped directory containing the active execution plan. If `plans/greenfield/EXECUTION_PLAN.md` exists in the current directory, tell them to `cd plans/greenfield` first.
 
 **Context Check:** If context is below 40% remaining, run `/compact` first.
 
@@ -174,11 +179,11 @@ them automatically. Do NOT ask the user — this keeps the auto-advance chain fl
        Do NOT create new files unless a fix explicitly requires it."
    - The subagent edits files and returns a summary of what it changed
 
-3. **Re-run automated verification** (same commands from Step 3):
+2. **Re-run automated verification** (same commands from Step 3):
    - Tests, typecheck, lint, build — whatever is configured in verification-config
    - This confirms the fixes don't break anything
 
-4. **Handle re-verification results:**
+3. **Handle re-verification results:**
 
    | Outcome | Action |
    |---------|--------|
@@ -191,7 +196,7 @@ them automatically. Do NOT ask the user — this keeps the auto-advance chain fl
    - `git checkout -- .` reverts working tree changes without needing `git reset --hard`
    - If pre-commit hooks fail the commit, treat as "skip auto-commit" and continue
 
-5. **Continue to Step 5** regardless of outcome — Codex findings never block.
+4. **Continue to Step 5** regardless of outcome — Codex findings never block.
 
 ### Output
 

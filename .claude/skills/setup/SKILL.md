@@ -423,10 +423,11 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
    2. /product-spec
    3. /technical-spec
    4. /generate-plan
-   5. /fresh-start
-   6. /configure-verification
-   7. /phase-prep 1
-   8. /phase-start 1
+   5. cd plans/greenfield
+   6. /fresh-start
+   7. /configure-verification
+   8. /phase-prep 1
+   9. /phase-start 1
    ```
 
    **Skill resolution line examples:**
@@ -446,12 +447,11 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
    2. /feature-spec <feature-name>
    3. /feature-technical-spec <feature-name>
    4. /feature-plan <feature-name>
-   5. /fresh-start
-   6. /configure-verification
-   7. /phase-prep 1
-   8. /phase-start 1
-
-   After phase completion, merge AGENTS_ADDITIONS.md into $1/AGENTS.md
+   5. cd features/<feature-name>
+   6. /fresh-start
+   7. /configure-verification
+   8. /phase-prep 1
+   9. /phase-start 1
    ```
 
 ## Important

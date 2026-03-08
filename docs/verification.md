@@ -48,22 +48,13 @@ Issues:
 - [Criterion 1] Test added after implementation
 ```
 
-### Test Quality Standards
+### Scoped Verification Guidance
 
-The generated `AGENTS.md` includes test quality standards:
+The generated instruction files now split responsibilities:
 
-- **AAA Pattern** — Tests use Arrange-Act-Assert structure
-- **Naming** — Tests use `should {behavior} when {condition}` format
-- **Coverage** — Happy path, edge cases, error cases, state changes
-- **Independence** — No shared mutable state between tests
-
-### Mocking Policy
-
-`AGENTS.md` also includes mocking guidelines:
-
-- **What to mock** — External APIs, databases, file system, time, random values
-- **What not to mock** — Code under test, pure functions
-- **Mock hygiene** — Reset between tests, prefer dependency injection
+- Root `AGENTS.md` keeps durable project-wide rules concise
+- Scoped `AGENTS.md` files in `plans/greenfield/` or `features/<name>/` define the active task loop and verification expectations
+- Detailed test conventions should follow the codebase and verification metadata in `EXECUTION_PLAN.md`
 
 ## Test Quality Gate (Optional)
 

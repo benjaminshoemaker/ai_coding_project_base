@@ -12,7 +12,7 @@ Copy this checklist and track progress:
 
 ```
 Go Progress:
-- [ ] Detect context (project root vs feature directory)
+- [ ] Detect context (greenfield plan vs feature directory)
 - [ ] Check for execution plan
 - [ ] Read phase state
 - [ ] Determine next action
@@ -28,9 +28,13 @@ Determine working context:
    - FEATURE_DIR = CWD
    - MODE = "feature"
 
-2. Otherwise:
-   - PROJECT_ROOT = current working directory
+2. If current working directory matches pattern `*/plans/greenfield*`:
+   - PROJECT_ROOT = parent of parent of CWD (e.g., `/project/plans/greenfield` → `/project`)
    - MODE = "greenfield"
+
+3. Otherwise:
+   - PROJECT_ROOT = current working directory
+   - MODE = "greenfield-legacy"
 
 ## Step 1: Check for Execution Plan
 
@@ -64,6 +68,11 @@ NO EXECUTION PLAN
 =================
 
 No EXECUTION_PLAN.md found in this directory.
+
+If this project uses the scoped greenfield layout and `plans/greenfield/EXECUTION_PLAN.md`
+exists here, run:
+  cd plans/greenfield
+  /go
 
 Options:
   - If you have specs ready: Run /generate-plan from the toolkit repo
@@ -178,7 +187,7 @@ Use AskUserQuestion:
 - "Review individually" → Invoke `/review-deferred`
 - "Skip for now" → Keep queue, note in session
 
-4. If queue is non-empty but `drainOnCompletion` is false:
+1. If queue is non-empty but `drainOnCompletion` is false:
 
 ```
 EXECUTION COMPLETE
@@ -194,7 +203,7 @@ Summary:
 - Deferred items: {N} pending review
 ```
 
-5. If queue is empty or file doesn't exist:
+1. If queue is empty or file doesn't exist:
 
 ```
 EXECUTION COMPLETE

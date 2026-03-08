@@ -1,11 +1,11 @@
 ---
 name: feature-plan
-description: Generate EXECUTION_PLAN.md and AGENTS_ADDITIONS.md for a feature. Use after /feature-technical-spec to create the task breakdown.
+description: Generate EXECUTION_PLAN.md and scoped AGENTS.md files for a feature. Use after /feature-technical-spec to create the task breakdown.
 argument-hint: <feature-name>
 allowed-tools: Bash, Read, Write, Edit, AskUserQuestion, Glob, Grep
 ---
 
-Generate the execution plan and agent additions for the feature `$1`.
+Generate the execution plan and scoped agent instructions for the feature `$1`.
 
 ## Workflow
 
@@ -17,7 +17,7 @@ Feature Plan Progress:
 - [ ] Handle arguments (feature name)
 - [ ] Check prerequisites (FEATURE_SPEC.md + FEATURE_TECHNICAL_SPEC.md)
 - [ ] Existing file guard (prevent overwrite)
-- [ ] Generate EXECUTION_PLAN.md and AGENTS_ADDITIONS.md
+- [ ] Generate EXECUTION_PLAN.md and feature-local AGENTS.md
 - [ ] Verify execution skills installed
 - [ ] Codex CLI detection and skill install
 - [ ] Run spec-verification
@@ -55,9 +55,9 @@ Feature Plan Progress:
 
 ## Existing File Guard (Prevent Overwrite)
 
-Before generating anything, check whether either output file already exists:
+Before generating anything, check whether any output files already exist:
 - `FEATURE_DIR/EXECUTION_PLAN.md`
-- `FEATURE_DIR/AGENTS_ADDITIONS.md`
+- `FEATURE_DIR/AGENTS.md`
 
 - If neither exists: continue normally.
 - If one or both exist: **STOP** and ask the user what to do for the existing file(s):
@@ -72,13 +72,23 @@ Read `.claude/skills/feature-plan/PROMPT.md` and follow its instructions exactly
 1. Read `FEATURE_DIR/FEATURE_SPEC.md` and `FEATURE_DIR/FEATURE_TECHNICAL_SPEC.md` as inputs
 2. Read existing `PROJECT_ROOT/AGENTS.md` to understand current conventions
 3. Generate EXECUTION_PLAN.md with phases, steps, and tasks for the feature
-4. Generate AGENTS_ADDITIONS.md with any additional workflow guidelines
+4. Generate `FEATURE_DIR/AGENTS.md` with feature-scoped workflow guidance
 
 ## Output
 
 Write both documents to the feature directory:
 - `FEATURE_DIR/EXECUTION_PLAN.md`
-- `FEATURE_DIR/AGENTS_ADDITIONS.md`
+- `FEATURE_DIR/AGENTS.md`
+
+## Create Scoped CLAUDE.md
+
+If `FEATURE_DIR/CLAUDE.md` does not exist, create it with:
+
+```
+@AGENTS.md
+```
+
+If it already exists, do not overwrite it.
 
 ## Verify Execution Skills
 
@@ -179,14 +189,15 @@ After verification passes, run cross-model review if Codex CLI is available:
 
 When verification is complete, inform the user:
 ```
-EXECUTION_PLAN.md and AGENTS_ADDITIONS.md created and verified at features/$1/
+EXECUTION_PLAN.md and AGENTS.md created and verified at features/$1/
 
 Verification: PASSED | PASSED WITH NOTES | NEEDS REVIEW
 Cross-Model Review: PASSED | PASSED WITH NOTES | SKIPPED
 
 Next steps:
-1. /fresh-start  (will offer to merge AGENTS_ADDITIONS.md if needed)
-2. /configure-verification
-3. /phase-prep 1
-4. /phase-start 1
+1. cd features/$1
+2. /fresh-start
+3. /configure-verification
+4. /phase-prep 1
+5. /phase-start 1
 ```

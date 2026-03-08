@@ -8,8 +8,8 @@ A structured framework for AI agents to build software autonomously — with ver
 
 A framework that turns ad-hoc AI prompting into a repeatable workflow with automatic verification. Three phases:
 
-1. **Specify** — Guided Q&A produces `PRODUCT_SPEC.md` and `TECHNICAL_SPEC.md`
-2. **Plan** — Generator creates `EXECUTION_PLAN.md` (tasks with testable acceptance criteria) and `AGENTS.md` (workflow rules)
+1. **Specify** — Guided Q&A produces `plans/greenfield/PRODUCT_SPEC.md` and `plans/greenfield/TECHNICAL_SPEC.md`
+2. **Plan** — Generator creates `plans/greenfield/EXECUTION_PLAN.md`, a scoped `plans/greenfield/AGENTS.md`, and a durable root `AGENTS.md`
 3. **Execute** — AI agents work task-by-task with automatic verification after each one
 
 **What makes execution robust?**
@@ -41,6 +41,7 @@ cd ~/Projects/my-new-app
 /product-spec
 /technical-spec
 /generate-plan
+cd plans/greenfield
 /fresh-start
 ```
 
@@ -57,9 +58,9 @@ For feature development in existing projects, see [Feature Workflow](docs/featur
 │                                                                         │
 │   Your Idea                                                             │
 │       ↓                                                                 │
-│   /product-spec  ───────────→  PRODUCT_SPEC.md                          │
+│   /product-spec  ───────────→  plans/greenfield/PRODUCT_SPEC.md        │
 │       ↓                                                                 │
-│   /technical-spec  ─────────→  TECHNICAL_SPEC.md                        │
+│   /technical-spec  ─────────→  plans/greenfield/TECHNICAL_SPEC.md      │
 │       ↓                                                                 │
 │   [Auto-Verify] ─────────────→  Check context preservation & quality    │
 │                                                                         │
@@ -69,8 +70,8 @@ For feature development in existing projects, see [Feature Workflow](docs/featur
 │                           PLANNING PHASE                                │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                         │
-│   /generate-plan  ──────────→  EXECUTION_PLAN.md                        │
-│                                 AGENTS.md                               │
+│   /generate-plan  ──────────→  plans/greenfield/EXECUTION_PLAN.md      │
+│                                 AGENTS.md + plans/greenfield/AGENTS.md │
 │       ↓                                                                 │
 │   [Auto-Verify] ─────────────→  Check context preservation & quality    │
 │                                                                         │
@@ -80,7 +81,9 @@ For feature development in existing projects, see [Feature Workflow](docs/featur
 │                          EXECUTION PHASE                                │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                         │
-│   /fresh-start  ────────────→  Orient to project, load context          │
+│   cd plans/greenfield                                               │
+│       ↓                                                                 │
+│   /fresh-start  ────────────→  Orient to scoped plan, load context      │
 │       ↓                                                                 │
 │   /phase-start N  ──────────→  Execute phase (branch + commits)         │
 │       ↓                                                                 │
@@ -97,7 +100,7 @@ For feature development in existing projects, see [Feature Workflow](docs/featur
 |---------|-------------|
 | `/product-spec` | Generate product specification |
 | `/technical-spec` | Generate technical specification |
-| `/generate-plan` | Generate execution plan and AGENTS.md |
+| `/generate-plan` | Generate the greenfield execution plan plus root and scoped AGENTS files |
 | `/go` | Resume execution from wherever you left off |
 | `/fresh-start` | Orient to project, load context, begin execution |
 | `/phase-start N` | Execute phase N (creates branch, commits per task) |
@@ -111,12 +114,17 @@ See [Command Reference](docs/commands.md) for the full list including feature, s
 
 ```
 your-project/
-├── PRODUCT_SPEC.md          # What you're building
-├── TECHNICAL_SPEC.md        # How it's built
-├── EXECUTION_PLAN.md        # Tasks with acceptance criteria
-├── AGENTS.md                # Workflow rules for AI agents
+├── AGENTS.md                # Durable project-wide workflow rules
+├── CLAUDE.md                # Root Claude shim
 ├── LEARNINGS.md             # Discovered patterns (created as you work)
 ├── DEFERRED.md              # Deferred requirements (captured during Q&A)
+├── plans/
+│   └── greenfield/
+│       ├── PRODUCT_SPEC.md      # What you're building
+│       ├── TECHNICAL_SPEC.md    # How it's built
+│       ├── EXECUTION_PLAN.md    # Tasks with acceptance criteria
+│       ├── AGENTS.md            # Greenfield execution guidance
+│       └── CLAUDE.md            # Scoped Claude shim
 ├── .claude/
 │   ├── skills/              # Execution skills (auto-copied)
 │   ├── verification-config.json

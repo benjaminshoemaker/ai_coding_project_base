@@ -135,8 +135,6 @@ Bottom line: re-implementing deployment preview support is still worthwhile for 
 - **REQ-ID generation**: Auto-generated during /product-spec (sequential: REQ-001, REQ-002, etc.)
 - **Existing projects**: Skip gracefully — if no REQ-ID exists for a task, omit [REQ-XXX] from commit message
 - [x] **[P0 / High x2]** Attempt automation before manual fallback — Add logic to attempt verification with available tools (curl, browser MCP, file inspection) before falling back to manual (see audit below) — DONE
-
-
 - [x] **[P1 / Medium]** [ready] Create `/create-pr` skill with automatic Codex review — Runs Codex automatically before PR creation, includes any findings in PR description, and wraps `gh pr create`. Provides a controlled integration point for cross-model review in the PR workflow. — DONE (fc50e37)
 
 **Clarifications (from Q&A 2026-01-29):**
@@ -244,8 +242,10 @@ GitHub Merge Queue makes integration async and automatic:
 - Consider adding to workstream contract verification
 
 **References:**
-- GitHub Merge Queue Docs: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue
-- How GitHub uses merge queue internally: https://github.blog/engineering/engineering-principles/how-github-uses-merge-queue-to-ship-hundreds-of-changes-every-day/
+- GitHub Merge Queue Docs:
+  [Managing a merge queue](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue)
+- How GitHub uses merge queue internally:
+  [How GitHub uses merge queue to ship hundreds of changes every day](https://github.blog/engineering/engineering-principles/how-github-uses-merge-queue-to-ship-hundreds-of-changes-every-day/)
 - Codex consultation recommends this as "simplest architecture that achieves async integration"
 
 **Goals Addressed (from PROJECT_GOALS.md):**
@@ -820,11 +820,13 @@ A lightweight alternative to a full "compound documentation" system — a simple
 - `.claude/commands/capture-learning.md`
 
 ---
-
-
 ### Move Product Specification Flow to Target Directory
 
-- [ ] **[P2 / Medium]** Move product specification flow to run from target directory — Currently `/product-spec` and `/technical-spec` run from the toolkit repo. Refactor so they run from the target project directory like feature commands (`/feature-spec`, `/feature-technical-spec`, `/feature-plan`) already do.
+- [ ] **[P2 / Medium]** Move product specification flow to run from target
+  directory — Currently `/product-spec` and `/technical-spec` run from the
+  toolkit repo. Refactor so they run from the target project directory like
+  feature commands (`/feature-spec`, `/feature-technical-spec`,
+  `/feature-plan`) already do.
 
 ---
 

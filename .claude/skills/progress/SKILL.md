@@ -1,10 +1,10 @@
 ---
 name: progress
-description: Report completion status of phases, tasks, and acceptance criteria from EXECUTION_PLAN.md. Use to check how many tasks remain and which phases are done.
+description: Report completion status of the main and feature execution plans. Use to check how many tasks remain and which phases are done.
 allowed-tools: Read, Grep, Glob
 ---
 
-Read EXECUTION_PLAN.md and any feature execution plans to show overall project status.
+Read the main greenfield execution plan and any feature execution plans to show overall project status.
 
 ## Workflow
 
@@ -23,9 +23,11 @@ After parsing EXECUTION_PLAN.md, validate that at least one phase and one task w
 
 ## Directory Guard (Wrong Directory Check)
 
-Before starting, confirm `EXECUTION_PLAN.md` exists in the current working directory.
+Before starting, confirm one of these exists in the current working directory:
+- `EXECUTION_PLAN.md`
+- `plans/greenfield/EXECUTION_PLAN.md`
 
-- If it does not exist, **STOP** and tell the user to `cd` into their project directory (the one containing `EXECUTION_PLAN.md`) and re-run `/progress`.
+- If neither exists, **STOP** and tell the user to `cd` into their project directory (the one containing the active `EXECUTION_PLAN.md`) and re-run `/progress`.
 
 ## Discover All Execution Plans
 
@@ -33,7 +35,8 @@ Search for execution plans in the project:
 
 ```bash
 # Main project plan (required)
-EXECUTION_PLAN.md
+plans/greenfield/EXECUTION_PLAN.md
+EXECUTION_PLAN.md   # legacy fallback
 
 # Feature plans (optional) - check common locations
 features/*/EXECUTION_PLAN.md
@@ -42,7 +45,7 @@ FEATURES/*/EXECUTION_PLAN.md
 ```
 
 Build a list of all execution plans found:
-1. Main: `./EXECUTION_PLAN.md` (always present)
+1. Main: `./plans/greenfield/EXECUTION_PLAN.md` when present, otherwise legacy `./EXECUTION_PLAN.md`
 2. Features: Any `EXECUTION_PLAN.md` files in `features/` subdirectories
 
 ## Checkbox Categories
@@ -239,7 +242,7 @@ When scanning for feature plans:
 PROJECT PROGRESS
 ================
 
-Main Project: EXECUTION_PLAN.md
+Main Project: plans/greenfield/EXECUTION_PLAN.md
 Phases: 4 | Steps: 12 | Tasks: 28
 
 | Phase | Status | Task Criteria | Checkpoint |

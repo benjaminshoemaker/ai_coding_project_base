@@ -12,9 +12,10 @@ Generate an execution toolkit from product and technical specifications. This pr
 ```
 I need you to generate an execution toolkit from the attached specifications (PRODUCT_SPEC.md and TECHNICAL_SPEC.md).
 
-Generate two documents:
-1. EXECUTION_PLAN.md — Task breakdown with acceptance criteria
-2. AGENTS.md — Workflow guidelines for AI agents
+Generate three documents:
+1. `plans/greenfield/EXECUTION_PLAN.md` — Task breakdown with acceptance criteria
+2. `AGENTS.md` — Durable project-wide workflow guidelines
+3. `plans/greenfield/AGENTS.md` — Greenfield execution guidance for agents working in `plans/greenfield/`
 
 Read `~/.claude/skills/shared/EXECUTION_PLAN_FORMAT.md` for the execution hierarchy definitions,
 verification types, EXECUTION_PLAN.md template structure, task quality checks, red flags, and
@@ -37,20 +38,23 @@ EXECUTION_PLAN.md owns:
 - Pre-phase setup requirements
 - Phase checkpoint criteria
 
-AGENTS.md owns:
-- Workflow mechanics (how agents pick up and complete tasks)
-- TDD policy and testing requirements
-- Context management between tasks
+Root `AGENTS.md` owns:
+- Durable workflow mechanics that apply across the project
 - Guardrails and "when to stop" triggers
-- Verification protocol
-- Git conventions
+- Project-wide git conventions
 - Minimal project context (tech stack, dev server only)
 
-AGENTS.md does NOT include:
+`plans/greenfield/AGENTS.md` owns:
+- Greenfield execution context for work inside `plans/greenfield/`
+- Which planning documents to load for the initial build
+- Per-task execution loop, verification flow, and progress updates
+
+Root `AGENTS.md` does NOT include:
 - Error handling patterns (agents discover from codebase)
-- Mocking strategies (agents infer from test framework)
+- Long testing or mocking reference guides
 - Naming conventions (agents follow existing code)
 - Detailed file structures (agents explore the repo)
+- Phase-specific execution detail that belongs in `plans/greenfield/AGENTS.md`
 
 ══════════════════════════════════════════════════════════════════════════════
 GENERATION INSTRUCTIONS
@@ -82,11 +86,14 @@ SPECIFICATION DOCUMENTS
 
 ══════════════════════════════════════════════════════════════════════════════
 
-Read `.claude/skills/generate-plan/AGENTS_TEMPLATE.md` and use its contents as the AGENTS.md template (do not paraphrase or summarize — use the template verbatim, filling in project-specific values).
+Read `.claude/skills/generate-plan/AGENTS_TEMPLATE.md` and use it for the root `AGENTS.md` template.
+Read `.claude/skills/generate-plan/PLAN_AGENTS_TEMPLATE.md` and use it for `plans/greenfield/AGENTS.md`.
+Do not paraphrase or summarize either template — use them verbatim, filling in project-specific values.
 
 Generate:
-1. EXECUTION_PLAN.md
-2. AGENTS.md
+1. `plans/greenfield/EXECUTION_PLAN.md`
+2. `AGENTS.md`
+3. `plans/greenfield/AGENTS.md`
 ```
 
 ---
@@ -108,12 +115,9 @@ Generate:
 - [ ] Requirement fields link to REQ-XXX from PRODUCT_SPEC.md where applicable
 
 **AGENTS.md**
+- [ ] Root `AGENTS.md` stays concise and project-wide
+- [ ] `plans/greenfield/AGENTS.md` captures the greenfield execution loop
 - [ ] Project context filled in (tech stack, dev server)
-- [ ] Workflow section present
-- [ ] Context management section present
-- [ ] Testing policy present
-- [ ] Test quality standards present (AAA pattern, naming, what to test)
-- [ ] Mocking policy present (what to mock, mock hygiene)
 - [ ] "When to stop" triggers present
 - [ ] Git conventions present (including `/create-pr` for PRs)
 - [ ] Guardrails present

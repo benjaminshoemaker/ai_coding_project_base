@@ -2,7 +2,11 @@
 
 Modern software development lifecycle **outcomes** for comparison during vision audits.
 
-This document catalogs what successful software development achieves, organized by phase. Practices and tools listed are *examples* of how these outcomes are currently achieved—not prescriptions. As technology evolves (AI-assisted coding, preview deployments, etc.), the practices may change while the outcomes remain stable.
+This document catalogs what successful software development achieves, organized
+by phase. Practices and tools listed are *examples* of how these outcomes are
+currently achieved, not prescriptions. As technology evolves (AI-assisted
+coding, preview deployments, etc.), the practices may change while the outcomes
+remain stable.
 
 **Sources:** [DORA Research](https://dora.dev/), [Atlassian SDLC Guide](https://www.atlassian.com/agile/software-development/sdlc), [Jobs to Be Done Framework](https://www.productplan.com/glossary/jobs-to-be-done-framework/)
 

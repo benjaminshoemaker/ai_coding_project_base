@@ -75,15 +75,15 @@ Fetch documentation when ANY of these apply:
 
 | Service | SDK/API Documentation |
 |---------|----------------------|
-| Supabase | https://supabase.com/docs/reference/javascript |
-| Firebase | https://firebase.google.com/docs/reference/js |
-| Stripe | https://stripe.com/docs/api |
-| Auth0 | https://auth0.com/docs/api |
-| Clerk | https://clerk.com/docs/references/javascript |
-| Resend | https://resend.com/docs/api-reference |
-| OpenAI | https://platform.openai.com/docs/api-reference |
-| Anthropic | https://docs.anthropic.com/en/api |
-| Trigger.dev | https://trigger.dev/docs |
+| Supabase | <https://supabase.com/docs/reference/javascript> |
+| Firebase | <https://firebase.google.com/docs/reference/js> |
+| Stripe | <https://stripe.com/docs/api> |
+| Auth0 | <https://auth0.com/docs/api> |
+| Clerk | <https://clerk.com/docs/references/javascript> |
+| Resend | <https://resend.com/docs/api-reference> |
+| OpenAI | <https://platform.openai.com/docs/api-reference> |
+| Anthropic | <https://docs.anthropic.com/en/api> |
+| Trigger.dev | <https://trigger.dev/docs> |
 
 For services not listed, use WebSearch: `{service name} {language} SDK documentation`
 
@@ -98,20 +98,25 @@ When implementing external service integrations:
 
 ## Context Detection
 
-Determine working context. **For feature work, users should `cd` into `features/<name>/` before running execution commands.** The skill auto-detects feature mode from the path.
+Determine working context. Run execution commands from the scoped directory that contains the active `EXECUTION_PLAN.md`.
 
 1. If current working directory matches pattern `*/features/*`:
    - PROJECT_ROOT = parent of parent of CWD (e.g., `/project/features/foo` → `/project`)
    - MODE = "feature"
 
-2. Otherwise:
-   - PROJECT_ROOT = current working directory
+2. If current working directory matches pattern `*/plans/greenfield*`:
+   - PROJECT_ROOT = parent of parent of CWD (e.g., `/project/plans/greenfield` → `/project`)
    - MODE = "greenfield"
+
+3. Otherwise:
+   - PROJECT_ROOT = current working directory
+   - MODE = "greenfield-legacy"
 
 ## Context
 
 Before starting, read these files:
-- **PROJECT_ROOT/AGENTS.md** — Follow all workflow conventions
+- **PROJECT_ROOT/AGENTS.md** — Follow all durable workflow conventions
+- **AGENTS.md** — Follow scoped execution guidance if present in CWD
 - **EXECUTION_PLAN.md** — Task definitions and acceptance criteria (from CWD)
 
 ## Directory Guard (Wrong Directory Check)
@@ -121,6 +126,7 @@ Before starting, confirm the required files exist:
 - `PROJECT_ROOT/AGENTS.md` exists
 
 - If either is missing, **STOP** and tell the user to `cd` into their project/feature directory (the one containing `EXECUTION_PLAN.md`) and re-run `/phase-start $1`.
+- If `plans/greenfield/EXECUTION_PLAN.md` exists in the current working directory, tell the user to `cd plans/greenfield` and re-run `/phase-start $1`.
 
 ## Context Check
 
@@ -362,7 +368,11 @@ Auto-advance to `/phase-checkpoint $1` ONLY if ALL of these are true:
 4. ✓ `--pause` flag was NOT passed to this command
 5. ✓ `autoAdvance.enabled` is true (or not configured, defaulting to true)
 
-**Rationale:** Auto-verify attempts automation before blocking. Only items tagged `(MANUAL)` that genuinely require human judgment AND affect downstream work block auto-advance. Items tagged `(MANUAL:DEFER)` are enqueued for later review. Items that can be verified with curl, file checks, or browser automation don't require human presence.
+**Rationale:** Auto-verify attempts automation before blocking. Only items
+tagged `(MANUAL)` that genuinely require human judgment and affect downstream
+work block auto-advance. Items tagged `(MANUAL:DEFER)` are enqueued for later
+review. Items that can be verified with curl, file checks, or browser
+automation do not require human presence.
 
 ### If Auto-Advance Conditions Met
 
