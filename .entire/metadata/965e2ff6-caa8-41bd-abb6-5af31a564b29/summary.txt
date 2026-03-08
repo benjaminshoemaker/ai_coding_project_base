@@ -1,0 +1,11 @@
+All done. Here's the summary:
+
+| Task | Status | Detail |
+|------|--------|--------|
+| **4. Commit in toolkit** | Done | `87339ad` in `ai_coding_project_base` |
+| **2. Sync KineticBI** | Done | 4 files copied, verified identical |
+| **3. Sync all projects** | Done | 12 projects synced (4 files each = 48 files total) |
+
+`★ Insight ─────────────────────────────────────`
+The macOS `cp` alias includes `-i` (interactive confirm) which silently declines in non-interactive shells. Using `/bin/cp` bypasses shell aliases — a common gotcha when scripting on macOS. This is worth remembering anytime you're doing batch file operations from a tool runner.
+`─────────────────────────────────────────────────`
