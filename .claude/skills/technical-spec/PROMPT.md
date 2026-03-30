@@ -28,7 +28,10 @@ We are building an MVP - bias your choices towards simplicity, ease of implement
 When facing significant technical decisions (tech stack, database, framework, architecture pattern), help the user make informed choices:
 
 ### Web Research (Required for Major Decisions)
-Before recommending a technology choice, use WebSearch to gather current information:
+
+**In `--lean` mode:** Launch all research as background Agent calls (`run_in_background: true`) and continue the Q&A without waiting. When results arrive, only surface findings that would materially change a recommendation — e.g., a critical production issue with a chosen technology, a deprecation or breaking change, or a clearly superior alternative. Skip routine benchmark comparisons and ecosystem summaries.
+
+**In normal mode:** Before recommending a technology choice, use WebSearch to gather current information:
 - Recent benchmarks and performance comparisons
 - Known issues or limitations discovered in production
 - Community adoption trends and ecosystem health

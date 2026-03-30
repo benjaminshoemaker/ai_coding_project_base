@@ -1,7 +1,8 @@
 ---
 name: product-spec
 description: Generate PRODUCT_SPEC.md through guided Q&A. Use as the first step when starting a new greenfield project.
-allowed-tools: Read, Write, AskUserQuestion, Bash
+argument-hint: "[--lean]"
+allowed-tools: Read, Write, AskUserQuestion, Bash, Agent
 ---
 
 Generate a product specification document for the current project.
@@ -21,6 +22,12 @@ Product Spec Progress:
 - [ ] Step 7: Review and refine with user
 - [ ] Step 8: Suggest next step (/technical-spec)
 ```
+
+## Lean Mode (`--lean`)
+
+When `--lean` is passed:
+- **Web research runs in background:** Launch all WebSearch research as background Agent calls (`run_in_background: true`). Continue the Q&A without waiting. When results arrive, only interrupt the flow if a finding would materially change a recommendation (e.g., a critical known issue, a dominant competitor, a clearly superior alternative). Skip routine competitive analysis summaries.
+- **Skip post-generation Codex consult:** Do not run `/codex-consult` after writing the spec. Proceed directly to the Next Step.
 
 ## Directory Guard
 
@@ -50,11 +57,23 @@ Before asking any questions, ensure `plans/greenfield/` exists, then check wheth
   2. **Overwrite**: replace `plans/greenfield/PRODUCT_SPEC.md` with the new document
   3. **Abort**: do not write anything; suggest they rename/move the existing file first
 
+## Discovery Notes Integration
+
+Before starting the Q&A, check for discovery notes:
+1. Look for `plans/greenfield/DISCOVERY_NOTES.md`, then `DISCOVERY_NOTES.md` in project root.
+2. If found, read the file and use it as pre-filled context:
+   - **Key Decisions** entries answer questions about problem, audience, platform, stack, and scope — skip those questions in the Q&A.
+   - **Open Questions** become the focus of the Q&A — ask about those specifically.
+   - **Existing Solutions & Tools** should be referenced when making recommendations (e.g., suggest leveraging a library found during discovery).
+   - **Raw Context** provides nuance — use it to inform your recommendations but don't re-ask about it.
+3. Announce: "Found discovery notes — skipping {N} questions already answered during /discover."
+4. If discovery notes are incomplete or ambiguous on a topic, still ask about it.
+
 ## Process
 
 Read `.claude/skills/product-spec/PROMPT.md` and follow its instructions exactly:
 
-1. Ask the user to describe their idea
+1. Ask the user to describe their idea (skip if discovery notes provide a clear summary)
 2. Work through each question category (Problem, Users, Experience, Features, Data)
 3. Make recommendations with confidence levels
 4. Generate the final PRODUCT_SPEC.md document
@@ -138,7 +157,9 @@ After collecting answers, append to `DEFERRED.md` right away (don't wait until e
 
 After capturing (or skipping), continue the spec Q&A where you left off. Don't break the flow.
 
-## Cross-Model Review (Automatic)
+## Cross-Model Review (Automatic — skipped in `--lean` mode)
+
+If `--lean` was passed, skip this entire section and proceed to Next Step.
 
 After writing `plans/greenfield/PRODUCT_SPEC.md`, run cross-model review if Codex CLI is available:
 

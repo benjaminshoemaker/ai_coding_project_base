@@ -1,7 +1,8 @@
 ---
 name: technical-spec
 description: Generate TECHNICAL_SPEC.md through guided Q&A. Use after /product-spec to define the technical architecture.
-allowed-tools: Read, Write, Edit, AskUserQuestion, Grep, Glob, Bash
+argument-hint: "[--lean]"
+allowed-tools: Read, Write, Edit, AskUserQuestion, Grep, Glob, Bash, Agent
 ---
 
 Generate a technical specification document for the current project.
@@ -22,6 +23,12 @@ Technical Spec Progress:
 - [ ] Step 8: Review and refine with user
 - [ ] Step 9: Suggest next step (/generate-plan)
 ```
+
+## Lean Mode (`--lean`)
+
+When `--lean` is passed:
+- **Web research runs in background:** Launch all WebSearch research as background Agent calls (`run_in_background: true`). Continue the Q&A without waiting. When results arrive, only interrupt the flow if a finding would materially change a recommendation (e.g., a critical production issue with a chosen technology, a clearly superior alternative, a deprecation or breaking change). Skip routine benchmark comparisons and ecosystem summaries.
+- **Skip post-generation Codex consult:** Do not run `/codex-consult` after writing the spec. Proceed directly to the Next Step.
 
 ## Directory Guard
 
@@ -153,7 +160,9 @@ After collecting answers, append to `DEFERRED.md` right away.
 
 After capturing (or skipping), continue the spec Q&A where you left off.
 
-## Cross-Model Review (Automatic)
+## Cross-Model Review (Automatic — skipped in `--lean` mode)
+
+If `--lean` was passed, skip this entire section and proceed to Next Step.
 
 After verification passes, run cross-model review if Codex CLI is available:
 

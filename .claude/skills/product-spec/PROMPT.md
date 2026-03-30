@@ -1,5 +1,13 @@
 Ask me questions so that we can develop a product specification document for this idea.
 
+### Discovery Notes Pre-fill
+
+If a `DISCOVERY_NOTES.md` file was found (see SKILL.md for lookup logic), treat its contents as pre-filled answers:
+- **Key Decisions** entries map directly to the questions below — skip any question whose answer is already clear from discovery notes.
+- **Open Questions** from discovery should become your priority questions — ask about those first.
+- **Existing Solutions & Tools** should inform your recommendations. If discovery found libraries to leverage, reference them. If a "Use Directly" candidate exists, acknowledge it and ask if the user still wants to build custom.
+- Focus the Q&A on gaps between what discovery covered and what the spec requires.
+
 The resulting document should answer at least (but not limited to) this set of questions:
 - What problem does the app solve?
 - Who is the ideal user for this app?
@@ -34,7 +42,10 @@ We are building an MVP - bias your choices towards simplicity, ease of implement
 When facing significant product decisions (platform, feature prioritization, user experience approach), help the user make informed choices:
 
 ### Web Research (Required for Market/Competitive Decisions)
-Before recommending product direction, use WebSearch to gather current information:
+
+**In `--lean` mode:** Launch all research as background Agent calls (`run_in_background: true`) and continue the Q&A without waiting. When results arrive, only surface findings that would materially change a recommendation — e.g., a critical known issue, a dominant competitor the user should know about, or a clearly superior alternative. Skip routine summaries.
+
+**In normal mode:** Before recommending product direction, use WebSearch to gather current information:
 - Competitor analysis (what do similar products do?)
 - User expectations for this category (what's table stakes vs. differentiator?)
 - Platform trends (mobile-first? desktop? PWA adoption rates?)
