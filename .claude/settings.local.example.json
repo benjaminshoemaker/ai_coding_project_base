@@ -23,12 +23,21 @@
   "codexReview": {
     "enabled": true,
     "codeModel": "gpt-5.3-codex",
+    "effort": "xhigh",
     "reviewTimeoutMinutes": 20,
     "taskTimeoutMinutes": 60
   },
   "codexConsult": {
     "enabled": true,
-    "researchModel": "gpt-5.2",
+    "researchModel": "gpt-5.3-codex",
+    "effort": "xhigh",
     "consultTimeoutMinutes": 20
+  },
+  "codexImplement": {
+    "enabled": true,
+    "model": "gpt-5.3-codex",
+    "effort": "xhigh",
+    "timeoutMinutes": 60,
+    "maxTasks": 5
   }
 }

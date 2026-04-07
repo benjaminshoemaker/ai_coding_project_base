@@ -71,6 +71,7 @@ Read `.claude/settings.local.json`:
 
 ```bash
 CODEX_MODEL=$(jq -r '.codexImplement.model // .codexReview.codeModel // empty' .claude/settings.local.json 2>/dev/null)
+CODEX_EFFORT=$(jq -r '.codexImplement.effort // .codexReview.effort // empty' .claude/settings.local.json 2>/dev/null)
 TIMEOUT_MINS=$(jq -r '.codexImplement.timeoutMinutes // .codexReview.taskTimeoutMinutes // 60' .claude/settings.local.json 2>/dev/null || echo "60")
 MAX_TASKS=$(jq -r '.codexImplement.maxTasks // 5' .claude/settings.local.json 2>/dev/null || echo "5")
 ENABLED=$(jq -r '.codexImplement.enabled // true' .claude/settings.local.json 2>/dev/null || echo "true")
@@ -240,6 +241,12 @@ if [ -n "$CODEX_MODEL" ]; then
   MODEL_FLAG="--model $CODEX_MODEL"
 fi
 
+# Build effort flag
+EFFORT_FLAG=""
+if [ -n "$CODEX_EFFORT" ]; then
+  EFFORT_FLAG="-c 'model_reasoning_effort=\"$CODEX_EFFORT\"'"
+fi
+
 PROMPT_FILE="/tmp/codex-impl-task-${TASK_NUM}.md"
 OUTPUT_FILE="/tmp/codex-impl-task-${TASK_NUM}-output.txt"
 
@@ -248,6 +255,7 @@ cat $PROMPT_FILE | codex exec \
   -c 'approval_policy="never"' \
   -c 'features.search=true' \
   $MODEL_FLAG \
+  $EFFORT_FLAG \
   -o $OUTPUT_FILE \
   -
 EXIT_CODE=$?
@@ -366,6 +374,7 @@ Add to `.claude/settings.local.json`:
   "codexImplement": {
     "enabled": true,
     "model": "gpt-5.3-codex",
+    "effort": "xhigh",
     "timeoutMinutes": 60,
     "maxTasks": 5
   }

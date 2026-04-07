@@ -39,6 +39,7 @@ OUTPUT_FILE="/tmp/codex-review-output-$(date +%s).txt"
 
 # Read config (model selection handled by SKILL.md Step 1)
 CODEX_MODEL=$(jq -r '.codexReview.codeModel // empty' .claude/settings.local.json 2>/dev/null)
+CODEX_EFFORT=$(jq -r '.codexReview.effort // empty' .claude/settings.local.json 2>/dev/null)
 TIMEOUT_MINS=$(jq -r '.codexReview.reviewTimeoutMinutes // 10' .claude/settings.local.json 2>/dev/null || echo "10")
 
 # Build model flag if configured
@@ -47,12 +48,19 @@ if [ -n "$CODEX_MODEL" ]; then
   MODEL_FLAG="--model $CODEX_MODEL"
 fi
 
+# Build effort flag if configured
+EFFORT_FLAG=""
+if [ -n "$CODEX_EFFORT" ]; then
+  EFFORT_FLAG="-c 'model_reasoning_effort=\"$CODEX_EFFORT\"'"
+fi
+
 # Execute (use Bash tool's timeout parameter for timeout — NOT shell `timeout`)
 cat {prompt_file} | codex exec \
   --sandbox danger-full-access \
   -c 'approval_policy="never"' \
   -c 'features.search=true' \
   $MODEL_FLAG \
+  $EFFORT_FLAG \
   -o $OUTPUT_FILE \
   -
 EXIT_CODE=$?
@@ -94,6 +102,7 @@ fi
 |------|---------|
 | `--sandbox danger-full-access` | Enables network access for documentation research |
 | `-c 'approval_policy="never"'` | Non-interactive execution |
+| `-c 'model_reasoning_effort=...'` | Optional, controls reasoning depth (low/medium/high/xhigh) |
 | `-c 'features.search=true'` | Enable web search for documentation research |
 | `--model` | Optional, use configured model or Codex default |
 | `-o $OUTPUT_FILE` | Write final response to file for parsing |

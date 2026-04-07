@@ -39,6 +39,7 @@ OUTPUT_FILE="/tmp/codex-consult-output-$(date +%s).txt"
 
 # Read config (model selection handled by SKILL.md Step 1)
 CONSULT_MODEL=$(jq -r '.codexConsult.researchModel // .codexReview.researchModel // empty' .claude/settings.local.json 2>/dev/null)
+CONSULT_EFFORT=$(jq -r '.codexConsult.effort // .codexReview.effort // empty' .claude/settings.local.json 2>/dev/null)
 TIMEOUT_MINS=$(jq -r '.codexConsult.consultTimeoutMinutes // 15' .claude/settings.local.json 2>/dev/null || echo "15")
 
 # Build model flag if configured
@@ -47,12 +48,19 @@ if [ -n "$CONSULT_MODEL" ]; then
   MODEL_FLAG="--model $CONSULT_MODEL"
 fi
 
+# Build effort flag if configured
+EFFORT_FLAG=""
+if [ -n "$CONSULT_EFFORT" ]; then
+  EFFORT_FLAG="-c 'model_reasoning_effort=\"$CONSULT_EFFORT\"'"
+fi
+
 # Execute (use Bash tool's timeout parameter for timeout — NOT shell `timeout`)
 cat {prompt_file} | codex exec \
   --sandbox danger-full-access \
   -c 'approval_policy="never"' \
   -c 'features.search=true' \
   $MODEL_FLAG \
+  $EFFORT_FLAG \
   -o $OUTPUT_FILE \
   -
 EXIT_CODE=$?

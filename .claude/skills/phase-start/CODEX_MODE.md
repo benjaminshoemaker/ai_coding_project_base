@@ -49,6 +49,9 @@ Extract configuration values:
 # Extract model (default: gpt-5.3-codex for code tasks)
 CODEX_MODEL=$(jq -r '.codexReview.codeModel // empty' .claude/settings.local.json 2>/dev/null)
 
+# Extract reasoning effort (default: use Codex CLI default)
+CODEX_EFFORT=$(jq -r '.codexReview.effort // empty' .claude/settings.local.json 2>/dev/null)
+
 # Extract timeout in minutes (default: 60 = 1 hour)
 TIMEOUT_MINS=$(jq -r '.codexReview.taskTimeoutMinutes // 60' .claude/settings.local.json 2>/dev/null || echo "60")
 TIMEOUT_SECS=$((TIMEOUT_MINS * 60))
@@ -134,12 +137,19 @@ if [ -n "$CODEX_MODEL" ]; then
   MODEL_FLAG="--model $CODEX_MODEL"
 fi
 
+# Build effort flag if configured
+EFFORT_FLAG=""
+if [ -n "$CODEX_EFFORT" ]; then
+  EFFORT_FLAG="-c 'model_reasoning_effort=\"$CODEX_EFFORT\"'"
+fi
+
 # Execute with timeout (default: 1 hour)
 timeout ${TIMEOUT_SECS:-3600} bash -c "cat $TASK_PROMPT | codex exec \
   --sandbox danger-full-access \
   -c 'approval_policy=\"never\"' \
   -c 'features.search=true' \
   $MODEL_FLAG \
+  $EFFORT_FLAG \
   -o $TASK_OUTPUT \
   -"
 EXIT_CODE=$?
@@ -150,6 +160,7 @@ EXIT_CODE=$?
 - `-c 'approval_policy="never"'`: Non-interactive, no approval prompts
 - `-c 'features.search=true'`: Enable web search for documentation research
 - `--model`: Optional, uses configured model or Codex default
+- `-c 'model_reasoning_effort=...'`: Optional, controls reasoning depth (low/medium/high/xhigh)
 - `-o $TASK_OUTPUT`: Write final response to file for parsing
 - `-`: Read prompt from stdin
 - `timeout`: Hard limit per task (default 1 hour)
