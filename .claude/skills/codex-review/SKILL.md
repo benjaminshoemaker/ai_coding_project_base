@@ -185,36 +185,9 @@ that confuse IDE watchers, hot-reload, and other processes. The HEAD check alone
 
 ### Invoke Codex
 
-```bash
-OUTPUT_FILE="/tmp/codex-review-output-$(date +%s).txt"
-
-# Build model flag
-MODEL_FLAG=""
-if [ -n "$CODEX_MODEL" ]; then
-  MODEL_FLAG="--model $CODEX_MODEL"
-fi
-
-# Execute (use Bash tool's timeout parameter for timeout — NOT shell `timeout`)
-cat {prompt_file} | codex exec \
-  --sandbox danger-full-access \
-  -c 'approval_policy="never"' \
-  -c 'features.search=true' \
-  $MODEL_FLAG \
-  -o $OUTPUT_FILE \
-  -
-EXIT_CODE=$?
-```
-
-### Post-Invocation Safety Check
-
-```bash
-# Check if Codex made any commits
-HEAD_AFTER=$(git rev-parse HEAD)
-if [ "$HEAD_BEFORE" != "$HEAD_AFTER" ]; then
-  echo "WARNING: Codex made commits during review. Reverting to pre-review state."
-  git reset --hard "$HEAD_BEFORE"
-fi
-```
+See [CODEX_INVOCATION.md](CODEX_INVOCATION.md) for the full command, effort handling,
+and safety checks. The invocation file is the single source of truth — do not
+duplicate the command here.
 
 **Flags explained:**
 - `--sandbox danger-full-access`: Enables network access for documentation research

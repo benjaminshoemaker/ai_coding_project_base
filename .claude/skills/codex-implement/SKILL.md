@@ -219,6 +219,12 @@ For each task (sequentially):
 ### Step 1: Capture Safety State
 
 ```bash
+# Fail fast if worktree is dirty — rollback can't safely distinguish
+# Codex changes from pre-existing uncommitted work
+if [ -n "$(git status --porcelain)" ]; then
+  echo "WARNING: Worktree has uncommitted changes. Commit or stash before running Codex."
+fi
+
 HEAD_BEFORE=$(git rev-parse HEAD)
 ```
 
@@ -242,9 +248,9 @@ if [ -n "$CODEX_MODEL" ]; then
 fi
 
 # Build effort flag
-EFFORT_FLAG=""
+EFFORT_ARGS=()
 if [ -n "$CODEX_EFFORT" ]; then
-  EFFORT_FLAG="-c 'model_reasoning_effort=\"$CODEX_EFFORT\"'"
+  EFFORT_ARGS=(-c "model_reasoning_effort=\"$CODEX_EFFORT\"")
 fi
 
 PROMPT_FILE="/tmp/codex-impl-task-${TASK_NUM}.md"
@@ -255,7 +261,7 @@ cat $PROMPT_FILE | codex exec \
   -c 'approval_policy="never"' \
   -c 'features.search=true' \
   $MODEL_FLAG \
-  $EFFORT_FLAG \
+  "${EFFORT_ARGS[@]}" \
   -o $OUTPUT_FILE \
   -
 EXIT_CODE=$?
@@ -275,7 +281,8 @@ Use Bash tool `timeout` parameter: `TIMEOUT_MINS * 60 * 1000` milliseconds.
 HEAD_AFTER=$(git rev-parse HEAD)
 if [ "$HEAD_BEFORE" != "$HEAD_AFTER" ]; then
   echo "WARNING: Codex made commits. Reverting."
-  git reset --hard "$HEAD_BEFORE"
+  git reset --soft "$HEAD_BEFORE"
+  git restore --staged .
 fi
 ```
 

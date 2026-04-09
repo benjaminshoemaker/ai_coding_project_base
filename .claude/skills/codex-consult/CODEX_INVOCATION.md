@@ -23,13 +23,19 @@ grants write access to the working tree. The safety guard prevents Codex from
 making unintended commits during consultation.
 
 ```bash
+# Fail fast if worktree is dirty — rollback can't safely distinguish
+# Codex changes from pre-existing uncommitted work
+if [ -n "$(git status --porcelain)" ]; then
+  echo "WARNING: Worktree has uncommitted changes. Commit or stash before running Codex consultation."
+fi
+
 # Record HEAD before Codex runs (to detect/revert accidental commits)
 HEAD_BEFORE=$(git rev-parse HEAD)
 ```
 
 **Note:** Do NOT stash uncommitted changes. Stash/pop triggers file-system events
-that confuse IDE watchers, hot-reload, and other processes. The HEAD check alone
-catches the only real risk (accidental commits by Codex).
+that confuse IDE watchers, hot-reload, and other processes. The dirty-worktree
+warning plus HEAD check catches the real risks.
 
 ## Build Command
 
@@ -38,7 +44,7 @@ catches the only real risk (accidental commits by Codex).
 OUTPUT_FILE="/tmp/codex-consult-output-$(date +%s).txt"
 
 # Read config (model selection handled by SKILL.md Step 1)
-CONSULT_MODEL=$(jq -r '.codexConsult.researchModel // .codexReview.researchModel // empty' .claude/settings.local.json 2>/dev/null)
+CONSULT_MODEL=$(jq -r '.codexConsult.researchModel // .codexReview.codeModel // empty' .claude/settings.local.json 2>/dev/null)
 CONSULT_EFFORT=$(jq -r '.codexConsult.effort // .codexReview.effort // empty' .claude/settings.local.json 2>/dev/null)
 TIMEOUT_MINS=$(jq -r '.codexConsult.consultTimeoutMinutes // 15' .claude/settings.local.json 2>/dev/null || echo "15")
 
@@ -49,9 +55,9 @@ if [ -n "$CONSULT_MODEL" ]; then
 fi
 
 # Build effort flag if configured
-EFFORT_FLAG=""
+EFFORT_ARGS=()
 if [ -n "$CONSULT_EFFORT" ]; then
-  EFFORT_FLAG="-c 'model_reasoning_effort=\"$CONSULT_EFFORT\"'"
+  EFFORT_ARGS=(-c "model_reasoning_effort=\"$CONSULT_EFFORT\"")
 fi
 
 # Execute (use Bash tool's timeout parameter for timeout — NOT shell `timeout`)
@@ -60,17 +66,18 @@ cat {prompt_file} | codex exec \
   -c 'approval_policy="never"' \
   -c 'features.search=true' \
   $MODEL_FLAG \
-  $EFFORT_FLAG \
+  "${EFFORT_ARGS[@]}" \
   -o $OUTPUT_FILE \
   -
 EXIT_CODE=$?
 
 # --- Post-Invocation Safety Check ---
-# Revert any commits Codex may have made
+# Revert any commits Codex may have made (only safe if worktree was clean)
 HEAD_AFTER=$(git rev-parse HEAD)
 if [ "$HEAD_BEFORE" != "$HEAD_AFTER" ]; then
   echo "WARNING: Codex made commits during consultation. Reverting."
-  git reset --hard "$HEAD_BEFORE"
+  git reset --soft "$HEAD_BEFORE"
+  git restore --staged .
 fi
 
 # --- End Safety Check ---
@@ -102,6 +109,7 @@ fi
 |------|---------|
 | `--sandbox danger-full-access` | Enables network access for documentation research |
 | `-c 'approval_policy="never"'` | Non-interactive execution |
+| `-c 'model_reasoning_effort=...'` | Optional, controls reasoning depth (low/medium/high/xhigh) |
 | `-c 'features.search=true'` | Enable web search for documentation research |
 | `--model` | Optional, use configured model or Codex default |
 | `-o $OUTPUT_FILE` | Write final response to file for parsing |

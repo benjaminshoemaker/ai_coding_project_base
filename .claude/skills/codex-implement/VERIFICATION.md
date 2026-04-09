@@ -18,8 +18,8 @@ Claude performs this check logically (not as a script):
 - Warn the user: "Codex modified unexpected files: {list}"
 - Ask via AskUserQuestion:
   - "Accept all changes" — proceed
-  - "Revert unexpected files" — `git checkout -- {files}`, keep expected changes
-  - "Revert everything" — `git checkout -- .`
+  - "Revert unexpected files" — `git restore {files}`, keep expected changes
+  - "Revert everything" — `git restore .`
 
 **Exception**: Test files and config/export files (package.json, index.ts barrel
 exports) that are reasonable side effects of the implementation are NOT violations.

@@ -104,7 +104,7 @@ Read `.claude/settings.local.json` for settings:
 
 ```bash
 # Read model from config (codexConsult with fallback to codexReview)
-CONSULT_MODEL=$(jq -r '.codexConsult.researchModel // .codexReview.researchModel // "gpt-5.2"' .claude/settings.local.json 2>/dev/null || echo "gpt-5.2")
+CONSULT_MODEL=$(jq -r '.codexConsult.researchModel // .codexReview.codeModel // "gpt-5.2"' .claude/settings.local.json 2>/dev/null || echo "gpt-5.2")
 TIMEOUT_MINS=$(jq -r '.codexConsult.consultTimeoutMinutes // 20' .claude/settings.local.json 2>/dev/null || echo "20")
 ```
 
@@ -181,36 +181,9 @@ that confuse IDE watchers, hot-reload, and other processes. The HEAD check alone
 
 ### Invoke Codex
 
-```bash
-OUTPUT_FILE="/tmp/codex-consult-output-$(date +%s).txt"
-
-# Build model flag
-MODEL_FLAG=""
-if [ -n "$CODEX_MODEL" ]; then
-  MODEL_FLAG="--model $CODEX_MODEL"
-fi
-
-# Execute (use Bash tool's timeout parameter for timeout — NOT shell `timeout`)
-cat {prompt_file} | codex exec \
-  --sandbox danger-full-access \
-  -c 'approval_policy="never"' \
-  -c 'features.search=true' \
-  $MODEL_FLAG \
-  -o $OUTPUT_FILE \
-  -
-EXIT_CODE=$?
-```
-
-### Post-Invocation Safety Check
-
-```bash
-# Check if Codex made any commits
-HEAD_AFTER=$(git rev-parse HEAD)
-if [ "$HEAD_BEFORE" != "$HEAD_AFTER" ]; then
-  echo "WARNING: Codex made commits during consultation. Reverting to pre-consult state."
-  git reset --hard "$HEAD_BEFORE"
-fi
-```
+See [CODEX_INVOCATION.md](CODEX_INVOCATION.md) for the full command, effort handling,
+and safety checks. The invocation file is the single source of truth — do not
+duplicate the command here.
 
 **Important:** Do NOT use `2>&1` — Codex streams progress to stderr and final output to stdout. Merging them corrupts the parseable response.
 
@@ -290,10 +263,10 @@ Read from `.claude/settings.local.json`:
 | Setting | Default | Fallback | Description |
 |---------|---------|----------|-------------|
 | `enabled` | `true` | `codexReview.enabled` | Set to `false` to disable consultation |
-| `researchModel` | `"gpt-5.2"` | `codexReview.researchModel` | Model for consultation tasks |
+| `researchModel` | `"gpt-5.2"` | `codexReview.codeModel` | Model for consultation tasks |
 | `consultTimeoutMinutes` | `20` | — | Max time for consultation invocations |
 
-Existing `codexReview.researchModel` config continues to work via fallback.
+Existing `codexReview.codeModel` config continues to work via fallback.
 
 **For CI/headless environments:** Set `CODEX_API_KEY` environment variable for authentication without interactive login.
 

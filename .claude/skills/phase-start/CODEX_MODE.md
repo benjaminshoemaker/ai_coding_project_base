@@ -138,9 +138,9 @@ if [ -n "$CODEX_MODEL" ]; then
 fi
 
 # Build effort flag if configured
-EFFORT_FLAG=""
+EFFORT_ARGS=()
 if [ -n "$CODEX_EFFORT" ]; then
-  EFFORT_FLAG="-c 'model_reasoning_effort=\"$CODEX_EFFORT\"'"
+  EFFORT_ARGS=(-c "model_reasoning_effort=\"$CODEX_EFFORT\"")
 fi
 
 # Execute with timeout (default: 1 hour)
@@ -149,7 +149,7 @@ timeout ${TIMEOUT_SECS:-3600} bash -c "cat $TASK_PROMPT | codex exec \
   -c 'approval_policy=\"never\"' \
   -c 'features.search=true' \
   $MODEL_FLAG \
-  $EFFORT_FLAG \
+  ${EFFORT_ARGS[@]:+"${EFFORT_ARGS[@]}"} \
   -o $TASK_OUTPUT \
   -"
 EXIT_CODE=$?

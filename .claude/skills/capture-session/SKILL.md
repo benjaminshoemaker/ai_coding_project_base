@@ -114,6 +114,8 @@ If user says yes (or modifies), proceed. If user removes items, respect that. If
 
 ### Step 4: Write to LEARNINGS.md
 
+**File location:** LEARNINGS.md is always created/updated at PROJECT_ROOT (not feature directories), since learnings apply project-wide. To determine PROJECT_ROOT: if current directory matches `*/features/*`, go up two levels; otherwise use current directory.
+
 **If LEARNINGS.md doesn't exist**, create it:
 
 ```markdown
