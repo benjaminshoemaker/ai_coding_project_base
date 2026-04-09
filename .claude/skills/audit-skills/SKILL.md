@@ -53,7 +53,8 @@ For each discovered file:
 1. **Read the file** — note line count immediately
 2. **Check applicable criteria** from CRITERIA.md (see type table in Step 1)
 3. **For skills with co-located PROMPT.md** — audit the PROMPT.md too and report alongside the SKILL.md (they function as a unit)
-4. **Record violations** with criterion ID and evidence
+4. **Cross-reference check** — Grep for `/skill-name` invocation patterns in other SKILL.md files. If explicitly invoked (not merely mentioned in prose), apply CO1 (output contract) check
+5. **Record violations** with criterion ID and evidence
 
 Use this template per file:
 
@@ -75,6 +76,8 @@ Group findings by severity (from SCORING.md):
 Within each severity, sort by:
 1. Most violations in single skill (fix skill holistically)
 2. Most common violation across skills (systemic issue)
+
+**Systemic pattern detection**: If any single criterion appears in >50% of audited skills *and* the sample size is 5 or more, flag it as a systemic issue requiring a template-level fix rather than per-skill remediation.
 
 ### Step 5: Output Report
 
@@ -100,6 +103,18 @@ Total findings: <N>
 ## Low Priority
 
 ...
+
+## Top 3 Recommendations
+
+1. **<most impactful fix>** — affects <N> skills (<criterion-ids>)
+2. **<second most impactful>** — affects <N> skills (<criterion-ids>)
+3. **<third most impactful>** — affects <N> skills (<criterion-ids>)
+
+{If any criterion appears in >50% of skills}
+## Systemic Issues
+
+- **<criterion-id>**: Found in <N>/<total> skills — consider a template-level fix
+{/If}
 
 ## Summary by Criterion
 

@@ -94,11 +94,11 @@ Task Progress:
 
 ## Description Quality
 
-### D1: Description missing "when to use"
+### D1: Description lacks trigger conditions
 - **Severity**: Medium
-- **Check**: Description only says what skill does, not when to invoke it
-- **Why**: Poor skill discovery/selection by agent
-- **Fix**: Add trigger phrases: "Use when...", "Triggers on..."
+- **Check**: Description says what skill does but not *when* to invoke it — lacks a concrete usage context or trigger condition
+- **Why**: All skill metadata is preloaded for routing; vague descriptions cause misactivation or missed activation
+- **Fix**: Add explicit trigger context. Examples: "Use when...", "Triggers on...", "After...", or any phrasing that communicates the invocation context. E.g., `"Use when verifying code against acceptance criteria"` not `"Verifies code"`
 
 ### D2: Description uses first/second person
 - **Severity**: Low
@@ -111,3 +111,42 @@ Task Progress:
 - **Check**: Generic terms like "helps with", "processes", "handles"
 - **Why**: Doesn't differentiate from other skills
 - **Fix**: Use specific terms: "Extracts text from PDF files" not "Processes documents"
+
+## Instruction Quality
+
+### R1: Negative-only instructions
+- **Severity**: Low
+- **Check**: Skill contains "don't", "never", "avoid" without a corresponding positive alternative
+- **Why**: Agents follow positive instructions more reliably than prohibitions alone
+- **Fix**: Pair each prohibition with a preferred action: "Don't use grep" → "Use the Grep tool instead of grep"
+- **Note**: Hard safety/policy constraints ("never force-push", "do not expose secrets") are valid as standalone prohibitions and should not be flagged
+
+## Composability
+
+### CO1: No output contract for composable skills
+- **Severity**: Medium
+- **Check**: Skill is explicitly invoked by other skills (via `/skill-name`, documented subagent handoffs, or scripted callers — not mere prose mentions) but has no defined output format
+- **Why**: Calling skills can't parse results reliably without a contract
+- **Fix**: Add "Output Format (Programmatic)" section with structured format (JSON, status codes, etc.)
+- **Note**: Incidental name mentions in narrative text do not count as invocations. Look for `/skill-name` patterns or explicit "invoke", "run", "call" directives
+
+### CO2: Multiple equivalent options with no default
+- **Severity**: Medium
+- **Check**: Skill presents 3+ alternatives (tools, approaches, libraries) without indicating a preferred path
+- **Why**: Choice paralysis — agent may pick randomly or deliberate excessively
+- **Fix**: Designate one default and make others conditional fallbacks: "Use X by default. Fall back to Y if..."
+
+## Token & Context Efficiency
+
+### T1: Repeated or brittle logic in prose instead of scripts
+- **Severity**: Low
+- **Check**: Multi-line shell commands that are repeated across steps, fragile (order-sensitive, quoting-sensitive), or reusable across skills — but embedded inline instead of extracted to a `.sh` file
+- **Why**: Agent may reconstruct commands with subtle errors from memory
+- **Fix**: Extract to a script file, reference with "Run `./<script>.sh`"
+- **Note**: One-off setup snippets, context-gathering commands, and inline ```` ```! ```` blocks are legitimate patterns and should not be flagged
+
+### T2: Dense inline payloads
+- **Severity**: Low
+- **Check**: Skill contains >50 lines of example output, full API responses, or embedded documentation
+- **Why**: Wastes shared context budget without proportional benefit; better as linked references
+- **Fix**: Move to reference file, link with "See `references/example-output.md`"
