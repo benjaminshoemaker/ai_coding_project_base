@@ -169,89 +169,9 @@ This gives the user visibility before the file is written.
 
 ### 7. Generate Report
 
-Write analysis to `.claude/logs/ANALYSIS_REPORT.md` (in the toolkit):
+Write analysis to `.claude/logs/ANALYSIS_REPORT.md` (in the toolkit).
 
-```markdown
-# Session Analysis Report
-
-Generated: {timestamp}
-Sessions analyzed: {N}
-Date range: {earliest} to {latest}
-
-## Summary
-
-- Total sessions: {N}
-- Projects: {list}
-- Common patterns identified: {count}
-
-## Per-Project Breakdown
-
-### {Project Name} ({N} sessions)
-
-**Type:** Toolkit | Target | Other
-**Date range:** {first} – {last}
-**Key patterns:**
-- {pattern 1}
-- {pattern 2}
-
-## Cross-Project Insights
-
-### Autonomy Levels
-| Project | Sessions | Questions/Session | Autonomy |
-|---------|----------|-------------------|----------|
-| {proj}  | {N}      | {avg}             | {level}  |
-
-### Shared Patterns
-- {pattern that appears across multiple projects}
-
-## Automation Opportunities
-
-### High Priority
-
-#### 1. {Pattern Name}
-**Occurrences:** {N} sessions
-**Projects:** {list of projects where this appears}
-**Pattern:** {description of what keeps happening}
-**Suggested Automation:**
-- {specific automation approach}
-- {implementation hint}
-
-#### 2. {Pattern Name}
-...
-
-### Medium Priority
-
-#### 1. {Pattern Name}
-...
-
-### Low Priority
-
-#### 1. {Pattern Name}
-...
-
-## Recommended Actions
-
-1. **Create new skill:** {skill name} — {what it would automate}
-2. **Add to AGENTS.md:** {guidance to add}
-3. **Create hook:** {hook description}
-
-## Raw Statistics
-
-### Questions Asked (AskUserQuestion)
-| Question Pattern | Count | Projects |
-|-----------------|-------|----------|
-| {pattern} | {N} | {list} |
-
-### Tools Used
-| Tool | Total Uses | Avg per Session |
-|------|------------|-----------------|
-| {tool} | {N} | {avg} |
-
-### Blockers Encountered
-| Blocker Type | Count | Resolution |
-|--------------|-------|------------|
-| {type} | {N} | {how resolved} |
-```
+See [references/output-structure.md](references/output-structure.md) for the full report template including summary, per-project breakdown, cross-project insights, automation opportunities, recommended actions, and raw statistics tables.
 
 ### 8. Output Summary
 

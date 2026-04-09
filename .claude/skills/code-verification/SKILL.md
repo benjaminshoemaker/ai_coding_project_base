@@ -345,3 +345,7 @@ Workflow execution:
 | Sub-agent returns malformed or empty output | Retry the sub-agent once; if still malformed, mark instruction as BLOCKED with "sub-agent error" |
 | Fix attempt introduces a regression in a previously-passing instruction | Revert the fix immediately and flag the conflict for manual review |
 | Dev server fails to start for browser-based criteria | Report the startup error, mark browser criteria as BLOCKED, continue with non-browser criteria |
+
+---
+
+**REMINDER**: Sub-agents report findings only — do not attempt fixes.

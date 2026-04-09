@@ -307,3 +307,7 @@ For document consultation (specs, plans), see `/codex-consult` which uses `codex
 ```
 /codex-review --base develop --model gpt-5.2-codex
 ```
+
+---
+
+**REMINDER**: NEVER use `run_in_background` for Codex invocations. NEVER use `2>&1` — it corrupts parseable output.

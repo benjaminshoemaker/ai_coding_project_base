@@ -37,16 +37,10 @@ If `$2` is not provided and the expected documents are not present in the curren
 
 ## Process
 
-Follow the instructions in `.claude/skills/spec-verification/SKILL.md` exactly.
-
-1. **Identify documents** - Based on `$1`, determine target and upstream documents
-2. **Context preservation check** - If upstream exists, extract key items and verify presence
-3. **Quality check** - Scan for anti-patterns (vague language, missing rationale, etc.)
-4. **Present issues** - Show CRITICAL issues inline with resolution options
-5. **Collect resolutions** - Use AskUserQuestion for each CRITICAL issue
-6. **Apply fixes** - Edit document(s) based on user choices
-7. **Re-verify** - Run checks again (max 2 iterations)
-8. **Report** - Show final status
+Run `/spec-verification` -- it handles the full verification workflow (document
+identification, context preservation checks, quality checks, interactive
+resolution, and final reporting). Pass the resolved document type and project
+directory as arguments.
 
 ## Output
 

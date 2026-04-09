@@ -142,9 +142,9 @@ Apply fixes based on user choices:
 
 ## Output Format
 
-### When called from /phase-checkpoint
+### Structured result (for all callers)
 
-Return a structured result:
+When invoked by any skill (`/phase-checkpoint`, `/verify-task`, or others), return:
 
 ```
 Security Scan: PASSED | FAILED | PASSED WITH NOTES
@@ -156,9 +156,14 @@ Skipped: M checks (documented)
 Blocking: Yes/No
 ```
 
+This format is the same regardless of the caller. The calling skill decides
+how to interpret it (e.g., `/phase-checkpoint` may block on `FAILED`;
+`/verify-task` may log it as a note).
+
 ### When called standalone
 
-Show full report with all findings and options.
+Show the structured result above followed by the full report with all
+findings and interactive fix options (Step 6 and Step 7).
 
 ## Severity Definitions
 

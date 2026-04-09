@@ -413,3 +413,7 @@ See [TOOL_NOTES.md](TOOL_NOTES.md) for detailed information on each browser MCP 
 - Microsoft Playwright MCP (use pinned version)
 - Chrome DevTools MCP (basic fallback)
 - Browserbase + Stagehand (cloud option)
+
+---
+
+**REMINDER**: All URLs in manual fallback instructions MUST use BASE_URL variable, not hardcoded URLs.

@@ -214,19 +214,34 @@ If `--consult` flag is set:
 
 ## Phase 5: Execute Tasks
 
+### Safety Guard Pattern
+
+Apply this pattern before and after every Codex invocation to prevent
+accidental commits from persisting:
+
+```bash
+# Before invocation — fail fast on dirty worktree, record HEAD
+if [ -n "$(git status --porcelain)" ]; then
+  echo "WARNING: Worktree has uncommitted changes. Commit or stash before running Codex."
+fi
+HEAD_BEFORE=$(git rev-parse HEAD)
+
+# ... invoke Codex ...
+
+# After invocation — revert any commits Codex made
+HEAD_AFTER=$(git rev-parse HEAD)
+if [ "$HEAD_BEFORE" != "$HEAD_AFTER" ]; then
+  echo "WARNING: Codex made commits. Reverting."
+  git reset --soft "$HEAD_BEFORE"
+  git restore --staged .
+fi
+```
+
 For each task (sequentially):
 
 ### Step 1: Capture Safety State
 
-```bash
-# Fail fast if worktree is dirty — rollback can't safely distinguish
-# Codex changes from pre-existing uncommitted work
-if [ -n "$(git status --porcelain)" ]; then
-  echo "WARNING: Worktree has uncommitted changes. Commit or stash before running Codex."
-fi
-
-HEAD_BEFORE=$(git rev-parse HEAD)
-```
+Apply the safety guard pattern (pre-invocation half) defined above.
 
 ### Step 2: Build Task Prompt
 
@@ -277,14 +292,7 @@ Use Bash tool `timeout` parameter: `TIMEOUT_MINS * 60 * 1000` milliseconds.
 
 ### Step 4: Safety Check
 
-```bash
-HEAD_AFTER=$(git rev-parse HEAD)
-if [ "$HEAD_BEFORE" != "$HEAD_AFTER" ]; then
-  echo "WARNING: Codex made commits. Reverting."
-  git reset --soft "$HEAD_BEFORE"
-  git restore --staged .
-fi
-```
+Apply the safety guard pattern (post-invocation half) defined above.
 
 ### Step 5: Parse Result
 

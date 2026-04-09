@@ -1,5 +1,5 @@
 ---
-description: Implement [ready]-tagged TODO items with commits. Use after /list-todos has marked items as [ready] for implementation.
+description: Implement [ready]-tagged TODO items with commits. Triggers after /list-todos marks items as [ready].
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion, Task
 ---
 

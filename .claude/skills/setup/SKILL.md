@@ -191,19 +191,17 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
    STORED_HASHES=$(jq '.files' "$1/.claude/toolkit-version.json")
    ```
 
+   **Hash calculation pattern** (used for all file comparisons in this step and below):
+   ```bash
+   # Compute SHA-256 hash of a file — used for toolkit, target, and stored hash comparisons
+   file_hash() { shasum -a 256 "$1" | cut -d' ' -f1; }
+   ```
+
    For each skill in the copy list (excluding toolkit-only skills — check `SKILL.md` frontmatter for `toolkit-only: true`):
 
-   1. Calculate toolkit file hash:
-      ```bash
-      TOOLKIT_HASH=$(shasum -a 256 "$TOOLKIT_FILE" | cut -d' ' -f1)
-      ```
-
+   1. Calculate toolkit file hash: `TOOLKIT_HASH=$(file_hash "$TOOLKIT_FILE")`
    2. Get stored hash from toolkit-version.json (hash at last sync)
-
-   3. Calculate target file hash (if exists):
-      ```bash
-      TARGET_HASH=$(shasum -a 256 "$TARGET_FILE" | cut -d' ' -f1)
-      ```
+   3. Calculate target file hash (if exists): `TARGET_HASH=$(file_hash "$TARGET_FILE")`
 
    **Classification and Action:**
 
@@ -296,10 +294,7 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
    COMMIT_DATE=$(git log -1 --format=%cI HEAD)
    ```
 
-   **Calculate file hashes:**
-   ```bash
-   shasum -a 256 "$file" | cut -d' ' -f1
-   ```
+   **Calculate file hashes** using the `file_hash()` pattern defined in Step 3a.
 
    **Include entries for ALL files in non-toolkit-only skill directories:**
    ```bash
@@ -311,7 +306,7 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
      fi
      for file in "$skill_dir"*.md; do
        [[ -f "$file" ]] || continue
-       hash=$(shasum -a 256 "$file" | cut -d' ' -f1)
+       hash=$(file_hash "$file")
        # Add entry for "$file" with hash and timestamp
      done
    done

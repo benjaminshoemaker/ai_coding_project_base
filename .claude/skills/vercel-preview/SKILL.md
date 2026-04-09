@@ -162,28 +162,13 @@ fi
 
 ### Polling Fallback
 
-If `vercel inspect --wait` is unavailable, use polling:
+If `vercel inspect --wait` is unavailable, poll using the same deployment query
+from Step 3 (`vercel ls --json -m gitBranch="$BRANCH"`) with a 10-second interval:
 
-```bash
-MAX_ATTEMPTS=$((DEPLOYMENT_TIMEOUT / 10))
-ATTEMPT=0
-
-while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-  STATUS=$(vercel ls --json -m gitBranch="$BRANCH" 2>/dev/null | \
-    jq -r '.[0].readyState // "UNKNOWN"')
-
-  if [ "$STATUS" = "READY" ]; then
-    DEPLOYMENT_URL=$(vercel ls --json -m gitBranch="$BRANCH" 2>/dev/null | \
-      jq -r '"https://" + .[0].url')
-    echo "Deployment ready: $DEPLOYMENT_URL"
-    break
-  fi
-
-  echo "Deployment status: $STATUS (attempt $((ATTEMPT + 1))/$MAX_ATTEMPTS)"
-  sleep 10
-  ATTEMPT=$((ATTEMPT + 1))
-done
-```
+- Compute `MAX_ATTEMPTS = DEPLOYMENT_TIMEOUT / 10`
+- Each iteration: query `readyState` from the Step 3 response
+- If `READY`: extract URL as `https://<url>` and break
+- If max attempts exceeded: fall through to Step 5 error guidance
 
 ## Step 5: Return Result
 

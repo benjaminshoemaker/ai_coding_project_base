@@ -1,5 +1,5 @@
 ---
-description: Synchronize target projects with toolkit updates. Use after toolkit skills are modified to push updates to target projects.
+description: Synchronize target projects with toolkit updates. Triggers after toolkit skill modifications.
 argument-hint: [target-or-toolkit-path]
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep, AskUserQuestion
 ---
@@ -105,11 +105,11 @@ If the file doesn't exist, this is the first sync — treat all files as `NEVER_
 
 ## Change Detection
 
-For each file in the sync list, calculate hashes and classify:
+For each file in the sync list, calculate hashes and classify.
 
+**Hash calculation** (same pattern used in `/setup` Step 3a):
 ```bash
-# Calculate SHA-256 hash
-shasum -a 256 "$file" | cut -d' ' -f1
+file_hash() { shasum -a 256 "$1" | cut -d' ' -f1; }
 ```
 
 **Classification logic:**
@@ -208,36 +208,14 @@ Default: Keep (don't delete without confirmation).
 After sync completes, write `TARGET_PATH/.claude/toolkit-version.json`:
 
 ```json
-{
-  "schema_version": "1.0",
-  "toolkit_location": "{TOOLKIT_PATH}",
-  "toolkit_commit": "{current toolkit HEAD commit}",
-  "toolkit_commit_date": "{commit date ISO}",
-  "last_sync": "{current ISO timestamp}",
-  "files": {
-    ".claude/skills/{skill-name}/SKILL.md": {
-      "hash": "{sha256 of synced file}",
-      "synced_at": "{ISO timestamp}"
-    }
-  }
-}
+{"schema_version":"1.0","toolkit_location":"{TOOLKIT_PATH}","toolkit_commit":"{HEAD}","toolkit_commit_date":"{ISO}","last_sync":"{ISO}","files":{"<rel_path>":{"hash":"{sha256}","synced_at":"{ISO}"}}}
 ```
+<!-- Full structure: see /setup Step 4 for field descriptions and resolution tracking -->
 
-**IMPORTANT:** The `files` object must include an entry for every file in every synced skill directory, not just `SKILL.md`. For skills with supporting files (e.g., `audit-skills` has `CRITERIA.md` and `SCORING.md`), include all files:
-
-```bash
-# For each skill directory, hash all .md files
-for skill_dir in "$TARGET_PATH/.claude/skills"/*/; do
-  for file in "$skill_dir"*.md; do
-    hash=$(shasum -a 256 "$file" | cut -d' ' -f1)
-    rel_path="${file#$TARGET_PATH/}"
-    # Add to files object: "$rel_path": {"hash": "$hash", "synced_at": "$NOW"}
-  done
-done
-```
-
-This ensures conflict detection works for all files, not just the main SKILL.md
-```
+**IMPORTANT:** The `files` object must include an entry for every `.md` file in every
+synced skill directory, not just `SKILL.md` (e.g., `audit-skills` has `CRITERIA.md`
+and `SCORING.md`). Use the `file_hash()` pattern above to hash each file and add it
+with its relative path. This ensures conflict detection works for all supporting files.
 
 Get toolkit commit info:
 ```bash

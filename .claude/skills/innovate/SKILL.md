@@ -1,12 +1,12 @@
 ---
 name: innovate
-description: Identify the single smartest, most radically innovative addition to make to the current app or plan
+description: Identify high-impact innovative additions to the current app or plan. Use when planning next features, during strategic reviews, or when the user asks for creative ideas.
 allowed-tools: Read, Glob, Grep, Bash, WebSearch, WebFetch
 ---
 
 # Innovate
 
-Identify the **single smartest, most radically innovative addition** to make to the current app or plan. Not a list of 10 safe ideas — one bold, high-leverage move that changes the game.
+Identify the **single highest-impact, feasible addition** to make to the current app or plan. Not a list of 10 safe ideas -- one bold, high-leverage move backed by research and cross-referenced evidence.
 
 ## Context Gathering
 
@@ -40,6 +40,10 @@ Use WebSearch to research:
 - What competitors or similar projects are doing
 - Emerging technologies relevant to this domain
 - User expectations in this space (current year)
+
+### 4. Verify Research Findings
+
+Cross-reference every key claim from Step 3 against at least 2 independent sources before using it to support a recommendation. Discard any finding that cannot be corroborated. Note which sources confirmed each claim in your internal evaluation (not in the final output).
 
 ---
 

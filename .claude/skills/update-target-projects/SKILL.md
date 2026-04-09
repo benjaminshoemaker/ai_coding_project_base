@@ -114,55 +114,11 @@ Status determination:
 
 For each target project, determine current skill resolution state:
 
-```bash
-check_project_resolution() {
-  local project_path="$1"
-  local version_file="$project_path/.claude/toolkit-version.json"
-  local skills_dir="$project_path/.claude/skills"
+See [GLOBAL_SYNC.md](GLOBAL_SYNC.md) for the full `check_project_resolution()` implementation.
 
-  # Read current resolution from config
-  local resolution=$(jq -r '.skill_resolution // "unknown"' "$version_file" 2>/dev/null)
-  local force_local=$(jq -r '.force_local_skills // null' "$version_file" 2>/dev/null)
-
-  # Check actual state: are there local skill directories?
-  local has_local_skills=false
-  local local_count=0
-  if [[ -d "$skills_dir" ]]; then
-    local_count=$(find "$skills_dir" -maxdepth 1 -mindepth 1 -type d 2>/dev/null | wc -l)
-    if [[ "$local_count" -gt 0 ]]; then
-      has_local_skills=true
-    fi
-  fi
-
-  # Check if global symlinks are healthy
-  local globals_healthy=false
-  if all_skills_globally_usable 2>/dev/null; then
-    globals_healthy=true
-  fi
-
-  # Respect force_local_skills override
-  if [[ "$force_local" == "true" ]]; then
-    echo "LOCAL_FORCED"
-    return
-  fi
-
-  # Determine resolution state
-  if [[ "$has_local_skills" == "true" ]]; then
-    if [[ "$globals_healthy" == "true" ]]; then
-      echo "ADOPTABLE"  # Can migrate to global
-    else
-      echo "LOCAL"  # Must stay local (globals not ready)
-    fi
-  else
-    # No local skills
-    if [[ "$globals_healthy" == "true" ]]; then
-      echo "GLOBAL"  # Resolving via global symlinks
-    else
-      echo "MISSING"  # Neither local nor global available!
-    fi
-  fi
-}
-```
+Summary: reads `skill_resolution` and `force_local_skills` from `toolkit-version.json`,
+counts local skill directories, checks global symlink health via `all_skills_globally_usable()`,
+and returns one of the resolution states below.
 
 | Resolution State | Meaning | Available Actions |
 |------------------|---------|-------------------|
@@ -299,24 +255,10 @@ See [GLOBAL_SYNC.md](GLOBAL_SYNC.md) for state model and helper definitions.
 
 **For each selected project:**
 
-1. **Detect modified local skills** — skills where current hash ≠ stored hash:
-   ```bash
-   find_modified_skills() {
-     local project_path="$1"
-     local modified=()
-     for skill in $(ls "$project_path/.claude/skills/" 2>/dev/null); do
-       local stored_hash=$(jq -r ".files[\".claude/skills/$skill/SKILL.md\"].hash // empty" \
-         "$project_path/.claude/toolkit-version.json")
-       if [[ -n "$stored_hash" ]]; then
-         local current_hash=$(shasum -a 256 "$project_path/.claude/skills/$skill/SKILL.md" | cut -d' ' -f1)
-         if [[ "$current_hash" != "$stored_hash" ]]; then
-           modified+=("$skill")
-         fi
-       fi
-     done
-     echo "${modified[@]}"
-   }
-   ```
+1. **Detect modified local skills** — skills where current hash != stored hash.
+   See [GLOBAL_SYNC.md](GLOBAL_SYNC.md) for the full `find_modified_skills()` implementation.
+   It compares each skill's current SHA-256 hash against the stored hash in `toolkit-version.json`
+   and returns the list of skill names that differ.
 
 2. **Show migration preview:**
    ```

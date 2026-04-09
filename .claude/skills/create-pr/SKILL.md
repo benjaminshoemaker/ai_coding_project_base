@@ -99,7 +99,7 @@ Question: "You have uncommitted changes. How would you like to proceed?"
 Header: "Dirty tree"
 Options:
   - Label: "Commit all changes"
-    Description: "Stage and commit everything before creating PR (Recommended)"
+    Description: "Stage and commit everything before creating PR **(Default)**"
   - Label: "Continue anyway"
     Description: "Create PR with current commits only"
   - Label: "Cancel"
@@ -189,7 +189,7 @@ Question: "Verification failed. How would you like to proceed?"
 Header: "Verify failed"
 Options:
   - Label: "Fix issues first"
-    Description: "Stop PR creation, address the failures (Recommended)"
+    Description: "Stop PR creation, address the failures **(Default)**"
   - Label: "Create PR anyway"
     Description: "Proceed despite verification failures"
   - Label: "Cancel"
@@ -316,7 +316,7 @@ Question: "Codex found critical issues. How would you like to proceed?"
 Header: "Critical"
 Options:
   - Label: "Fix issues first"
-    Description: "Stop PR creation, address the issues (Recommended)"
+    Description: "Stop PR creation, address the issues **(Default)**"
   - Label: "Create PR anyway"
     Description: "Proceed with critical issues noted in PR body"
   - Label: "Cancel"
@@ -477,3 +477,7 @@ If both `codexReview.enabled` and `codexConsult.enabled` are `false`, Codex revi
 ```
 /create-pr --draft --title "WIP: Add authentication"
 ```
+
+---
+
+**REMINDER**: Working tree must be clean before PR creation. Commit or stash all changes first.

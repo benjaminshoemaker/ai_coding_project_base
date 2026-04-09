@@ -1,5 +1,5 @@
 ---
-description: Initialize git repo and push to GitHub. Use when starting a new project that needs a GitHub repository.
+description: Initialize git repo and push to GitHub. Triggers on new project setup requiring a GitHub repository.
 argument-hint: [target-directory]
 allowed-tools: Bash, Read, Write, Edit, Glob, AskUserQuestion
 ---

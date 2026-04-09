@@ -121,28 +121,9 @@ For each PR with failing CI checks:
 
 #### Step 2.1 — Pull failure logs
 
-Use the **3-tier log retrieval chain** (see [CI_DIAGNOSIS.md](CI_DIAGNOSIS.md) for details):
-
-```bash
-# Tier 1: Check Run Annotations (structured — file, line, message)
-OWNER_REPO=$(gh repo view --json nameWithOwner -q '.nameWithOwner')
-BRANCH=$(gh pr view <PR_NUMBER> --json headRefName -q '.headRefName')
-RUN_ID=$(gh run list --branch "$BRANCH" --status failure --limit 1 --json databaseId -q '.[0].databaseId')
-gh api "repos/$OWNER_REPO/check-runs/<CHECK_RUN_ID>/annotations" \
-  --jq '.[] | {path: .path, line: .start_line, level: .annotation_level, message: .message}'
-```
-
-```bash
-# Tier 2: Failed step logs
-gh run view "$RUN_ID" --log-failed 2>&1
-```
-
-```bash
-# Tier 3: Full log tail (last resort)
-gh run view "$RUN_ID" --log 2>&1 | tail -200
-```
-
-**Prefer Tier 1** — annotations give structured `{file, line, message}` triples for direct edit operations.
+Follow the **3-tier CI log retrieval chain** in [CI_DIAGNOSIS.md](CI_DIAGNOSIS.md):
+Tier 1 (check-run annotations) -> Tier 2 (`--log-failed`) -> Tier 3 (full log tail).
+Prefer Tier 1 -- annotations give structured `{file, line, message}` triples for direct edit operations.
 
 #### Step 2.2 — Check for flaky tests
 

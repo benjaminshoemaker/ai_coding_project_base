@@ -1,5 +1,5 @@
 ---
-description: Install git hooks for this project. Use during project setup or after cloning to install automation hooks.
+description: Install git hooks for this project. Triggers during project setup or after cloning.
 allowed-tools: Bash, Read, Write, AskUserQuestion
 ---
 

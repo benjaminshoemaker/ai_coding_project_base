@@ -130,6 +130,8 @@ Human must complete before starting:
 PART 3: AGENTS.md FORMAT
 ═══════════════════════════════════════════════════════════════════
 
+Note: This template is intentionally inline as it's consumed by the LLM during generation.
+
 Keep AGENTS.md focused on workflow mechanics only. Do NOT include:
 - Error handling patterns (agents discover from codebase)
 - Mocking strategies (agents figure out from test framework)
@@ -421,6 +423,32 @@ SPECIFICATIONS TO ANALYZE
 Generate:
 1. EXECUTION_PLAN.md
 2. AGENTS.md
+
+═══════════════════════════════════════════════════════════════════
+AFTER GENERATION CHECKLIST
+═══════════════════════════════════════════════════════════════════
+
+Before presenting the documents, verify:
+
+EXECUTION_PLAN.md
+□ All phases have pre-phase setup sections
+□ All tasks have testable acceptance criteria
+□ All tasks specify files to create/modify
+□ All tasks have dependencies listed
+□ All phases have checkpoint criteria
+□ No task depends on a parallel task in the same step
+□ Tasks with UI criteria marked as "Requires Browser Verification: Yes"
+□ Browser verification prerequisites documented in Pre-Phase Setup (if project has UI)
+
+AGENTS.md
+□ Focused on workflow only (no coding patterns)
+□ Includes initialization instructions (CLAUDE.md, .claude/)
+□ Includes context management (fresh per task, preserve for debugging)
+□ Includes "when to stop and ask" triggers
+□ Includes blocker reporting format
+□ Includes git conventions
+□ Includes critical guardrails (no duplicating files, read errors fully)
+□ Describes sequential task execution (not parallel worktrees)
 ```
 
 ---
@@ -450,28 +478,3 @@ The scope has changed: {description}
 Update EXECUTION_PLAN.md to reflect this change.
 ```
 
----
-
-## After Generation Checklist
-
-```
-EXECUTION_PLAN.md
-□ All phases have pre-phase setup sections
-□ All tasks have testable acceptance criteria
-□ All tasks specify files to create/modify
-□ All tasks have dependencies listed
-□ All phases have checkpoint criteria
-□ No task depends on a parallel task in the same step
-□ Tasks with UI criteria marked as "Requires Browser Verification: Yes"
-□ Browser verification prerequisites documented in Pre-Phase Setup (if project has UI)
-
-AGENTS.md
-□ Focused on workflow only (no coding patterns)
-□ Includes initialization instructions (CLAUDE.md, .claude/)
-□ Includes context management (fresh per task, preserve for debugging)
-□ Includes "when to stop and ask" triggers
-□ Includes blocker reporting format
-□ Includes git conventions
-□ Includes critical guardrails (no duplicating files, read errors fully)
-□ Describes sequential task execution (not parallel worktrees)
-```

@@ -284,3 +284,33 @@ Check which of these exist and read them:
 | /phase-prep failure | Report which pre-flight check failed and stop. Do not proceed to execution. |
 
 **Important:** If LEARNINGS.md exists, apply those patterns throughout your work. These are project-specific conventions discovered during development that override general defaults.
+
+## Output Format (Programmatic — for calling skills)
+
+When invoked by another skill (e.g., `/go`), return structured data:
+
+```json
+{
+  "status": "<Status>",
+  "context_loaded": ["AGENTS.md", "EXECUTION_PLAN.md", "PRODUCT_SPEC.md"],
+  "blockers": [],
+  "next_action": "Continue with Phase 1, Task 1"
+}
+```
+
+**Status enum** — exactly one of:
+
+| Value | Meaning |
+|-------|---------|
+| `ready` | All context loaded, no blockers. Execution can proceed. |
+| `blocked` | One or more blockers prevent execution (missing files, failed git init, etc.). |
+| `partial` | Context partially loaded; some optional files missing but execution can proceed with caveats. |
+
+**Field descriptions:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | `Status` | Overall readiness result (see enum above). |
+| `context_loaded` | `string[]` | List of context files successfully read (e.g., `"AGENTS.md"`, `"EXECUTION_PLAN.md"`). |
+| `blockers` | `string[]` | Issues preventing execution. Empty array when `status` is `ready` or `partial`. |
+| `next_action` | `string` | Suggested next step (e.g., `"Continue with Phase 2, Task 3"` or `"Run /setup first"`). |

@@ -81,6 +81,7 @@ If `codexReview` is not configured, default to `enabled: true` when Codex CLI is
 **IMPORTANT**: All local verification must pass before production verification.
 
 See [VERIFICATION.md](VERIFICATION.md) for detailed check procedures.
+See also [DEFERRED_QUEUE.md](DEFERRED_QUEUE.md) for the deferred review queue format and processing rules.
 
 ### Automated Checks
 

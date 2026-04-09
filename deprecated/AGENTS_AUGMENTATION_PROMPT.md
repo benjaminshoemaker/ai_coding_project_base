@@ -8,6 +8,17 @@ Use this prompt to customize `AGENTS_BASE.md` for a new project. Copy everything
 
 I have an `AGENTS_BASE.md` file that provides general guidelines for AI agents working on my project. I need you to augment it with project-specific context.
 
+```
+AGENTS.md Section Checklist:
+□ 1. Project Context (tech stack, file structure, state/data conventions)
+□ 2. Mocking Policy (external services, SDKs, real access)
+□ 3. Error Handling (error hierarchy, patterns, logging)
+□ 4. Additional Sections (async, state mgmt, API design, security, perf)
+□ 4.5. Browser/UI Verification (dev server, Playwright MCP, UI patterns)
+□ 5. .gitignore Patterns
+□ 6. Repository docs section
+```
+
 Please review the attached `ONE_PAGER.md` and `DEV_SPEC.md` files, then update `AGENTS_BASE.md` by filling in all the `TODO` sections with project-specific information. Specifically:
 
 ### 1. Project Context Section
@@ -102,6 +113,8 @@ Produce a complete, updated `AGENTS.md` file with:
 - All generic content preserved
 
 Do not remove any of the base guardrails, testing policies, or agent responsibilities—only add project-specific context to them where appropriate.
+
+Verify: Review the generated AGENTS.md against the checklist above before presenting.
 
 ---
 

@@ -225,113 +225,26 @@ For every project, push beyond safe defaults. Ask: **what makes this UNFORGETTAB
 
 *Adapted from design-principles by interface-design.*
 
-These apply regardless of design direction. This is the minimum bar.
+Apply these regardless of design direction — they are the minimum quality bar.
+Covers: 4px spacing grid, depth/elevation strategy (pick one: borders-only, single
+shadows, layered shadows, or surface color shifts), typography hierarchy, contrast
+levels, card/surface consistency, custom controls, navigation context, dark mode
+rules, and anti-patterns to avoid.
 
-### Spacing: 4px Grid
-All spacing on a 4px base: 4, 8, 12, 16, 24, 32px. Symmetrical padding (TLBR match).
-
-### Depth & Elevation
-Choose ONE approach and commit. Mixing strategies creates visual inconsistency.
-
-- **Borders-only** — Clean, technical, dense. Subtle borders define regions. Not lazy — intentional restraint. (Linear, Raycast)
-- **Subtle single shadows** — `0 1px 3px rgba(0,0,0,0.08)`. Soft lift without complexity.
-- **Layered shadows** — Multiple shadow layers for premium, dimensional feel. (Stripe, Mercury)
-- **Surface color shifts** — Background tints establish hierarchy. Card at `#fff` on `#f8fafc` already feels elevated.
-
-```css
-/* Borders-only */
-border: 0.5px solid rgba(0, 0, 0, 0.08);
-
-/* Single shadow */
-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-
-/* Layered shadows */
-box-shadow: 0 0 0 0.5px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.04), 0 2px 4px rgba(0,0,0,0.03), 0 4px 8px rgba(0,0,0,0.02);
-```
-
-The craft is in the choice, not the complexity.
-
-### Typography Hierarchy
-- Headlines: 600 weight, tight letter-spacing (-0.02em)
-- Body: 400-500 weight, standard tracking. Line-height 1.5-1.75, 65-75 chars/line.
-- Labels: 500 weight, slight positive tracking for uppercase
-- Data/numbers: monospace, `tabular-nums` for columnar alignment
-
-### Contrast & Color
-- Four-level contrast: foreground (primary) → secondary → muted → faint
-- Gray builds structure. Color only for meaning: status, action, error, success.
-- Dominant colors with sharp accents outperform timid, evenly-distributed palettes.
-
-### Cards & Surfaces
-Card layouts should vary to serve their content (metric card ≠ plan card ≠ settings card),
-but surface treatment stays consistent: same border weight, shadow depth, corner radius,
-padding scale. Cohesion comes from the container chrome, not identical internal layouts.
-
-### Controls & Forms
-Never use native `<select>`, `<input type="date">` in styled UI — they render OS-native
-controls that can't be styled. Build custom: trigger button + dropdown, input + calendar
-popover, styled div + state management.
-
-### Navigation Context
-Screens need grounding. A data table floating in space feels like a component demo, not
-a product. Include navigation (sidebar/top nav), location indicators (breadcrumbs, active
-state), and user context (who's logged in, what workspace).
-
-### Dark Mode
-- Borders over shadows — shadows barely show on dark backgrounds
-- Desaturate semantic colors (success, warning, error) to avoid harshness
-- Same contrast hierarchy, inverted values
-- Border at 10-15% white opacity — resist making it more prominent
-
-### Anti-Patterns
-- Dramatic drop shadows, large border radius (16px+) on small elements
-- Asymmetric padding without clear reason
-- Thick borders (2px+) or gradients for decoration
-- Multiple accent colors in one interface
-- Spring/bouncy animations in professional UI
-- Emojis as UI icons — use SVG icon sets (Lucide, Phosphor, Heroicons)
+See [references/craft-principles.md](references/craft-principles.md) for the full
+principles with CSS examples and detailed guidance.
 
 ---
 
 ## Phase 5: Accessibility & Interaction Quality
 
-### Non-Negotiable Accessibility
+Enforce WCAG AA standards (4.5:1 contrast, 44px touch targets, keyboard navigation,
+semantic HTML, focus rings, `prefers-reduced-motion`). Audit interaction quality:
+cursor states, hover feedback, transitions (150-300ms), loading states, error feedback.
+Check light/dark mode contrast for text, borders, and glass elements.
 
-| Requirement | Standard |
-|-------------|----------|
-| Color contrast | 4.5:1 minimum for normal text (WCAG AA) |
-| Touch targets | 44x44px minimum |
-| Focus indicators | Visible focus rings on all interactive elements |
-| Alt text | Descriptive alt text for meaningful images |
-| ARIA | aria-label for icon-only buttons, proper roles |
-| Keyboard | Tab order matches visual order, all flows keyboard-operable |
-| Form labels | Every input has an associated label |
-| Reduced motion | Respect `prefers-reduced-motion` |
-| Semantic HTML | Use proper elements (button, nav, main, article) |
-| Color independence | Color is never the only indicator of state |
-
-### Interaction Quality
-
-*Common mistakes adapted from ui-ux-pro-max by nextlevelbuilder.*
-
-| Rule | Do | Don't |
-|------|----|-------|
-| Cursor | `cursor-pointer` on all clickable elements | Default cursor on interactive elements |
-| Hover feedback | Color/opacity transitions on hover | Scale transforms that shift layout |
-| Transitions | `transition-colors duration-200` (150-300ms) | Instant changes or >500ms |
-| Loading | Disable button during async, show skeleton/spinner | No indication of loading state |
-| Error feedback | Clear messages near the problem | Vague or distant error display |
-| Icon sizing | Fixed viewBox (24x24), consistent `w-6 h-6` | Mixed icon sizes |
-| Brand logos | Research official SVG from Simple Icons | Guess or use incorrect paths |
-
-### Light/Dark Mode Contrast
-
-| Context | Do | Don't |
-|---------|----|-------|
-| Glass cards (light) | `bg-white/80` or higher opacity | `bg-white/10` (too transparent) |
-| Text (light) | `#0F172A` (slate-900) for body | `#94A3B8` (slate-400) for body |
-| Muted text (light) | `#475569` (slate-600) minimum | gray-400 or lighter |
-| Borders (light) | `border-gray-200` | `border-white/10` (invisible) |
+See [references/accessibility.md](references/accessibility.md) for the full
+requirements tables and do/don't guidance.
 
 ---
 
@@ -396,97 +309,20 @@ recommendations. Don't include all — pick what's most impactful for this proje
 
 ### Design System Setup
 
-If the project lacks a design system, recommend creating one:
+If the project lacks a design system, recommend creating one. This includes design
+tokens (CSS `@theme` or `tokens.css`), a `design-system/MASTER.md` doc, and
+page-specific overrides. Use AI-readable token metadata (DTCG format with
+`when_to_use`/`avoid_when`) for maximum AI effectiveness.
 
-**1. Design Tokens File** (`design-system/tokens.css` or `@theme` in Tailwind v4):
-```css
-@theme {
-  --color-primary: #2563eb;       /* Trust, primary actions */
-  --color-destructive: #dc2626;   /* Errors, destructive actions only */
-  --color-success: #16a34a;       /* Confirmation, positive status */
-  --color-warning: #d97706;       /* Caution, needs attention */
-  --color-muted: #64748b;         /* Secondary text, less emphasis */
-  --color-border: #e2e8f0;        /* Default borders */
-
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
-  --spacing-xl: 32px;
-}
-```
-
-**2. Design System Documentation** (`design-system/MASTER.md`):
-Document the chosen design direction, token values, component conventions, and
-constraints. If ui-ux-pro-max is installed, use `--persist` to generate this
-automatically. Otherwise, create it manually from the design direction decisions.
-
-**3. Page-Specific Overrides** (`design-system/pages/<page>.md`):
-For pages with unique design needs (marketing landing vs. app dashboard), document
-how they deviate from the master rules.
+See [references/design-tokens.md](references/design-tokens.md) for token templates,
+CSS examples, component patterns, and modern CSS techniques.
 
 ### AGENTS.md Integration
 
-Recommend adding a Design System section to the project's AGENTS.md:
+Recommend adding a Design System section to the project's AGENTS.md to document the
+chosen personality, tokens location, component library, icon set, and key constraints.
 
-```markdown
-## Design System
-
-This project follows [Personality] design direction.
-
-- **Design tokens:** `design-system/tokens.css` (or `tailwind.config.*`)
-- **Master design rules:** `design-system/MASTER.md`
-- **Component library:** [shadcn/ui, Radix, custom, etc.]
-- **Icon set:** [Lucide, Phosphor, Heroicons]
-- **Key constraints:**
-  - 4px spacing grid
-  - [Chosen radius system]
-  - [Chosen depth strategy]
-  - WCAG AA minimum accessibility
-  - `prefers-reduced-motion` respected
-
-When building UI, read `design-system/MASTER.md` first. Check for page-specific
-overrides at `design-system/pages/<page-name>.md`.
-```
-
-### AI-Readable Token Metadata
-
-For maximum AI effectiveness, enrich tokens with usage context (DTCG format):
-
-```json
-{
-  "color-feedback-error": {
-    "$type": "color",
-    "$value": "#DC2626",
-    "$description": "Error messages, destructive button backgrounds, invalid input borders. Never decorative.",
-    "when_to_use": ["form validation errors", "destructive action confirmations"],
-    "avoid_when": ["decorative purposes", "warning states"]
-  }
-}
-```
-
-Tokens with `when_to_use` and `avoid_when` prevent arbitrary AI color choices.
-
-### Component Patterns
-
-If using shadcn/ui or similar copy-to-project libraries:
-- **Wrapper components:** Create pre-configured wrappers (e.g., `AppButton`) with brand
-  defaults instead of raw library imports. Scales better and ensures consistency.
-- **Directory structure:** Separate raw library components (`components/ui/`), customized
-  wrappers (`components/`), and feature compositions (`components/[feature]/`).
-
-### Modern CSS Techniques
-
-Recommend when the project supports them:
-- **Container queries** (`@container`) — Components respond to parent size, not viewport.
-- **`:has()` selector** — Style parents based on children without JavaScript.
-- **Native CSS nesting** — SCSS-like organization without preprocessor.
-- **`@layer`** — Cascade layers for design system vs component vs utility specificity.
-- **Tailwind v4 `@theme`** — CSS-first design tokens replacing JavaScript config.
+See [references/agents-template.md](references/agents-template.md) for the template.
 
 ---
 
