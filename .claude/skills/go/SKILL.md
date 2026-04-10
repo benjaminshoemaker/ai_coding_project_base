@@ -1,10 +1,27 @@
 ---
 name: go
 description: Resume execution from wherever you left off. Detects current state and runs the appropriate next command, or reports what's blocking progress. Use at the start of any session to pick up where you left off.
-allowed-tools: Read, Glob, Grep, Bash, Skill, AskUserQuestion
+argument-hint: "[--codex] [--no-codex]"
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Skill, AskUserQuestion
 ---
 
 Determine where execution stands and either continue or report blockers.
+
+## Arguments
+
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `--codex` | No | Switch to Codex execution mode (persists to settings) |
+| `--no-codex` | No | Switch to default execution mode (persists to settings) |
+
+## Execution Mode Toggle
+
+If `--codex` or `--no-codex` is passed, update `executionMode` in `.claude/settings.local.json` **before** any other logic:
+
+- `--codex` → write `"executionMode": "codex"`
+- `--no-codex` → write `"executionMode": "default"`
+
+The flag is forwarded to any `/phase-start` invocation downstream. When neither flag is passed, the current setting is used as-is.
 
 ## Workflow
 
@@ -122,13 +139,13 @@ No prior state found. Running /fresh-start...
 
 **Condition:** State exists. Current phase status is `IN_PROGRESS`. There are tasks in EXECUTION_PLAN.md for that phase with unchecked `- [ ]` acceptance criteria.
 
-**Action:** Determine execution mode: check `execution_mode` for the current phase in `phase-state.json`, then fall back to `executionMode` in `.claude/settings.local.json`. If either is `"codex"`, invoke `/phase-start {CURRENT_PHASE} --codex`. Otherwise invoke `/phase-start {CURRENT_PHASE}`. Phase-start handles resumption — it skips already-completed tasks.
+**Action:** Read `executionMode` from `.claude/settings.local.json`. If `"codex"`, invoke `/phase-start {CURRENT_PHASE} --codex`. Otherwise invoke `/phase-start {CURRENT_PHASE}`. Phase-start handles resumption — it skips already-completed tasks.
 
 ```
 RESUMING EXECUTION
 ==================
 Phase {CURRENT_PHASE} in progress. Resuming...
-{If execution_mode is "codex": "Mode: Codex (from {source: state/settings})"}
+{If executionMode is "codex": "Mode: Codex"}
 {If a specific task was IN_PROGRESS in state: "Continuing from Task {id}"}
 ```
 

@@ -30,22 +30,20 @@ Phase Start Progress:
 | Argument | Required | Description |
 |----------|----------|-------------|
 | `$1` | Yes | Phase number to execute |
-| `--codex` | No | Execute tasks via Codex CLI instead of directly |
+| `--codex` | No | Switch to Codex execution mode (persists to settings) |
+| `--no-codex` | No | Switch to default execution mode (persists to settings) |
 | `--pause` | No | Stop after phase completes (skip auto-advance to checkpoint) |
 
 ## Execution Mode Resolution
 
-Determine execution mode using this priority order:
+When `--codex` or `--no-codex` is passed, **update** `executionMode` in `.claude/settings.local.json` before proceeding:
 
-1. **Explicit `--codex` flag** — always wins
-2. **`execution_mode` in `phase-state.json`** — for this phase or any prior phase. Preserves mode across session breaks and auto-advance
-3. **`executionMode` in `.claude/settings.local.json`** — project-wide default. Set to `"codex"` to use Codex mode for all phases without passing `--codex` each time:
-   ```json
-   { "executionMode": "codex" }
-   ```
-4. **Fallback** — `"default"` (Claude Code executes directly)
+- `--codex` → write `"executionMode": "codex"`
+- `--no-codex` → write `"executionMode": "default"`
 
-This ensures `/go`, `/fresh-start`, and auto-advance chains all resolve the correct mode — even on first run before any `phase-state.json` exists.
+These flags are persistent toggles, not one-time overrides. The setting survives across sessions, auto-advance, and `/go` resume.
+
+When neither flag is passed, read `executionMode` from `.claude/settings.local.json`. If not set, default to `"default"` (Claude Code executes directly).
 
 ## Execution Modes
 
