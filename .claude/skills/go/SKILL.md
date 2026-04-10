@@ -122,13 +122,13 @@ No prior state found. Running /fresh-start...
 
 **Condition:** State exists. Current phase status is `IN_PROGRESS`. There are tasks in EXECUTION_PLAN.md for that phase with unchecked `- [ ]` acceptance criteria.
 
-**Action:** Check the current phase's `execution_mode` in `phase-state.json`. If `execution_mode` is `"codex"`, invoke `/phase-start {CURRENT_PHASE} --codex`. Otherwise invoke `/phase-start {CURRENT_PHASE}`. Phase-start handles resumption — it skips already-completed tasks.
+**Action:** Determine execution mode: check `execution_mode` for the current phase in `phase-state.json`, then fall back to `executionMode` in `.claude/settings.local.json`. If either is `"codex"`, invoke `/phase-start {CURRENT_PHASE} --codex`. Otherwise invoke `/phase-start {CURRENT_PHASE}`. Phase-start handles resumption — it skips already-completed tasks.
 
 ```
 RESUMING EXECUTION
 ==================
 Phase {CURRENT_PHASE} in progress. Resuming...
-{If execution_mode is "codex": "Mode: Codex (persisted from prior session)"}
+{If execution_mode is "codex": "Mode: Codex (from {source: state/settings})"}
 {If a specific task was IN_PROGRESS in state: "Continuing from Task {id}"}
 ```
 
