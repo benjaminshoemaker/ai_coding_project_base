@@ -1,7 +1,7 @@
 ---
 name: codex-implement
 description: Delegate code implementation to Codex CLI. Claude decomposes, scopes context, and verifies; Codex implements. Accepts a spec file, text description, or gathers requirements interactively.
-argument-hint: "[SPEC_FILE | \"description\"] [--consult] [--no-commit] [--dry-run] [--model MODEL]"
+argument-hint: "[SPEC_FILE | \"description\"] [--consult] [--no-commit] [--dry-run] [--batch] [--model MODEL]"
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep, Agent, AskUserQuestion
 ---
 
@@ -24,6 +24,7 @@ Architect (decomposes, selects context, verifies); Codex acts as Editor
 - `--no-commit` — Skip commits after each task (leave changes unstaged)
 - `--dry-run` — Show Implementation Brief + task decomposition without executing
 - `--model MODEL` — Override Codex model for this invocation
+- `--batch` — Non-interactive mode for automated pipelines (skip user confirmations). Used by `/phase-start --codex` to drive tasks without pausing for approval
 
 ## Workflow
 
@@ -86,6 +87,7 @@ Extract from argument string:
 - `--consult` → `CONSULT=true`
 - `--no-commit` → `NO_COMMIT=true`
 - `--dry-run` → `DRY_RUN=true`
+- `--batch` → `BATCH=true`
 - `--model VALUE` → override `CODEX_MODEL`
 - Remaining text → `INPUT` (file path or description)
 
@@ -99,7 +101,7 @@ If `INPUT` is a file path that exists:
 
 1. Read the file
 2. Extract: problem statement, requirements, acceptance criteria, scope boundaries
-3. Present summary to user via AskUserQuestion: "This is what I'll have Codex implement. Correct?"
+3. If `BATCH` is false: Present summary to user via AskUserQuestion: "This is what I'll have Codex implement. Correct?"
 4. If user modifies, incorporate changes
 
 ### Mode B: Inline Text
@@ -115,11 +117,13 @@ If `INPUT` is quoted text (not a file path):
    - Affected files (from codebase exploration)
    - Success criteria (Claude generates testable criteria)
    - Constraints (from AGENTS.md and codebase conventions)
-3. Present brief to user via AskUserQuestion for confirmation
+3. If `BATCH` is false: Present brief to user via AskUserQuestion for confirmation
 
 ### Mode C: Interactive
 
-If no `INPUT` provided:
+If `BATCH` is true and no `INPUT` provided: STOP with error — batch mode requires a spec file or description.
+
+If no `INPUT` provided (and `BATCH` is false):
 
 1. Ask one question at a time via AskUserQuestion (conversational, discover-style)
 2. Follow threads: if an answer raises something interesting, explore it
@@ -192,10 +196,12 @@ Tasks: {N}
 Estimated Codex time: ~{N * timeout/4} minutes (worst case: {N * timeout} minutes)
 ```
 
-Ask: "Ready to execute?" with options:
+If `BATCH` is false, ask: "Ready to execute?" with options:
 - "Execute (Recommended)"
 - "Modify tasks"
 - "Cancel"
+
+If `BATCH` is true, proceed directly to execution.
 
 ### Dry Run Exit
 
@@ -208,9 +214,10 @@ If `--consult` flag is set:
 1. Write Implementation Brief to temp file
 2. Invoke `/codex-consult` on the temp file
 3. Present Codex's findings to user
-4. Ask: "Incorporate suggestions?" → refine brief if yes
-5. Clean up temp file
-6. Proceed to Phase 5
+4. If `BATCH` is false: Ask: "Incorporate suggestions?" → refine brief if yes
+5. If `BATCH` is true: Auto-incorporate non-breaking suggestions, skip interactive refinement
+6. Clean up temp file
+7. Proceed to Phase 5
 
 ## Phase 5: Execute Tasks
 
@@ -332,7 +339,8 @@ See [VERIFICATION.md](VERIFICATION.md) for the full verification strategy.
 
 **On failure**:
 - Show what went wrong (Codex output + verification results)
-- Ask user via AskUserQuestion:
+- If `BATCH` is true: report failure status and return immediately (let the caller handle retry/skip/abort decisions)
+- If `BATCH` is false: Ask user via AskUserQuestion:
   - "Retry this task"
   - "Skip and continue"
   - "Abort remaining tasks"
@@ -346,6 +354,27 @@ rm -f $PROMPT_FILE $OUTPUT_FILE
 ```
 
 ## Phase 6: Summary
+
+### Batch Mode Result Block
+
+When `BATCH` is true, output this structured result block as the **final output** so callers can parse status:
+
+```
+CODEX_IMPLEMENT_RESULT
+======================
+Status: COMPLETE | PARTIAL | FAILED
+Tasks: {completed}/{total}
+Files changed: {list of changed file paths}
+Issue: {description, only if PARTIAL or FAILED}
+```
+
+- `COMPLETE` — all tasks succeeded and passed verification
+- `PARTIAL` — some tasks succeeded, others failed/skipped
+- `FAILED` — no tasks succeeded or critical pre-flight failure
+
+### Interactive Mode Summary
+
+When `BATCH` is false, show the full summary:
 
 ```
 IMPLEMENTATION COMPLETE

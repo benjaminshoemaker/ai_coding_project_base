@@ -2,7 +2,7 @@
 name: phase-start
 description: Execute all tasks in a phase autonomously. Use after /phase-prep confirms prerequisites are met.
 argument-hint: "<phase-number> [--codex] [--pause]"
-allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Task, WebFetch, WebSearch
+allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Task, Skill, WebFetch, WebSearch
 ---
 
 Execute all steps and tasks in Phase $1 from EXECUTION_PLAN.md.
@@ -37,10 +37,11 @@ Phase Start Progress:
 
 **Default mode:** Claude Code executes tasks directly using its tools.
 
-**Codex mode (`--codex`):** Claude Code orchestrates while Codex CLI executes each task:
-- Claude Code maintains context, verification, auto-advance logic
-- Codex executes individual tasks with documentation research
-- Results return to Claude Code for verification and next-task decisions
+**Codex mode (`--codex`):** Claude Code orchestrates while `/codex-implement` handles each task:
+- Claude Code maintains phase context, state tracking, commits, and auto-advance logic
+- Each task is delegated to `/codex-implement --no-commit --batch` with a spec file
+- `/codex-implement` provides decomposition, scoped context, safety guards, and multi-tier verification
+- Results return to Claude Code for commit and next-task decisions
 
 Use `--codex` when:
 - Tasks involve external APIs where current documentation matters
@@ -213,10 +214,10 @@ See [CODEX_MODE.md](CODEX_MODE.md) for detailed Codex CLI setup and configuratio
    **Codex Execution Mode:**
 
    See [CODEX_MODE.md](CODEX_MODE.md) for full details. Summary:
-   - Build task prompt with context and acceptance criteria
-   - Execute via `codex exec` with appropriate flags
-   - Process results and handle failures
-   - Verify and commit (Claude Code verifies Codex's work)
+   - Build task spec file from execution plan data
+   - Invoke `/codex-implement <spec> --no-commit --batch` via Skill tool
+   - Process results and handle failures (stuck detection applies)
+   - Run `/verify-task` then commit (Claude Code verifies and commits)
 
    {Else}
 
