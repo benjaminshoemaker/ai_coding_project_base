@@ -43,7 +43,10 @@ Run from the scoped execution directory that contains the active plan:
 | `/phase-checkpoint N` | Run verification gate: tests, lint, security, then production checks |
 | `/progress` | Report completion status of phases, tasks, and acceptance criteria |
 
-Use `--pause` with any phase command to disable auto-advance. Use `--codex` with `/phase-start` to have Codex CLI execute tasks while Claude orchestrates.
+Use `--pause` with any phase command to disable auto-advance.
+Use `--codex` or `--no-codex` with `/go` or `/phase-start` to toggle execution mode.
+These are persistent toggles that write to `executionMode` in `.claude/settings.local.json`.
+In codex mode, each task is delegated to `/codex-implement` for scoped context, decomposition, and multi-tier verification.
 
 ## Verification Commands
 
@@ -66,10 +69,12 @@ Run from your **project directory**. These use OpenAI Codex CLI for second-opini
 
 | Command | Description |
 |---------|-------------|
+| `/codex-implement [spec\|text]` | Delegate implementation to Codex with scoped context and multi-tier verification |
 | `/codex-review [focus]` | Review current branch code diffs using Codex |
 | `/codex-consult [file]` | Get Codex second opinion on documents, specs, or plans |
 | `/create-pr [focus]` | Create GitHub PR with automatic Codex review |
 
+`/codex-implement` flags: `--consult`, `--no-commit`, `--dry-run`, `--batch`, `--model`
 `/codex-review` flags: `--upstream`, `--research`, `--base`, `--model`
 `/codex-consult` flags: `--upstream`, `--research`, `--model`
 `/create-pr` flags: `--skip-verify`, `--skip-review`, `--base`, `--title`, `--draft`
