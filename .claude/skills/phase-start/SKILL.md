@@ -33,6 +33,16 @@ Phase Start Progress:
 | `--codex` | No | Execute tasks via Codex CLI instead of directly |
 | `--pause` | No | Stop after phase completes (skip auto-advance to checkpoint) |
 
+## Execution Mode Persistence
+
+The `--codex` flag is persisted to `phase-state.json` as `execution_mode: "codex"` (see STATE_TRACKING.md). On resume:
+
+- If `--codex` is explicitly passed: use Codex mode
+- If `--codex` is NOT passed: check `execution_mode` for this phase in `phase-state.json`. If it is `"codex"`, use Codex mode (preserves mode across session breaks and auto-advance)
+- If neither: use default mode
+
+This ensures `/go` and auto-advance chains preserve the execution mode without requiring `--codex` to be re-specified.
+
 ## Execution Modes
 
 **Default mode:** Claude Code executes tasks directly using its tools.

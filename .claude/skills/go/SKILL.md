@@ -122,12 +122,13 @@ No prior state found. Running /fresh-start...
 
 **Condition:** State exists. Current phase status is `IN_PROGRESS`. There are tasks in EXECUTION_PLAN.md for that phase with unchecked `- [ ]` acceptance criteria.
 
-**Action:** Invoke `/phase-start {CURRENT_PHASE}` using the Skill tool. Phase-start handles resumption — it skips already-completed tasks.
+**Action:** Check the current phase's `execution_mode` in `phase-state.json`. If `execution_mode` is `"codex"`, invoke `/phase-start {CURRENT_PHASE} --codex`. Otherwise invoke `/phase-start {CURRENT_PHASE}`. Phase-start handles resumption — it skips already-completed tasks.
 
 ```
 RESUMING EXECUTION
 ==================
 Phase {CURRENT_PHASE} in progress. Resuming...
+{If execution_mode is "codex": "Mode: Codex (persisted from prior session)"}
 {If a specific task was IN_PROGRESS in state: "Continuing from Task {id}"}
 ```
 
