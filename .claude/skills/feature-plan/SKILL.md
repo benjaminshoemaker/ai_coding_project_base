@@ -132,7 +132,17 @@ If Codex IS detected:
 
 4. Report installation result.
 
-## Verification (Automatic)
+## Lean Mode (`--lean`)
+
+When `--lean` is passed:
+- **Skip all post-generation gates.** Do not run `/verify-spec`, `/codex-consult`, or `/criteria-audit`. Report each as `LEAN_SKIP` in the output.
+- All other steps (Q&A, document generation, deferred capture) run normally.
+
+## Post-Generation Gates (MANDATORY unless `--lean`)
+
+These gates MUST execute before you produce the "Next Step" output. The output template requires results from each gate. Reporting `SKIPPED` without `--lean` is a skill violation — go back and run the gate.
+
+### Gate 1: Spec Verification
 
 After writing EXECUTION_PLAN.md, run the spec-verification workflow:
 
@@ -143,9 +153,9 @@ After writing EXECUTION_PLAN.md, run the spec-verification workflow:
 5. Apply fixes based on user choices
 6. Re-verify until clean or max iterations reached
 
-**IMPORTANT**: Do not proceed to "Next Step" until verification passes or user explicitly chooses to proceed with noted issues.
+**IMPORTANT**: Do not proceed to Gate 2 until verification passes or user explicitly chooses to proceed with noted issues.
 
-## Criteria Audit
+### Gate 2: Criteria Audit
 
 Run `/criteria-audit FEATURE_DIR` to validate verification metadata in EXECUTION_PLAN.md.
 This passes the feature directory so criteria-audit reads `features/$1/EXECUTION_PLAN.md`
@@ -154,7 +164,7 @@ instead of looking in the project root.
 - If FAIL: stop and ask the user to resolve missing metadata before proceeding.
 - If WARN: report and continue.
 
-## Cross-Model Review (Automatic)
+### Gate 3: Cross-Model Review
 
 After verification passes, run cross-model review if Codex CLI is available:
 
@@ -173,7 +183,7 @@ After verification passes, run cross-model review if Codex CLI is available:
 - If Yes: Apply suggested fixes
 - If No: Continue with noted issues
 
-**If Codex unavailable:** Skip silently and proceed to Next Step.
+**If Codex CLI is not installed or not authenticated:** Report `UNAVAILABLE` (not `SKIPPED` — the distinction matters).
 
 ## Error Handling
 
@@ -187,12 +197,15 @@ After verification passes, run cross-model review if Codex CLI is available:
 
 ## Next Step
 
-When verification is complete, inform the user:
+**Pre-condition**: All gates above have completed, or `--lean` was explicitly passed. If you have not run them, STOP and run them now. Reporting `SKIPPED` without `--lean` is a skill violation.
+
+When complete, inform the user:
 ```
 EXECUTION_PLAN.md and AGENTS.md created and verified at features/$1/
 
-Verification: PASSED | PASSED WITH NOTES | NEEDS REVIEW
-Cross-Model Review: PASSED | PASSED WITH NOTES | SKIPPED
+Verification: PASSED | PASSED WITH NOTES | NEEDS REVIEW | LEAN_SKIP
+Criteria Audit: PASSED | WARN | LEAN_SKIP
+Cross-Model Review: PASSED | PASSED WITH NOTES | UNAVAILABLE | LEAN_SKIP
 
 Next steps:
 1. cd features/$1

@@ -147,7 +147,17 @@ After collecting answers, append to `PROJECT_ROOT/DEFERRED.md` right away.
 
 After capturing (or skipping), continue the spec Q&A where you left off.
 
-## Verification (Automatic)
+## Lean Mode (`--lean`)
+
+When `--lean` is passed:
+- **Skip all post-generation gates.** Do not run `/verify-spec`, `/codex-consult`, or `/criteria-audit`. Report each as `LEAN_SKIP` in the output.
+- All other steps (Q&A, document generation, deferred capture) run normally.
+
+## Post-Generation Gates (MANDATORY unless `--lean`)
+
+These gates MUST execute before you produce the "Next Step" output. The output template requires results from each gate. Reporting `SKIPPED` without `--lean` is a skill violation — go back and run the gate.
+
+### Gate 1: Spec Verification
 
 After writing FEATURE_SPEC.md, run quality verification:
 
@@ -163,9 +173,9 @@ After writing FEATURE_SPEC.md, run quality verification:
    - Q-PS-003: Unbounded scope ("all", "any", "every" without limits)
    - Q-PS-004: Missing non-functional requirements (performance, security, accessibility)
 3. Present CRITICAL issues with resolution options (max 2 fix iterations)
-4. Do not proceed to cross-model review until verification passes or user explicitly chooses to proceed with noted issues
+4. Do not proceed to Gate 2 until verification passes or user explicitly chooses to proceed with noted issues
 
-## Cross-Model Review (Automatic)
+### Gate 2: Cross-Model Review
 
 After verification, run cross-model review if Codex CLI is available:
 
@@ -184,7 +194,7 @@ After verification, run cross-model review if Codex CLI is available:
 - If Yes: Apply suggested fixes
 - If No: Continue with noted issues
 
-**If Codex unavailable:** Skip silently and proceed to Next Step.
+**If Codex CLI is not installed or not authenticated:** Report `UNAVAILABLE` (not `SKIPPED` — the distinction matters).
 
 ## Error Handling
 
@@ -198,12 +208,14 @@ After verification, run cross-model review if Codex CLI is available:
 
 ## Next Step
 
+**Pre-condition**: All gates above have completed, or `--lean` was explicitly passed. If you have not run them, STOP and run them now. Reporting `SKIPPED` without `--lean` is a skill violation.
+
 When complete, inform the user:
 ```
 FEATURE_SPEC.md created at features/$1/FEATURE_SPEC.md
 Deferred Requirements: {count} items captured to DEFERRED.md
-Verification: PASSED | PASSED WITH NOTES | NEEDS REVIEW
-Cross-Model Review: PASSED | PASSED WITH NOTES | SKIPPED
+Verification: PASSED | PASSED WITH NOTES | NEEDS REVIEW | LEAN_SKIP
+Cross-Model Review: PASSED | PASSED WITH NOTES | UNAVAILABLE | LEAN_SKIP
 
 Next: Run /feature-technical-spec $1
 ```

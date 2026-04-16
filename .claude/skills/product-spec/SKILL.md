@@ -27,7 +27,7 @@ Product Spec Progress:
 
 When `--lean` is passed:
 - **Web research runs in background:** Launch all WebSearch research as background Agent calls (`run_in_background: true`). Continue the Q&A without waiting. When results arrive, only interrupt the flow if a finding would materially change a recommendation (e.g., a critical known issue, a dominant competitor, a clearly superior alternative). Skip routine competitive analysis summaries.
-- **Skip post-generation Codex consult:** Do not run `/codex-consult` after writing the spec. Proceed directly to the Next Step.
+- **Skip all post-generation gates.** Do not run `/verify-spec`, `/codex-consult`, or `/criteria-audit`. Report each as `LEAN_SKIP` in the output.
 
 ## Directory Guard
 
@@ -157,11 +157,31 @@ After collecting answers, append to `DEFERRED.md` right away (don't wait until e
 
 After capturing (or skipping), continue the spec Q&A where you left off. Don't break the flow.
 
-## Cross-Model Review (Automatic — skipped in `--lean` mode)
+## Post-Generation Gates (MANDATORY unless `--lean`)
 
-If `--lean` was passed, skip this entire section and proceed to Next Step.
+These gates MUST execute before you produce the "Next Step" output. The output template requires results from each gate. Reporting `SKIPPED` without `--lean` is a skill violation — go back and run the gate.
 
-After writing `plans/greenfield/PRODUCT_SPEC.md`, run cross-model review if Codex CLI is available:
+### Gate 1: Spec Verification
+
+After writing `plans/greenfield/PRODUCT_SPEC.md`, run quality verification:
+
+1. Invoke `/verify-spec product-spec` on the generated document
+2. This runs **quality checks only** (no upstream context preservation since PRODUCT_SPEC.md has no upstream):
+   - Q-001: Vague/unmeasurable language ("fast", "user-friendly", "simple")
+   - Q-002: Subjective terms without targets ("better", "improved")
+   - Q-003: Missing rationale for decisions
+   - Q-005: Implicit assumptions
+   - Q-006: Conflicting requirements
+   - Q-PS-001: Missing user flow (feature mentioned without step-by-step interaction)
+   - Q-PS-002: Only happy path described (no edge cases)
+   - Q-PS-003: Unbounded scope ("all", "any", "every" without limits)
+   - Q-PS-004: Missing non-functional requirements (performance, security, accessibility)
+3. Present CRITICAL issues with resolution options (max 2 fix iterations)
+4. Do not proceed to Gate 2 until verification passes or user explicitly chooses to proceed with noted issues
+
+### Gate 2: Cross-Model Review
+
+After verification, run cross-model review if Codex CLI is available:
 
 1. Check if Codex CLI is installed: `codex --version`
 2. If available, run `/codex-consult` on the generated document
@@ -178,7 +198,7 @@ After writing `plans/greenfield/PRODUCT_SPEC.md`, run cross-model review if Code
 - If Yes: Apply suggested fixes
 - If No: Continue with noted issues
 
-**If Codex unavailable:** Skip silently and proceed to Next Step.
+**If Codex CLI is not installed or not authenticated:** Report `UNAVAILABLE` (not `SKIPPED` — the distinction matters).
 
 ## Error Handling
 
@@ -190,11 +210,14 @@ After writing `plans/greenfield/PRODUCT_SPEC.md`, run cross-model review if Code
 
 ## Next Step
 
+**Pre-condition**: All gates above have completed, or `--lean` was explicitly passed. If you have not run them, STOP and run them now. Reporting `SKIPPED` without `--lean` is a skill violation.
+
 When complete, inform the user:
 ```
 PRODUCT_SPEC.md created at ./plans/greenfield/PRODUCT_SPEC.md
 Deferred Requirements: {count} items captured to DEFERRED.md
-Cross-Model Review: PASSED | PASSED WITH NOTES | SKIPPED
+Verification: PASSED | PASSED WITH NOTES | NEEDS REVIEW | LEAN_SKIP
+Cross-Model Review: PASSED | PASSED WITH NOTES | UNAVAILABLE | LEAN_SKIP
 
 Next: Run /technical-spec
 ```

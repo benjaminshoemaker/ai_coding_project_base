@@ -115,11 +115,17 @@ If `plans/greenfield/CLAUDE.md` does not exist, create it with:
 
 If it already exists, do not overwrite it.
 
-## Verification (Automatic)
+## Lean Mode (`--lean`)
 
-After writing the root and scoped files:
+When `--lean` is passed:
+- **Skip all post-generation gates.** Do not run `/verify-spec`, `/codex-consult`, or `/criteria-audit`. Report each as `LEAN_SKIP` in the output.
+- All other steps (Q&A, document generation, deferred capture) run normally.
 
-### 1. AGENTS.md Size Check
+## Post-Generation Gates (MANDATORY unless `--lean`)
+
+These gates MUST execute before you produce the "Next Step" output. The output template requires results from each gate. Reporting `SKIPPED` without `--lean` is a skill violation — go back and run the gate.
+
+### Gate 1: AGENTS.md Size Check
 
 Count the lines in the generated root `AGENTS.md`:
 
@@ -130,7 +136,7 @@ Count the lines in the generated root `AGENTS.md`:
 
 If WARN or FAIL, offer to help split the file before proceeding.
 
-### 2. Spec Verification
+### Gate 2: Spec Verification
 
 Run the spec-verification workflow:
 
@@ -141,16 +147,16 @@ Run the spec-verification workflow:
 5. Apply fixes based on user choices
 6. Re-verify until clean or max iterations reached
 
-**IMPORTANT**: Do not proceed to "Next Step" until verification passes or user explicitly chooses to proceed with noted issues.
+**IMPORTANT**: Do not proceed to Gate 3 until verification passes or user explicitly chooses to proceed with noted issues.
 
-### 3. Criteria Audit
+### Gate 3: Criteria Audit
 
 Run `/criteria-audit plans/greenfield` to validate verification metadata in `plans/greenfield/EXECUTION_PLAN.md`.
 
 - If FAIL: stop and ask the user to resolve missing metadata before proceeding.
 - If WARN: report and continue.
 
-## Cross-Model Review (Automatic)
+### Gate 4: Cross-Model Review
 
 After verification passes, run cross-model review if Codex CLI is available:
 
@@ -169,7 +175,7 @@ After verification passes, run cross-model review if Codex CLI is available:
 - If Yes: Apply suggested fixes
 - If No: Continue with noted issues
 
-**If Codex unavailable:** Skip silently and proceed to Next Step.
+**If Codex CLI is not installed or not authenticated:** Report `UNAVAILABLE` (not `SKIPPED` — the distinction matters).
 
 ## Error Handling
 
@@ -184,12 +190,16 @@ After verification passes, run cross-model review if Codex CLI is available:
 
 ## Next Step
 
-When verification is complete, inform the user:
+**Pre-condition**: All gates above have completed, or `--lean` was explicitly passed. If you have not run them, STOP and run them now. Reporting `SKIPPED` without `--lean` is a skill violation.
+
+When complete, inform the user:
 ```
 Root AGENTS.md plus greenfield plan files created and verified.
 
-Verification: PASSED | PASSED WITH NOTES | NEEDS REVIEW
-Cross-Model Review: PASSED | PASSED WITH NOTES | SKIPPED
+AGENTS.md Size: PASS | WARN | LEAN_SKIP
+Verification: PASSED | PASSED WITH NOTES | NEEDS REVIEW | LEAN_SKIP
+Criteria Audit: PASSED | WARN | LEAN_SKIP
+Cross-Model Review: PASSED | PASSED WITH NOTES | UNAVAILABLE | LEAN_SKIP
 
 Your project is ready for execution:
 1. cd plans/greenfield
