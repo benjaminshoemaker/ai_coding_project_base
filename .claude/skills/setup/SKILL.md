@@ -50,87 +50,58 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
     - Create `$1/features/<feature-name>/` directory
     - Store the feature path as `FEATURE_PATH` = `$1/features/<feature-name>`
 
-3. **Copy skills to target (with global resolution check)**
+3. **Validate global skills runtime (global-only policy)**
 
-   Before copying each skill, check if it's globally available. See [GLOBAL_SYNC.md](../update-target-projects/GLOBAL_SYNC.md) for helper definitions.
+   Skills must resolve globally via `~/.claude/skills/`. Do not copy toolkit
+   skills into `$1/.claude/skills/`.
 
-   **Pre-copy checks:**
+   See [GLOBAL_SYNC.md](../update-target-projects/GLOBAL_SYNC.md) for helper definitions.
+
+   **Validation checks:**
    ```bash
-   # Source the global sync helpers
    GLOBAL_SKILLS_DIR="$HOME/.claude/skills"
    TOOLKIT_ROOT="$(pwd)"
 
-   # Check if global directory exists and has symlinks
-   GLOBAL_AVAILABLE=false
-   if [[ -d "$GLOBAL_SKILLS_DIR" ]]; then
-     # Count symlinks pointing to this toolkit
-     SYMLINK_COUNT=$(find "$GLOBAL_SKILLS_DIR" -maxdepth 1 -type l 2>/dev/null | wc -l)
-     if [[ "$SYMLINK_COUNT" -gt 0 ]]; then
-       GLOBAL_AVAILABLE=true
+   if [[ ! -d "$GLOBAL_SKILLS_DIR" ]]; then
+     echo "Missing global skills directory: $GLOBAL_SKILLS_DIR"
+     exit 1
+   fi
+
+   MISSING_GLOBAL=0
+   for skill_dir in .claude/skills/*/; do
+     skill_name="$(basename "$skill_dir")"
+     if sed -n '/^---$/,/^---$/p' "$skill_dir/SKILL.md" 2>/dev/null | grep -q '^toolkit-only: true'; then
+       continue
      fi
+
+     global_path="$GLOBAL_SKILLS_DIR/$skill_name"
+     resolved=$(realpath "$global_path" 2>/dev/null || true)
+     expected=$(realpath "$skill_dir" 2>/dev/null || true)
+     if [[ ! -L "$global_path" || -z "$resolved" || "$resolved" != "$expected" ]]; then
+       echo "  $skill_name — missing or incorrect global symlink"
+       MISSING_GLOBAL=1
+     fi
+   done
+
+   if [[ "$MISSING_GLOBAL" -ne 0 ]]; then
+     echo "Global skills are not ready. Run ./scripts/sync-agent-skills.sh from the toolkit repo first."
+     exit 1
    fi
    ```
 
-   **Copy logic with global resolution:**
-   ```bash
-   GLOBAL_COUNT=0
-   LOCAL_COUNT=0
-
-   for skill_dir in .claude/skills/*/; do
-     skill_name="$(basename "$skill_dir")"
-
-     # Check for toolkit-only flag in YAML frontmatter (between --- markers)
-     if sed -n '/^---$/,/^---$/p' "$skill_dir/SKILL.md" 2>/dev/null | grep -q '^toolkit-only: true'; then
-       continue  # Skip toolkit-only skills
-     fi
-
-     # Check if this skill is globally usable
-     if [[ "$GLOBAL_AVAILABLE" == "true" ]]; then
-       global_path="$GLOBAL_SKILLS_DIR/$skill_name"
-       if [[ -L "$global_path" && -e "$global_path" ]]; then
-         # Verify it points to this toolkit
-         resolved=$(realpath "$global_path" 2>/dev/null)
-         expected=$(realpath "$skill_dir" 2>/dev/null)
-         if [[ "$resolved" == "$expected" ]]; then
-           echo "  $skill_name — globally available"
-           ((GLOBAL_COUNT++))
-           continue  # Skip copy, will resolve via global
-         fi
-       fi
-     fi
-
-     # Copy locally
-     cp -r "$skill_dir" "$1/.claude/skills/"
-     echo "  $skill_name — copied locally"
-     ((LOCAL_COUNT++))
-   done
-   ```
-
-   **Summary output:**
-   - If all skills are global: `"All skills resolved via ~/.claude/skills/ — no local copies needed"`
-   - If mixed: `"Skills: {GLOBAL_COUNT} global, {LOCAL_COUNT} local"`
-   - If all local: `"Copied {LOCAL_COUNT} skills to project"`
+   **Local shadow cleanup (required):**
+   - If `$1/.claude/skills/` exists, treat it as legacy shadowing.
+   - Back up modified local skills to `$1/.claude/skills.bak/`.
+   - Remove toolkit-managed directories under `$1/.claude/skills/`.
+   - Do not delete non-toolkit custom skills silently; report and ask first.
 
    Copy verification config (if missing):
    - `.claude/verification-config.json` → target's `.claude/verification-config.json`
-
-   **Verify result:**
-   ```bash
-   # For local-only or mixed: verify local copies exist
-   if [[ "$LOCAL_COUNT" -gt 0 ]]; then
-     actual_count=$(ls -d "$1/.claude/skills/"*/ 2>/dev/null | wc -l)
-     if [[ "$actual_count" -eq 0 ]]; then
-       # STOP and report copy failure
-     fi
-   fi
-   ```
 
    Also verify configuration file:
    ```bash
    test -f "$1/.claude/verification-config.json" && echo "Config: OK" || echo "Config: MISSING (non-critical)"
    ```
-
-   **Verify skill copy results:** After the copy loop completes, run `ls "$1/.claude/skills/"` and confirm the expected skill directories are present. If any expected local copies are missing, STOP and report the failure before continuing.
 
 3b. **Copy workstream scripts to target**
 
@@ -180,14 +151,13 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
    **Check resolution mode from existing config:**
    ```bash
    FORCE_LOCAL=$(jq -r '.force_local_skills // empty' "$1/.claude/toolkit-version.json")
-   CURRENT_RESOLUTION=$(jq -r '.skill_resolution // "local"' "$1/.claude/toolkit-version.json")
+   CURRENT_RESOLUTION=$(jq -r '.skill_resolution // "global"' "$1/.claude/toolkit-version.json")
    ```
 
-   **Important:** Global-first policy applies:
-   - If global symlinks are healthy and `force_local_skills` is not `true`, prefer
-     global resolution (remove local shadow copies after backup if needed).
-   - Fall back to local sync for shared repos, CI portability, or explicit
-     `force_local_skills: true`.
+   **Important:** Global-only policy applies:
+   - `force_local_skills=true` is legacy-only and should be migrated to `false`.
+   - Remove local shadow copies after backup if present.
+   - Do not copy toolkit skills into `.claude/skills/` during incremental sync.
 
    Load the stored file hashes from `$1/.claude/toolkit-version.json`:
    ```bash
@@ -200,43 +170,40 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
    file_hash() { shasum -a 256 "$1" | cut -d' ' -f1; }
    ```
 
-   For each skill in the copy list (excluding toolkit-only skills — check `SKILL.md` frontmatter for `toolkit-only: true`):
+   For each skill in the tracked list (excluding toolkit-only skills — check `SKILL.md` frontmatter for `toolkit-only: true`):
 
    1. Calculate toolkit file hash: `TOOLKIT_HASH=$(file_hash "$TOOLKIT_FILE")`
    2. Get stored hash from toolkit-version.json (hash at last sync)
-   3. Calculate target file hash (if exists): `TARGET_HASH=$(file_hash "$TARGET_FILE")`
+   3. Validate global symlink points to this toolkit skill directory
 
    **Classification and Action:**
 
    | Condition | Classification | Action |
    |-----------|----------------|--------|
-   | Already using global resolution | `GLOBAL_USABLE` | Skip (resolves via global) |
-   | Existing local copies + global healthy + not forced local | `ADOPT_GLOBAL` | Migrate to global (backup modified, remove local shadow copies) |
-   | Target doesn't exist | `NEW` | Copy from toolkit |
-   | Target hash = Toolkit hash | `CURRENT` | Skip (already up to date) |
-   | Target hash = Stored hash | `CLEAN_UPDATE` | Copy from toolkit (no local changes) |
-   | Target hash ≠ Stored hash | `LOCAL_MODIFIED` | Skip with warning |
+   | Global symlink valid | `GLOBAL_USABLE` | Keep global mode |
+   | Local shadow copies exist | `ADOPT_GLOBAL` | Backup modified local copies, remove local shadowing |
+   | Global symlink missing/broken | `GLOBAL_MISSING` | Stop and instruct bootstrap repair |
+   | Stored hash differs from toolkit | `TOOLKIT_UPDATED` | Update hash metadata (global resolution remains) |
 
    Track counts for each classification and report summary:
    ```
    INCREMENTAL SYNC
    ================
    Global resolution: {count} skills (via ~/.claude/skills)
-   New files:         {count} copied
-   Updated files:     {count} copied
-   Current files:     {count} skipped (already up to date)
-   Modified files:    {count} skipped (local changes preserved)
+   Local shadows removed: {count}
+   Missing/broken globals: {count} (must repair before completion)
+   Metadata updated: {count}
    ```
 
-   If any files are `LOCAL_MODIFIED`, list them:
+   If any skills are `GLOBAL_MISSING`, list them:
    ```
-   WARNING: These files have local modifications and were NOT updated:
-   - .claude/skills/phase-start/SKILL.md
-   - .claude/skills/fresh-start/SKILL.md
+   ERROR: These global skills are missing or misconfigured:
+   - ~/.claude/skills/phase-start
+   - ~/.claude/skills/fresh-start
 
-   To update these files, either:
-   - Run /sync for interactive conflict resolution
-   - Manually backup and delete them, then re-run /setup
+   Repair with:
+   ./scripts/sync-agent-skills.sh
+   Then re-run /setup.
    ```
 
 4. **Create or Update toolkit-version.json**
@@ -244,7 +211,7 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
    **For full setup (SETUP_MODE=full):**
 
    Create `.claude/toolkit-version.json` in the target to enable future syncs.
-   Determine the resolution mode based on how skills were installed:
+   Use global-only resolution metadata:
 
    ```json
    {
@@ -253,13 +220,13 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
      "toolkit_commit": "{current git HEAD commit hash}",
      "toolkit_commit_date": "{commit date in ISO format}",
      "last_sync": "{current ISO timestamp}",
-     "force_local_skills": null,
-     "skill_resolution": "{global|local|mixed}",
+     "force_local_skills": false,
+     "skill_resolution": "global",
      "files": {
        ".claude/skills/fresh-start/SKILL.md": {
          "hash": "{sha256 hash of file}",
          "synced_at": "{ISO timestamp}",
-         "resolution": "{global|local}"
+         "resolution": "global"
        }
        // ... entry for each skill
      }
@@ -267,13 +234,10 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
    ```
 
    **Resolution determination:**
-   - If `GLOBAL_COUNT > 0` and `LOCAL_COUNT == 0`: `"skill_resolution": "global"`
-   - If `GLOBAL_COUNT == 0` and `LOCAL_COUNT > 0`: `"skill_resolution": "local"`
-   - If both > 0: `"skill_resolution": "mixed"`
+   - Always set `"skill_resolution": "global"` for toolkit-managed projects.
 
    **Per-file resolution:**
-   - Skills that were skipped (globally available): `"resolution": "global"`
-   - Skills that were copied: `"resolution": "local"`
+   - All toolkit-managed skills should record `"resolution": "global"`.
 
    **For incremental update (SETUP_MODE=incremental):**
 
@@ -281,11 +245,9 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
    - Update `toolkit_commit` to current HEAD
    - Update `toolkit_commit_date` to current commit date
    - Update `last_sync` to current timestamp
-   - Preserve `force_local_skills` setting
-   - For each file that was copied (NEW or CLEAN_UPDATE):
-     - Update the file's `hash`, `synced_at`, and `resolution`
-   - Keep existing entries for files that were skipped (CURRENT or LOCAL_MODIFIED)
-   - Recalculate `skill_resolution` based on all files
+   - Set `force_local_skills` to `false` when present
+   - Update each tracked skill file `hash`, `synced_at`, and `resolution: "global"`
+   - Set `skill_resolution` to `"global"`
 
    **For already current (SETUP_MODE=current):**
 
@@ -319,7 +281,7 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
    This ensures skills with supporting files (e.g., `audit-skills/CRITERIA.md`,
    `audit-skills/SCORING.md`) are tracked for conflict detection.
 
-   **Skills with `toolkit-only: true` in frontmatter are NOT copied or tracked.**
+   **Skills with `toolkit-only: true` in frontmatter are NOT distributed or tracked.**
    These run only from the toolkit directory (e.g., setup, update-target-projects).
 
    **Verify toolkit-version.json:** Read back the file with `cat "$1/.claude/toolkit-version.json" | python3 -m json.tool` (or `jq .`) to confirm it contains valid JSON and the `toolkit_commit` field matches the expected value.
@@ -401,7 +363,7 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
    TOOLKIT INITIALIZED
    ===================
    Target: $1
-   Skill resolution: {mode} ({details})
+   Skill resolution: global ({GLOBAL_COUNT} skills via ~/.claude/skills)
 
    Next steps (run from your project directory):
    1. cd $1
@@ -415,10 +377,8 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
    9. /phase-start 1
    ```
 
-   **Skill resolution line examples:**
+   **Skill resolution line example:**
    - `Skill resolution: global (30 skills via ~/.claude/skills symlinks)`
-   - `Skill resolution: local (30 skills copied to project)`
-   - `Skill resolution: mixed (25 global, 5 local)`
 
    **For SETUP_MODE=full, Feature:**
    ```
@@ -452,19 +412,18 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
 | Situation | Action |
 |-----------|--------|
 | Target directory does not exist and `mkdir -p` fails | Report permission error, suggest creating manually, exit without partial state |
-| `cp -r` fails when copying skills to target | STOP immediately, report which skills failed to copy, do not write toolkit-version.json |
+| Global skill validation fails (`~/.claude/skills` missing/broken) | STOP immediately, report missing skills, and instruct user to run `./scripts/sync-agent-skills.sh` |
 | `toolkit-version.json` write fails or produces invalid JSON | Complete file copies (primary goal), warn that incremental syncs will not work, suggest checking `.claude/` directory permissions |
 | Codex CLI skill installation fails | Do NOT fail the entire setup; report the error and continue with remaining steps |
-| Global symlink check fails (broken symlinks in `~/.claude/skills/`) | Fall back to local copy for affected skills, report which symlinks are broken |
+| Global symlink check fails (broken symlinks in `~/.claude/skills/`) | STOP and repair global symlinks; do not fall back to project-local copies |
 
 ## When Setup Cannot Complete
 
-**If LOCAL_MODIFIED files conflict during incremental sync:**
-- List all conflicting files with their local vs toolkit versions
-- Ask user: "Keep local changes, overwrite with toolkit, or diff each file?"
-- If "Keep local": Skip those files, complete rest of sync, warn about version mismatch
-- If "Overwrite": Back up local files to `.claude/backup/` before overwriting
-- If "Diff each": Show side-by-side diff, let user choose per file
+**If legacy local skills are detected during incremental sync:**
+- List locally shadowed skills
+- Back up modified local skills to `.claude/skills.bak/`
+- Remove toolkit-managed local copies
+- Keep untracked project-specific custom skills only with explicit user confirmation
 
 **If target directory doesn't exist and can't be created:**
 - Report: "Cannot create directory: {path}"
@@ -480,6 +439,6 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
 
 **If toolkit-version.json cannot be written:**
 - Report: "Cannot write toolkit-version.json"
-- Complete the file copies (primary goal)
+- Complete non-skill setup files (`.workstream`, `.codex`, config) as possible
 - Warn: "Future incremental syncs will not work until version file is created"
 - Suggest: Check .claude/ directory permissions

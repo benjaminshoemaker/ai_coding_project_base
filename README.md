@@ -44,7 +44,7 @@ This sets up:
 
 Safety defaults:
 - Existing non-toolkit skills are preserved (not overwritten)
-- Existing MCPs are discovered and normalized via `add-mcp list` + `add-mcp sync`
+- Existing MCPs are discovered and normalized via `add-mcp list` + `add-mcp sync` (use `--no-normalize-existing` for manifest-only MCP apply)
 
 ## Quick Start
 
@@ -144,12 +144,12 @@ your-project/
 │       ├── AGENTS.md            # Greenfield execution guidance
 │       └── CLAUDE.md            # Scoped Claude shim
 ├── .claude/
-│   ├── skills/              # Execution skills (auto-copied)
 │   ├── verification-config.json
-│   └── toolkit-version.json # Tracks toolkit sync state
+│   └── toolkit-version.json # Tracks toolkit sync state (global skill resolution)
 └── [your code]
 ```
 
+Skills resolve globally from `~/.claude/skills/` (managed by `./scripts/bootstrap-agent-runtime.sh`) rather than long-lived per-project copies.
 These documents persist across sessions, enabling any AI agent to pick up where another left off.
 
 ## Documentation

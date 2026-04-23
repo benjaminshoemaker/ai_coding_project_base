@@ -23,6 +23,8 @@ Options:
   --add-mcp-version <ver>    add-mcp version override
   --scope <user|project>     MCP scope override
   --agents <csv>             MCP agents override (example: claude-code,codex)
+  --normalize-existing       Run add-mcp sync after manifest apply (default)
+  --no-normalize-existing    Skip add-mcp sync (manifest-only MCP apply)
   --dry-run                  Show planned operations without writes
   --check                    Check mode (exit non-zero on skill drift)
   -h, --help                 Show help
@@ -33,6 +35,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 SKILLS_ARGS=()
 MCPS_ARGS=()
+NORMALIZE_EXISTING="1"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -51,6 +54,14 @@ while [[ $# -gt 0 ]]; do
           ;;
       esac
       shift 2
+      ;;
+    --normalize-existing)
+      NORMALIZE_EXISTING="1"
+      shift
+      ;;
+    --no-normalize-existing)
+      NORMALIZE_EXISTING="0"
+      shift
       ;;
     --force|--adopt-unmanaged-skills|--prune|--adopt-codex-shim|--no-codex-shim)
       SKILLS_ARGS+=("$1")
@@ -77,6 +88,10 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+if [[ "$NORMALIZE_EXISTING" == "1" ]]; then
+  MCPS_ARGS+=("--normalize-existing")
+fi
 
 echo "Bootstrapping agent runtime from: $ROOT_DIR"
 

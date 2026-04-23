@@ -45,10 +45,18 @@ CODEX_SHIM_DIR="${CODEX_HOME:-$HOME/.codex}/skills"
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --method)
+      if [[ $# -lt 2 ]]; then
+        echo "Missing value for $1" >&2
+        exit 2
+      fi
       METHOD="${2:-}"
       shift 2
       ;;
     --source)
+      if [[ $# -lt 2 ]]; then
+        echo "Missing value for $1" >&2
+        exit 2
+      fi
       SRC_DIR="${2:-}"
       shift 2
       ;;
@@ -163,7 +171,9 @@ if [[ ${#SKILL_NAMES[@]} -eq 0 ]]; then
 fi
 
 SKILL_SET=" ${SKILL_NAMES[*]} "
+ROOT_DIR_REAL="$(realpath_safe "$ROOT_DIR")"
 SRC_ROOT_REAL="$(realpath_safe "$SRC_DIR")"
+MARKER_ROOT="${ROOT_DIR_REAL:-$ROOT_DIR}"
 
 created=0
 updated=0
@@ -223,11 +233,35 @@ is_toolkit_managed_entry() {
     return 1
   fi
 
-  if [[ -d "$dest" && -f "$dest/.toolkit-source" ]]; then
+  if marker_points_to_toolkit "$dest"; then
     return 0
   fi
 
   return 1
+}
+
+marker_points_to_toolkit() {
+  local dest="$1"
+  local marker_file="$dest/.toolkit-source"
+  local marker_root=""
+  local marker_real=""
+
+  if [[ ! -f "$marker_file" ]]; then
+    return 1
+  fi
+
+  marker_root="$(head -n 1 "$marker_file" 2>/dev/null | tr -d '\r')"
+  if [[ -z "$marker_root" ]]; then
+    return 1
+  fi
+
+  marker_real="$(realpath_safe "$marker_root")"
+  if [[ -n "$ROOT_DIR_REAL" && -n "$marker_real" ]]; then
+    [[ "$marker_real" == "$ROOT_DIR_REAL" ]]
+    return
+  fi
+
+  [[ "$marker_root" == "$ROOT_DIR" ]]
 }
 
 create_skill() {
@@ -241,9 +275,9 @@ create_skill() {
 
   run_cmd cp -R "$src" "$dest"
   if [[ "$DRY_RUN" == "1" ]]; then
-    print_cmd /bin/sh -c "printf '%s\\n' '$ROOT_DIR' > '$dest/.toolkit-source'"
+    print_cmd /bin/sh -c "printf '%s\\n' '$MARKER_ROOT' > '$dest/.toolkit-source'"
   else
-    printf '%s\n' "$ROOT_DIR" > "$dest/.toolkit-source"
+    printf '%s\n' "$MARKER_ROOT" > "$dest/.toolkit-source"
   fi
 }
 
@@ -340,7 +374,7 @@ sync_target() {
       if [[ -n "$resolved" && -n "$SRC_ROOT_REAL" && "$resolved" == "$SRC_ROOT_REAL/"* ]]; then
         should_prune="1"
       fi
-    elif [[ -f "$entry/.toolkit-source" ]]; then
+    elif marker_points_to_toolkit "$entry"; then
       should_prune="1"
     fi
 

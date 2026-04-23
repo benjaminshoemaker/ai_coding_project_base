@@ -13,6 +13,7 @@ Options:
   --add-mcp-version <ver>    add-mcp version override (default: manifest value)
   --scope <user|project>     Scope override for all servers
   --agents <csv>             Agent override for all servers (example: claude-code,codex)
+  --normalize-existing       Run add-mcp sync after apply (opt-in)
   --dry-run                  Show planned add-mcp commands without executing
   --check                    Validate manifest and show planned commands (no writes)
   -h, --help                 Show help
@@ -30,24 +31,45 @@ SCOPE_OVERRIDE=""
 AGENTS_OVERRIDE=""
 DRY_RUN="0"
 CHECK_ONLY="0"
+NORMALIZE_EXISTING="0"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --manifest)
+      if [[ $# -lt 2 ]]; then
+        echo "Missing value for $1" >&2
+        exit 2
+      fi
       MANIFEST="${2:-}"
       shift 2
       ;;
     --add-mcp-version)
+      if [[ $# -lt 2 ]]; then
+        echo "Missing value for $1" >&2
+        exit 2
+      fi
       ADD_MCP_VERSION="${2:-}"
       shift 2
       ;;
     --scope)
+      if [[ $# -lt 2 ]]; then
+        echo "Missing value for $1" >&2
+        exit 2
+      fi
       SCOPE_OVERRIDE="${2:-}"
       shift 2
       ;;
     --agents)
+      if [[ $# -lt 2 ]]; then
+        echo "Missing value for $1" >&2
+        exit 2
+      fi
       AGENTS_OVERRIDE="${2:-}"
       shift 2
+      ;;
+    --normalize-existing)
+      NORMALIZE_EXISTING="1"
+      shift
       ;;
     --dry-run)
       DRY_RUN="1"
@@ -79,16 +101,25 @@ if [[ -n "$SCOPE_OVERRIDE" && "$SCOPE_OVERRIDE" != "user" && "$SCOPE_OVERRIDE" !
   exit 2
 fi
 
-python3 - "$MANIFEST" "$ADD_MCP_VERSION" "$SCOPE_OVERRIDE" "$AGENTS_OVERRIDE" "$DRY_RUN" "$CHECK_ONLY" <<'PY'
+python3 - "$MANIFEST" "$ADD_MCP_VERSION" "$SCOPE_OVERRIDE" "$AGENTS_OVERRIDE" "$DRY_RUN" "$CHECK_ONLY" "$NORMALIZE_EXISTING" <<'PY'
 import json
 import shlex
 import subprocess
 import sys
 from collections import defaultdict
 
-manifest_path, version_override, scope_override, agents_override, dry_run_raw, check_only_raw = sys.argv[1:]
+(
+    manifest_path,
+    version_override,
+    scope_override,
+    agents_override,
+    dry_run_raw,
+    check_only_raw,
+    normalize_existing_raw,
+) = sys.argv[1:]
 dry_run = dry_run_raw == "1"
 check_only = check_only_raw == "1"
+normalize_existing = normalize_existing_raw == "1"
 
 with open(manifest_path, "r", encoding="utf-8") as f:
     manifest = json.load(f)
@@ -141,9 +172,6 @@ print(f"Mode:              {'check' if check_only else ('dry-run' if dry_run els
 planned = 0
 applied = 0
 target_scope_agents = defaultdict(set)
-
-for agent in (cli_agents or default_agents):
-    target_scope_agents[default_scope].add(agent)
 
 for idx, server in enumerate(servers, start=1):
     if not isinstance(server, dict):
@@ -210,6 +238,10 @@ for idx, server in enumerate(servers, start=1):
     subprocess.run(cmd, check=True)
     applied += 1
 
+if not target_scope_agents:
+    for agent in (cli_agents or default_agents):
+        target_scope_agents[default_scope].add(agent)
+
 # Preflight: discover existing MCP configuration for all targeted scopes/agents.
 for scope in sorted(target_scope_agents):
     list_cmd = ["npx", "-y", f"add-mcp@{add_mcp_version}", "list"]
@@ -221,34 +253,41 @@ for scope in sorted(target_scope_agents):
 
     print(f"\n[CHECK] existing MCPs scope={scope} agents={', '.join(sorted(target_scope_agents[scope]))}")
     print("  cmd:    " + shlex.join(list_cmd))
+    if dry_run:
+        continue
+
     subprocess.run(list_cmd, check=True)
 
 if planned == 0:
-    print("\nNo enabled MCP servers found in manifest. Skipping add step and running sync only.")
+    print("\nNo enabled MCP servers found in manifest.")
 
-# Normalize names and installations across targeted agents.
+# Normalize names and installations across targeted agents only when explicitly enabled.
 sync_runs = 0
-for scope in sorted(target_scope_agents):
-    sync_cmd = ["npx", "-y", f"add-mcp@{add_mcp_version}", "sync", "-y"]
-    if scope == "user":
-        sync_cmd.append("-g")
+if normalize_existing:
+    for scope in sorted(target_scope_agents):
+        sync_cmd = ["npx", "-y", f"add-mcp@{add_mcp_version}", "sync", "-y"]
+        if scope == "user":
+            sync_cmd.append("-g")
 
-    for agent in sorted(target_scope_agents[scope]):
-        sync_cmd.extend(["-a", agent])
+        for agent in sorted(target_scope_agents[scope]):
+            sync_cmd.extend(["-a", agent])
 
-    print(f"\n[SYNC] scope={scope} agents={', '.join(sorted(target_scope_agents[scope]))}")
-    print("  cmd:    " + shlex.join(sync_cmd))
+        print(f"\n[SYNC] scope={scope} agents={', '.join(sorted(target_scope_agents[scope]))}")
+        print("  cmd:    " + shlex.join(sync_cmd))
 
-    if dry_run or check_only:
-        continue
+        if dry_run or check_only:
+            continue
 
-    subprocess.run(sync_cmd, check=True)
-    sync_runs += 1
+        subprocess.run(sync_cmd, check=True)
+        sync_runs += 1
+else:
+    print("\n[SYNC] skipped (manifest-only mode; pass --normalize-existing to run add-mcp sync)")
 
 print("\nMCP sync summary")
 print(f"  Planned: {planned}")
 print(f"  Applied: {applied if not (dry_run or check_only) else 0}")
 print(f"  Scopes:  {len(target_scope_agents)}")
 print(f"  Syncs:   {sync_runs if not (dry_run or check_only) else 0}")
+print(f"  Normalize existing: {'yes' if normalize_existing else 'no'}")
 print(f"  Mode:    {'check' if check_only else ('dry-run' if dry_run else 'apply')}")
 PY

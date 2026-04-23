@@ -7,6 +7,7 @@ toolkit-only: true
 # Update Target Projects
 
 Discover and sync all toolkit-using projects, the Codex CLI skill pack, and global Conductor skill symlinks with the latest skills.
+Skill policy is global-only: local/mixed project skill copies are treated as legacy states to migrate.
 
 ## Trigger
 
@@ -63,8 +64,7 @@ Update Target Projects Progress:
 - [ ] Phase 6c: Sync target projects (if selected) — includes deletions
 - [ ] Phase 6d: Sync workstream scripts (if selected)
 - [ ] Phase 6g: Sync Codex App setup wrapper (if selected)
-- [ ] Phase 6e: Adopt global skills (if selected) — migrate local to global
-- [ ] Phase 6f: Revert to local skills (if selected) — copy from global back to project
+- [ ] Phase 6e: Migrate legacy local/mixed projects to global skills (if selected)
 - [ ] Phase 6h: Sync public skills repo (if selected)
 - [ ] Phase 7: Generate summary report
 ```
@@ -122,11 +122,9 @@ and returns one of the resolution states below.
 
 | Resolution State | Meaning | Available Actions |
 |------------------|---------|-------------------|
-| `GLOBAL` | Using global symlinks (healthy) | Revert to local (option 9) |
-| `LOCAL` | Local copies, globals not ready | Sync locally |
-| `LOCAL_FORCED` | Local copies, `force_local_skills: true` | Sync locally (override active) |
-| `ADOPTABLE` | Local, but global available | Adopt global (option 8) |
-| `MISSING` | No local, no healthy global | ⚠️ Skills unavailable — run global sync first |
+| `GLOBAL` | Using global symlinks (healthy) | Keep current state |
+| `LEGACY_LOCAL` | Local/mixed copies shadow globals | Migrate to global (option 8) |
+| `MISSING` | No healthy global symlink state | ⚠️ Repair global symlinks first |
 
 ### Phase 1g: Check Public Skills Repo
 
@@ -181,19 +179,18 @@ Status:   {READY|NOT CONFIGURED|DIRTY|NOT A GIT REPO}
 
 TARGET PROJECTS
 ───────────────
-  #  Project          Sync Status   Resolution   Adoptable   Activity
+  #  Project          Sync Status   Resolution    Migration   Activity
   ─────────────────────────────────────────────────────────────────────
-  1  ~/Projects/app   OUTDATED      local        ✓ (30 dirs) DORMANT
+  1  ~/Projects/app   OUTDATED      legacy-local ✓ (30 dirs) DORMANT
   2  ~/Projects/api   CURRENT       global       —           RECENT
-  3  ~/Projects/lib   CURRENT       local        ⚠️ 2 modified ACTIVE
+  3  ~/Projects/lib   CURRENT       legacy-local ⚠️ 2 modified ACTIVE
 ```
 
 **Resolution column values:**
 - `global` — Skills resolve via `~/.claude/skills/` symlinks
-- `local` — Skills copied to project's `.claude/skills/`
-- `mixed` — Some global, some local
+- `legacy-local` — Project still has local shadow copies that should be removed
 
-**Adoptable column values:**
+**Migration column values:**
 - `✓ (N dirs)` — Can adopt global resolution (N skill directories to remove)
 - `⚠️ N modified` — Can adopt, but N skills have local modifications
 - `—` — Already using global resolution (or not applicable)
@@ -201,21 +198,18 @@ TARGET PROJECTS
 ### Phase 5: User Selection
 
 Prompt with options:
-1. Sync everything (Recommended) — includes global adoption for `ADOPTABLE` projects and public skills repo if configured
+1. Sync everything (Recommended) — includes global migration for legacy local/mixed projects and public skills repo if configured
 2. Global skill symlinks only
 3. Codex skill pack only
 4. Target projects only
 5. Select specific items
 6. Include ACTIVE projects too
 7. Skip for now
-8. Adopt global skills (remove local copies, switch to global resolution)
-9. Revert to local skills (copy from global back to project)
-10. Public skills repo only (visible only if enabled in `.claude/public-skills-config.json`)
+8. Migrate legacy local/mixed projects to global skills
+9. Public skills repo only (visible only if enabled in `.claude/public-skills-config.json`)
 
-**Option 8 visibility:** Only show if at least one project is `ADOPTABLE` (has local
+**Option 8 visibility:** Only show if at least one project is `LEGACY_LOCAL` (has local
 copies and global symlinks are healthy).
-
-**Option 9 visibility:** Only show if at least one project uses `global` resolution.
 
 ### Phase 6: Execute Sync
 
@@ -223,8 +217,8 @@ copies and global symlinks are healthy).
 **6b: Global Skills Sync** — See [GLOBAL_SYNC.md](GLOBAL_SYNC.md)
 **6c: Project Sync** — See [PROJECT_SYNC.md](PROJECT_SYNC.md)
 
-**Global-first default:** When running option 1, treat `ADOPTABLE` projects as
-"sync + adopt global" unless the user explicitly opts out. This prevents
+**Global-only default:** When running option 1, treat `LEGACY_LOCAL` projects as
+"sync + migrate to global" unless the user explicitly opts out. This prevents
 local shadow copies from persisting indefinitely.
 
 **6d: Workstream Scripts Sync** — Copy `.workstream/*.sh`, `README.md`, and `workstream.json.example` to target projects:
@@ -249,7 +243,7 @@ local shadow copies from persisting indefinitely.
 2. Compare hashes before copying — skip if CURRENT
 3. Do NOT overwrite `.codex/environments/` or other Codex App config (project-owned)
 
-**6e: Adopt Global Skills** — Migrate from local to global resolution:
+**6e: Migrate Legacy Local Skills** — Migrate from local/mixed to global resolution:
 
 See [GLOBAL_SYNC.md](GLOBAL_SYNC.md) for state model and helper definitions.
 
@@ -303,38 +297,11 @@ See [GLOBAL_SYNC.md](GLOBAL_SYNC.md) for state model and helper definitions.
      Skills now resolve via: ~/.claude/skills/
    ```
 
-**6f: Revert to Local Skills** — Copy from global back to project:
+**6f: Legacy Local Reversion (Deprecated)**
 
-For projects that were migrated to global but need portability:
-
-1. **Show revert preview:**
-   ```
-   REVERT TO LOCAL SKILLS: ~/Projects/app
-   ───────────────────────────────────────
-   Will copy:       30 skills from ~/.claude/skills/
-   Target:          .claude/skills/
-   After revert:    Skills copied locally for portability
-
-   Proceed? [y/N]
-   ```
-
-2. **If user confirms:**
-   - Create `.claude/skills/` directory
-   - For each globally-resolved skill:
-     - Copy from global symlink target to local
-   - Verify with `ls .claude/skills/` that expected skill directories were copied.
-   - Update toolkit-version.json:
-     - Set `"skill_resolution": "local"`
-     - Set each file's `"resolution": "local"`
-     - Update hashes and timestamps
-   - Read back `toolkit-version.json` to confirm valid JSON and that `skill_resolution` is `"local"`.
-
-3. **Report:**
-   ```
-   ✓ Reverted ~/Projects/app to local skill resolution
-     Copied: 30 skills to .claude/skills/
-     Skills now resolve via: project-local copies
-   ```
+Do not offer or execute a "revert to local" flow in normal operation.
+If a user explicitly demands local copies, treat it as a one-off exception and
+warn that it diverges from toolkit global-only policy.
 
 ### Phase 6h: Sync Public Skills Repo
 
@@ -384,8 +351,7 @@ Public Skills Repo:
   Pushed:          no (user declined)
 
 Resolution Changes:
-  Adopted global: 1 project (30 local dirs removed)
-  Reverted local: 0 projects
+  Migrated to global: 1 project (30 local dirs removed)
   Modified backed up: 2 skills → .claude/skills.bak/
 
 Deleted Skills (removed from toolkit):
@@ -416,7 +382,7 @@ Run this from their toolkit clone: /update-target-projects → option 2
 | No `toolkit-version.json` files found in search paths | Report "No toolkit-using projects found in {search paths}" and list the paths searched; suggest running `/setup` first |
 | `toolkit_location` in a project's `toolkit-version.json` points to a different toolkit | Skip that project with a warning; do not sync skills from a mismatched toolkit |
 | `cp -r` or symlink creation fails during sync | Report the specific failure, continue syncing remaining items, include failures in the summary report |
-| `rm -rf` fails during global adoption (option 8) | STOP adoption for that project, report permission error, do not update `toolkit-version.json` to `"global"` |
+| `rm -rf` fails during global migration (option 8) | STOP migration for that project, report permission error, do not update `toolkit-version.json` to `"global"` |
 | `gh` or `git` commands fail during discovery | Report the error, skip affected projects, continue with remaining projects |
 | Public skills repo path missing or not a git repo | Report specific pre-flight failure, skip public repo sync, continue with other sync operations |
 | Public skills repo has dirty working tree | Report "public repo has uncommitted changes", skip public repo sync |
@@ -435,4 +401,4 @@ See [EDGE_CASES.md](EDGE_CASES.md) for handling:
 
 ---
 
-**REMINDER**: For projects using **local resolution**, always copy skills to target projects, not just update toolkit-version.json. The version file tracks state, but skills must actually be copied for changes to take effect. Projects using **global resolution** don't need local copies—they resolve via `~/.claude/skills/` symlinks.
+**REMINDER**: Toolkit-managed projects should use **global resolution**. Local skill copies are legacy migration debt: back up modified local skills, remove local shadow copies, and keep `toolkit-version.json` aligned to `"skill_resolution": "global"`.

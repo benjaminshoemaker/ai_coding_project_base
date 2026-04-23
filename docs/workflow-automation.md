@@ -80,16 +80,16 @@ After committing skill changes to the toolkit, a post-commit hook reminds you to
 
 The sync command:
 - **Detects changes** by comparing file hashes against the last sync
-- **Auto-applies** new files and clean updates (no local modifications)
-- **Prompts for conflicts** when you've customized a file locally
+- **Maintains global skill resolution** by migrating legacy local/mixed project copies
+- **Backs up modified local skill shadows** before removing toolkit-managed local copies
 - **Tracks state** in `.claude/toolkit-version.json`
 
 | Change Type | Action |
 |-------------|--------|
-| New toolkit file | Auto-copy without prompting |
-| Toolkit updated, no local changes | Auto-copy without prompting |
-| Toolkit updated, local changes exist | Show diff, ask: overwrite / skip / backup |
-| File removed from toolkit | Warn, offer to delete (default: keep) |
+| Project already global | Verify metadata, no local skill copy needed |
+| Legacy local/mixed project | Migrate to global resolution |
+| Local skill has modifications | Backup to `.claude/skills.bak/` before migration |
+| Global symlink missing/broken | Repair global runtime first, then rerun sync |
 
 ## Parallel Workstreams
 

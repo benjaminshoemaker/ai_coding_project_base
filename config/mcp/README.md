@@ -25,11 +25,21 @@ Apply this manifest with:
 ./scripts/sync-agent-mcps.sh
 ```
 
-`sync-agent-mcps.sh` performs three steps:
+`sync-agent-mcps.sh` always performs the first two steps:
 
 1. Check existing MCPs for targeted agents/scopes (`add-mcp list`)
 2. Apply manifest MCP entries (`add-mcp <source> ...`)
-3. Normalize/sync existing and newly-added MCP names/installations (`add-mcp sync`)
+3. Optionally normalize/sync existing and newly-added MCP names/installations (`add-mcp sync`) when `--normalize-existing` is passed
+
+Examples:
+
+```bash
+# Manifest-only apply (default)
+./scripts/sync-agent-mcps.sh
+
+# Include cross-agent normalization of existing MCPs
+./scripts/sync-agent-mcps.sh --normalize-existing
+```
 
 For full machine bootstrap (skills + MCPs):
 

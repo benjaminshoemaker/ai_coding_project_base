@@ -74,9 +74,11 @@ Guidelines:
 
 ## Global Skill Resolution
 
-When `~/.claude/skills/` contains symlinks to this toolkit, per-project skill
-copies can be skipped during `/setup` and `/update-target-projects`. Claude Code
-discovers skills from three tiers with project-local shadowing global:
+The toolkit now uses a global-only policy for skills. Projects should resolve
+skills from `~/.claude/skills/` and should not keep long-lived project-local
+copies in `.claude/skills/`.
+
+Claude Code discovers skills from three tiers with project-local shadowing global:
 
 1. **managed** (`/Library/Application Support/ClaudeCode/.claude/skills`)
 2. **user** (`~/.claude/skills`) ← toolkit symlinks go here
@@ -86,41 +88,40 @@ discovers skills from three tiers with project-local shadowing global:
 
 | Mode | Description | When Used |
 |------|-------------|-----------|
-| `global` | All skills resolve via `~/.claude/skills/` | New projects with healthy symlinks |
-| `local` | All skills copied to project `.claude/skills/` | Shared repos, CI, explicit override |
-| `mixed` | Some global, some local | Partial migration or unavailable global |
+| `global` | All skills resolve via `~/.claude/skills/` | Required default for toolkit-managed projects |
+| `local` | All skills copied to project `.claude/skills/` | Legacy state to migrate away from |
+| `mixed` | Some global, some local | Legacy state to migrate away from |
 
 **Behavior by project type:**
 
-- **New projects:** `/setup` checks `is_globally_usable()` for each skill. If
-  globally available, skip copy—skill resolves via user tier.
-- **Existing projects:** Global is preferred by default. If global symlinks are
-  healthy and portability constraints do not apply, migrate to global
-  resolution during sync instead of preserving stale local shadow copies.
-- **Shared repos:** Auto-detected via git remotes. Default to local copies
-  for portability. Set `"force_local_skills": false` to explicitly opt into global.
+- **New projects:** `/setup` verifies global symlinks, then records global
+  resolution without copying skills into the project.
+- **Existing projects:** `/update-target-projects` should migrate legacy local
+  or mixed projects to global resolution by default.
+- **Shared repos:** Also use global resolution. Portability is handled by each
+  collaborator bootstrapping `~/.claude/skills` from their own toolkit clone.
 
 **Configuration (`toolkit-version.json`):**
 
 ```json
 {
-  "force_local_skills": null,
+  "force_local_skills": false,
   "skill_resolution": "global"
 }
 ```
 
-- `force_local_skills`: `true`=always local, `false`=always global, `null`=auto
-- `skill_resolution`: Current mode (`global`, `local`, or `mixed`)
+- `force_local_skills`: legacy field; keep `false` for global-only behavior
+- `skill_resolution`: expected value is `global` for toolkit-managed projects
 
 **Migration:**
 
-- **Adopt global:** `/update-target-projects` → option 8. Removes local copies,
-  backs up modified skills, switches to global resolution.
-- **Revert to local:** `/update-target-projects` → option 9. Copies from global
-  back to project for portability.
+- **Adopt global:** `/update-target-projects` removes local copies, backs up
+  modified skills, and switches to global resolution.
+- **Legacy local projects:** treat as migration debt and convert during normal
+  sync runs.
 
-**Fallback:** If a skill is not globally available (symlink missing or broken),
-it is copied locally regardless of resolution mode.
+**Fallback:** If a global symlink is missing or broken, repair global symlinks.
+Do not silently fall back to project-local copies.
 
 ## Cross-Model Verification
 

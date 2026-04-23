@@ -44,7 +44,7 @@ Then restart Claude Code and Codex CLI.
 ### Bootstrap Options
 
 ```bash
-# Default: symlink skills + apply MCP manifest
+# Default: symlink skills + apply MCP manifest + normalize existing MCPs
 ./scripts/bootstrap-agent-runtime.sh
 
 # Show planned changes only
@@ -67,6 +67,9 @@ Then restart Claude Code and Codex CLI.
 
 # Override MCP manifest location
 ./scripts/bootstrap-agent-runtime.sh --manifest /path/to/servers.json
+
+# Manifest-only MCP apply (skip add-mcp sync normalization)
+./scripts/bootstrap-agent-runtime.sh --no-normalize-existing
 ```
 
 ### Legacy Codex-Only Install Script (Backward Compatibility)
