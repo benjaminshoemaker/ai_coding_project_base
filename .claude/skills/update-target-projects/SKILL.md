@@ -201,7 +201,7 @@ TARGET PROJECTS
 ### Phase 5: User Selection
 
 Prompt with options:
-1. Sync everything (Recommended) — includes public skills repo if configured
+1. Sync everything (Recommended) — includes global adoption for `ADOPTABLE` projects and public skills repo if configured
 2. Global skill symlinks only
 3. Codex skill pack only
 4. Target projects only
@@ -222,6 +222,10 @@ copies and global symlinks are healthy).
 **6a: Codex Sync** — See [CODEX_SYNC.md](CODEX_SYNC.md)
 **6b: Global Skills Sync** — See [GLOBAL_SYNC.md](GLOBAL_SYNC.md)
 **6c: Project Sync** — See [PROJECT_SYNC.md](PROJECT_SYNC.md)
+
+**Global-first default:** When running option 1, treat `ADOPTABLE` projects as
+"sync + adopt global" unless the user explicitly opts out. This prevents
+local shadow copies from persisting indefinitely.
 
 **6d: Workstream Scripts Sync** — Copy `.workstream/*.sh`, `README.md`, and `workstream.json.example` to target projects:
 

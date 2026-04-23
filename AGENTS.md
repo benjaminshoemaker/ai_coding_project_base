@@ -94,10 +94,11 @@ discovers skills from three tiers with project-local shadowing global:
 
 - **New projects:** `/setup` checks `is_globally_usable()` for each skill. If
   globally available, skip copy—skill resolves via user tier.
-- **Existing projects:** Continue syncing locally until explicit migration.
-  Local copies shadow global symlinks, so deletion is required to switch.
+- **Existing projects:** Global is preferred by default. If global symlinks are
+  healthy and portability constraints do not apply, migrate to global
+  resolution during sync instead of preserving stale local shadow copies.
 - **Shared repos:** Auto-detected via git remotes. Default to local copies
-  for portability. Set `"force_local_skills": false` to override.
+  for portability. Set `"force_local_skills": false` to explicitly opt into global.
 
 **Configuration (`toolkit-version.json`):**
 

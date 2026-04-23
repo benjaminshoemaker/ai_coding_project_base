@@ -183,8 +183,11 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
    CURRENT_RESOLUTION=$(jq -r '.skill_resolution // "local"' "$1/.claude/toolkit-version.json")
    ```
 
-   **Important:** For existing projects with local copies, continue syncing locally
-   to preserve shadowing behavior. Do NOT automatically switch to global resolution.
+   **Important:** Global-first policy applies:
+   - If global symlinks are healthy and `force_local_skills` is not `true`, prefer
+     global resolution (remove local shadow copies after backup if needed).
+   - Fall back to local sync for shared repos, CI portability, or explicit
+     `force_local_skills: true`.
 
    Load the stored file hashes from `$1/.claude/toolkit-version.json`:
    ```bash
@@ -208,6 +211,7 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
    | Condition | Classification | Action |
    |-----------|----------------|--------|
    | Already using global resolution | `GLOBAL_USABLE` | Skip (resolves via global) |
+   | Existing local copies + global healthy + not forced local | `ADOPT_GLOBAL` | Migrate to global (backup modified, remove local shadow copies) |
    | Target doesn't exist | `NEW` | Copy from toolkit |
    | Target hash = Toolkit hash | `CURRENT` | Skip (already up to date) |
    | Target hash = Stored hash | `CLEAN_UPDATE` | Copy from toolkit (no local changes) |

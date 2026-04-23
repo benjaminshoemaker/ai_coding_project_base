@@ -119,8 +119,10 @@ For each skill being synced, follow this classification logic:
      classify as GLOBAL_USABLE — skip copy, record resolution "global"
 
 3. Check if EXISTING project with local copies
-   → if local copy exists: continue syncing locally (preserve shadowing)
-   → classification falls through to existing CURRENT/NEW/CLEAN_UPDATE/LOCAL_MODIFIED
+   → if local copy exists AND global is healthy AND force_local_skills is not true:
+     classify project as ADOPTABLE and migrate to global resolution
+   → if shared repo or force_local_skills=true: continue syncing locally
+   → classification falls through to CURRENT/NEW/CLEAN_UPDATE/LOCAL_MODIFIED only when local mode is required
 
 4. (Existing logic) Hash-based classification for local copies
 ```
@@ -143,7 +145,8 @@ fi
 | Condition | Classification | Action |
 |-----------|----------------|--------|
 | New project, globally usable | `GLOBAL_USABLE` | Skip copy, record "global" |
-| Existing project, local copy exists | (use existing logic) | Sync locally |
+| Existing local project, global healthy, not forced local | `ADOPTABLE` | Migrate to global |
+| Existing project requiring local mode | (use existing logic) | Sync locally |
 | Target doesn't exist, not global | `NEW` | Copy from toolkit |
 | Target hash = Toolkit hash | `CURRENT` | Skip (already up to date) |
 | Target hash = Stored hash | `CLEAN_UPDATE` | Copy from toolkit |

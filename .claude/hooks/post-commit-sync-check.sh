@@ -31,18 +31,84 @@ CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD 2>/dev/null || 
 # Check for skill changes (only .claude/skills/ files trigger sync)
 SKILL_CHANGES=$(echo "$CHANGED_FILES" | grep -E "^\.claude/skills/" || true)
 
-# If skill files changed, write marker and notify
+# Determine whether downstream project sync is actually needed.
+# Global-only projects resolve skills from ~/.claude/skills and do not need per-project sync.
+detect_sync_needed() {
+    local search_paths=()
+    local project_list=""
+    local found_local_or_mixed="0"
+
+    if ! command -v jq >/dev/null 2>&1; then
+        # Conservative fallback: if jq is unavailable, keep previous behavior.
+        echo "1"
+        return
+    fi
+
+    if [ -n "${TOOLKIT_SEARCH_PATH:-}" ]; then
+        IFS=':' read -r -a search_paths <<< "$TOOLKIT_SEARCH_PATH"
+    else
+        search_paths=("$HOME/Projects")
+    fi
+
+    local search_path
+    for search_path in "${search_paths[@]}"; do
+        [ -d "$search_path" ] || continue
+
+        while IFS= read -r version_file; do
+            [ -f "$version_file" ] || continue
+
+            local toolkit_location
+            local force_local
+            local resolution
+            local project_dir
+
+            toolkit_location=$(jq -r '.toolkit_location // empty' "$version_file" 2>/dev/null)
+            [ "$toolkit_location" = "$TOOLKIT_DIR" ] || continue
+
+            force_local=$(jq -r '.force_local_skills // "null"' "$version_file" 2>/dev/null)
+            resolution=$(jq -r '.skill_resolution // "local"' "$version_file" 2>/dev/null)
+            project_dir=$(cd "$(dirname "$version_file")/.." && pwd)
+
+            if [ "$force_local" = "true" ] || [ "$resolution" != "global" ]; then
+                found_local_or_mixed="1"
+                project_list="${project_list}${project_dir}\n"
+            fi
+        done < <(find "$search_path" -maxdepth 4 -name "toolkit-version.json" -path "*/.claude/*" 2>/dev/null)
+    done
+
+    if [ "$found_local_or_mixed" = "1" ]; then
+        printf "1\n"
+        printf "%b" "$project_list" | sed '/^$/d' | sort -u
+    else
+        echo "0"
+    fi
+}
+
+# If skill files changed, only write a sync marker when some project still uses local/mixed resolution.
 if [ -n "$SKILL_CHANGES" ]; then
-    # Get commit info
-    COMMIT_HASH=$(git rev-parse HEAD)
-    COMMIT_SHORT=$(git rev-parse --short HEAD)
-    COMMIT_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+    SYNC_NEEDS_OUTPUT=$(detect_sync_needed)
+    SYNC_NEEDED=$(echo "$SYNC_NEEDS_OUTPUT" | head -n1)
+    PROJECTS_NEEDING_SYNC=$(echo "$SYNC_NEEDS_OUTPUT" | tail -n +2)
 
-    # Count skills changed
-    SKILL_COUNT=$(echo "$SKILL_CHANGES" | wc -l | tr -d ' ')
+    if [ "$SYNC_NEEDED" = "1" ]; then
+        # Get commit info
+        COMMIT_HASH=$(git rev-parse HEAD)
+        COMMIT_SHORT=$(git rev-parse --short HEAD)
+        COMMIT_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-    # Write marker file with sync details
-    cat > "$SYNC_MARKER" << EOF
+        # Count skills changed
+        SKILL_COUNT=$(echo "$SKILL_CHANGES" | wc -l | tr -d ' ')
+        PROJECT_COUNT=$(echo "$PROJECTS_NEEDING_SYNC" | sed '/^$/d' | wc -l | tr -d ' ')
+
+        PROJECTS_JSON=$(
+            echo "$PROJECTS_NEEDING_SYNC" \
+            | sed '/^$/d; s/\\/\\\\/g; s/"/\\"/g; s/^/    "/; s/$/"/' \
+            | paste -sd ',' - \
+            | sed 's/,/,\n/g'
+        )
+
+        # Write marker file with sync details
+        cat > "$SYNC_MARKER" << EOF
 {
   "timestamp": "$COMMIT_TIME",
   "commit": "$COMMIT_HASH",
@@ -50,21 +116,42 @@ if [ -n "$SKILL_CHANGES" ]; then
   "skills_changed": [
 $(echo "$SKILL_CHANGES" | sed 's/^/    "/; s/$/"/' | paste -sd ',' - | sed 's/,/,\n/g')
   ],
-  "skill_count": $SKILL_COUNT
+  "skill_count": $SKILL_COUNT,
+  "projects_requiring_sync": [
+${PROJECTS_JSON}
+  ],
+  "project_count": $PROJECT_COUNT
 }
 EOF
 
-    echo ""
-    echo -e "${CYAN}╭─────────────────────────────────────────────────────────────╮${NC}"
-    echo -e "${CYAN}│${NC}              ${YELLOW}TOOLKIT SYNC PENDING${NC}                          ${CYAN}│${NC}"
-    echo -e "${CYAN}╰─────────────────────────────────────────────────────────────╯${NC}"
-    echo ""
-    echo -e "${YELLOW}Skills modified in commit ${COMMIT_SHORT}:${NC}"
-    echo "$SKILL_CHANGES" | sed 's/^/  /'
-    echo ""
-    echo -e "${GREEN}Target projects may need syncing.${NC}"
-    echo -e "${DIM}Claude will prompt you to sync.${NC}"
-    echo ""
+        echo ""
+        echo -e "${CYAN}╭─────────────────────────────────────────────────────────────╮${NC}"
+        echo -e "${CYAN}│${NC}              ${YELLOW}TOOLKIT SYNC PENDING${NC}                          ${CYAN}│${NC}"
+        echo -e "${CYAN}╰─────────────────────────────────────────────────────────────╯${NC}"
+        echo ""
+        echo -e "${YELLOW}Skills modified in commit ${COMMIT_SHORT}:${NC}"
+        echo "$SKILL_CHANGES" | sed 's/^/  /'
+        echo ""
+        if [ "$PROJECT_COUNT" -gt 0 ]; then
+            echo -e "${GREEN}${PROJECT_COUNT} project(s) still use local/mixed skill resolution.${NC}"
+            echo "$PROJECTS_NEEDING_SYNC" | sed 's/^/  - /'
+            echo ""
+        fi
+        echo -e "${GREEN}Target projects may need syncing.${NC}"
+        echo -e "${DIM}Claude will prompt you to sync.${NC}"
+        echo ""
+    else
+        # No downstream local/mixed projects: clear stale marker and avoid unnecessary prompts.
+        rm -f "$SYNC_MARKER"
+        echo ""
+        echo -e "${CYAN}╭─────────────────────────────────────────────────────────────╮${NC}"
+        echo -e "${CYAN}│${NC}          ${GREEN}GLOBAL SKILL MODE DETECTED${NC}                         ${CYAN}│${NC}"
+        echo -e "${CYAN}╰─────────────────────────────────────────────────────────────╯${NC}"
+        echo ""
+        echo -e "${GREEN}Skills changed, but tracked projects are global-only.${NC}"
+        echo -e "${DIM}No project skill sync marker created.${NC}"
+        echo ""
+    fi
 fi
 
 # Always exit 0 - this hook should never block commits
