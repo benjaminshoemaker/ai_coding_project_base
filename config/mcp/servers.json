@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "add_mcp_version": "1.8.0",
+  "defaults": {
+    "scope": "user",
+    "agents": [
+      "claude-code",
+      "codex"
+    ]
+  },
+  "servers": [
+    {
+      "name": "executeautomation-playwright",
+      "source": "@executeautomation/playwright-mcp-server",
+      "description": "Primary browser automation MCP for verification workflows.",
+      "enabled": true
+    }
+  ]
+}

@@ -93,6 +93,12 @@ Run from the **toolkit directory**. These initialize and sync projects.
 | `/gh-init [path]` | Initialize git repo with smart .gitignore and optional GitHub remote |
 | `/install-hooks [path]` | Install git hooks and session logging for workflow automation |
 
+For machine-level (cross-project) agent runtime sync on your laptop, use:
+
+```bash
+./scripts/bootstrap-agent-runtime.sh
+```
+
 ## UI/UX Commands
 
 Run from your **project directory**. These analyze and improve UI/UX quality.

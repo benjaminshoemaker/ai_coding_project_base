@@ -329,7 +329,7 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
 
    **Verify CLAUDE.md:** Read back `$1/CLAUDE.md` to confirm it was written correctly and contains the `@AGENTS.md` reference.
 
-6. **Codex CLI Detection (Optional)**
+6. **Cross-Agent Runtime Bootstrap (Optional)**
 
    Check if OpenAI Codex CLI is installed:
    ```bash
@@ -339,47 +339,33 @@ Initialize a new project at `$1` with the AI Coding Toolkit.
    If Codex is detected:
    - Use AskUserQuestion to prompt:
      ```
-     Question: "Codex CLI detected. Install toolkit skills for Codex?"
+     Question: "Codex CLI detected. Bootstrap shared runtime now? (skills + MCPs for Claude and Codex)"
      Options:
-       - "Yes, install" — Install skills via symlink (auto-updates with toolkit)
-       - "No, skip" — Don't install Codex skills
+       - "Yes, bootstrap" — Run toolkit bootstrap for cross-agent skills + MCP sync
+       - "No, skip" — Skip machine-level runtime setup
      ```
 
-   If user selects "Yes, install":
+   If user selects "Yes, bootstrap":
    - Run from this toolkit directory:
      ```bash
-     ./scripts/install-codex-skill-pack.sh --method symlink
+     ./scripts/bootstrap-agent-runtime.sh
      ```
-   - Verify with `ls -la ~/.codex/skills/` that symlinks were created successfully.
-   - Report the installation result
+   - Verify with `ls -la ~/.claude/skills ~/.agents/skills ~/.codex/skills` that skill paths are configured.
+   - Verify with `./scripts/sync-agent-mcps.sh --check` that MCP manifest entries are valid and planned correctly.
+   - Report the bootstrap result
 
    If Codex is not detected:
    - Skip silently (don't mention Codex to users who don't have it)
 
-   **Note:** Using symlinks means Codex skills auto-update when user runs `git pull` on the toolkit.
+   **Why this matters:** One command keeps machine-level skills and MCPs aligned across Claude Code and Codex.
 
-6a. **Codex MCP Configuration (if Codex detected and skills installed)**
+6a. **Legacy Codex-Only MCP Path (Backward Compatibility)**
 
-   After installing Codex skills, offer to configure essential MCPs:
-   - Use AskUserQuestion to prompt:
-     ```
-     Question: "Configure essential MCP servers for Codex? (Playwright for browser verification)"
-     Options:
-       - "Yes, configure" — Add Playwright MCP to ~/.codex/config.toml
-       - "No, skip" — Skip MCP configuration
-     ```
-
-   If user selects "Yes, configure":
-   - Run from this toolkit directory:
-     ```bash
-     ./scripts/configure-codex-mcp.sh
-     ```
-   - Verify with `cat ~/.codex/config.toml` that the MCP configuration was written correctly.
-   - Report the configuration result
-
-   **Why this matters:** Both Claude Code and Codex CLI support the same MCP protocol.
-   This ensures Codex has access to browser automation for verification workflows,
-   matching Claude Code's capabilities when using the Playwright MCP.
+   If a user explicitly asks for Codex-only MCP setup, run:
+   ```bash
+   ./scripts/configure-codex-mcp.sh
+   ```
+   This now delegates to the shared MCP manifest flow and applies settings only to Codex.
 
 7. **Report success and next steps**
 

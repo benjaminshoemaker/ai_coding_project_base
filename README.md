@@ -28,6 +28,24 @@ A framework that turns ad-hoc AI prompting into a repeatable workflow with autom
 
 Codex CLI users: see [Codex CLI Setup](docs/codex-cli.md). Not using Claude Code? See [Manual Setup](docs/manual-setup.md).
 
+## Cross-Agent Runtime (Optional)
+
+If you switch between Claude Code and Codex across multiple laptops, bootstrap shared machine-level skills and MCPs from this toolkit repo:
+
+```bash
+./scripts/bootstrap-agent-runtime.sh
+```
+
+This sets up:
+- `~/.claude/skills/` (Claude personal skills)
+- `~/.agents/skills/` (Codex user skills)
+- `~/.codex/skills -> ~/.agents/skills` compatibility symlink (when `~/.codex/skills` is not already in use)
+- MCP servers for both agents from `config/mcp/servers.json`
+
+Safety defaults:
+- Existing non-toolkit skills are preserved (not overwritten)
+- Existing MCPs are discovered and normalized via `add-mcp list` + `add-mcp sync`
+
 ## Quick Start
 
 ```bash

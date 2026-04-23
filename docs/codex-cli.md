@@ -23,42 +23,71 @@ codex login
 
 ## Installation
 
-### Manual Installation
+### Recommended Bootstrap (Skills + MCPs)
 
 From the toolkit repo root:
 
 ```bash
-./scripts/install-codex-skill-pack.sh
+./scripts/bootstrap-agent-runtime.sh
 ```
 
-This creates symlinks from `~/.codex/skills/` to the toolkit's `.claude/skills/` directory.
+This configures both agents in one run:
 
-Then restart Codex CLI.
+- Installs toolkit skills into:
+  - `~/.claude/skills/` (Claude Code personal skills)
+  - `~/.agents/skills/` (Codex user skills path)
+- Maintains compatibility shim: `~/.codex/skills -> ~/.agents/skills` when `~/.codex/skills` is not already in use
+- Applies MCP servers from `config/mcp/servers.json` to both `claude-code` and `codex` via `add-mcp`
 
-### Installation Options
+Then restart Claude Code and Codex CLI.
+
+### Bootstrap Options
 
 ```bash
-# Default: symlinks (recommended)
-./scripts/install-codex-skill-pack.sh
+# Default: symlink skills + apply MCP manifest
+./scripts/bootstrap-agent-runtime.sh
 
-# Force overwrite existing skills
-./scripts/install-codex-skill-pack.sh --force
+# Show planned changes only
+./scripts/bootstrap-agent-runtime.sh --dry-run
 
-# Copy instead of symlink
-./scripts/install-codex-skill-pack.sh --method copy
+# Check-only mode (non-zero exit on skill drift)
+./scripts/bootstrap-agent-runtime.sh --check
 
-# Custom destination
-./scripts/install-codex-skill-pack.sh --dest /custom/path/skills
+# Replace conflicting skill paths
+./scripts/bootstrap-agent-runtime.sh --force
+
+# Adopt conflicting external skill paths (opt-in, requires --force)
+./scripts/bootstrap-agent-runtime.sh --force --adopt-unmanaged-skills
+
+# Copy skills instead of symlink
+./scripts/bootstrap-agent-runtime.sh --method copy
+
+# Replace existing ~/.codex/skills with compatibility shim (opt-in, requires --force)
+./scripts/bootstrap-agent-runtime.sh --force --adopt-codex-shim
+
+# Override MCP manifest location
+./scripts/bootstrap-agent-runtime.sh --manifest /path/to/servers.json
 ```
 
-### Symlinks vs Copy
+### Legacy Codex-Only Install Script (Backward Compatibility)
 
-The default installation uses symlinks. This means:
+If you only want Codex skills (without shared bootstrap), you can still use:
+
+```bash
+./scripts/install-codex-skill-pack.sh
+```
+
+This script remains supported for existing workflows.
+
+### Skill Install Methods
+
+The default bootstrap uses per-skill symlinks. This means:
 - Skills auto-update when you update the toolkit
 - No need to reinstall after toolkit updates
 - Single source of truth for skill definitions
+- Existing non-toolkit skills are preserved by default (no overwrite)
 
-If you use `--method copy`, you'll need to re-run with `--force` to get updates.
+If you use `--method copy`, re-run with `--force` to refresh copied skills.
 
 ### New Skills
 
@@ -188,7 +217,8 @@ You can have Codex CLI execute tasks while Claude Code orchestrates:
 
 If commands aren't recognized after installation:
 
-1. Ensure the install script completed successfully
-2. Restart Codex CLI completely
-3. Verify skills exist in `~/.codex/skills/`
-4. Check that symlinks point to valid paths: `ls -la ~/.codex/skills/`
+1. Ensure bootstrap completed successfully: `./scripts/bootstrap-agent-runtime.sh --check`
+2. Restart Claude Code and Codex CLI completely
+3. Verify skills exist in `~/.claude/skills/` and `~/.agents/skills/`
+4. Verify compatibility shim: `ls -la ~/.codex/skills/`
+5. Verify MCP manifest plan: `./scripts/sync-agent-mcps.sh --check`
