@@ -97,11 +97,11 @@ echo "Bootstrapping agent runtime from: $ROOT_DIR"
 
 echo
 echo "[1/2] Syncing skills"
-"$ROOT_DIR/scripts/sync-agent-skills.sh" "${SKILLS_ARGS[@]}"
+"$ROOT_DIR/scripts/sync-agent-skills.sh" ${SKILLS_ARGS[@]+"${SKILLS_ARGS[@]}"}
 
 echo
 echo "[2/2] Syncing MCPs"
-"$ROOT_DIR/scripts/sync-agent-mcps.sh" "${MCPS_ARGS[@]}"
+"$ROOT_DIR/scripts/sync-agent-mcps.sh" ${MCPS_ARGS[@]+"${MCPS_ARGS[@]}"}
 
 echo
 echo "Bootstrap complete."
