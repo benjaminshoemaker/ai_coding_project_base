@@ -1,4 +1,6 @@
 node_modules/
+.DS_Store
+**/.DS_Store
 .claude/settings.local.json
 .claude/public-skills-config.json
 tmp/
