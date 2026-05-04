@@ -53,6 +53,13 @@
       "transport": "sse",
       "description": "Atlassian remote MCP (Jira + Confluence). Requires Atlassian OAuth on first use.",
       "enabled": true
+    },
+    {
+      "name": "posthog",
+      "source": "https://mcp.posthog.com/mcp",
+      "transport": "http",
+      "description": "PostHog remote MCP for analytics, feature flags, insights, errors, experiments, and related product data.",
+      "enabled": true
     }
   ]
 }
