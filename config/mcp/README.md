@@ -46,3 +46,16 @@ For full machine bootstrap (skills + MCPs):
 ```bash
 ./scripts/bootstrap-agent-runtime.sh
 ```
+
+## Personal / Sensitive MCPs
+
+Servers whose source URL contains a personal token, a company-internal hostname,
+or other secrets must not be committed. Use a local override manifest:
+
+```bash
+cp config/mcp/servers.local.json.example config/mcp/servers.local.json
+# edit servers.local.json — fill in real URLs/tokens, set enabled: true
+./scripts/sync-agent-mcps.sh --manifest config/mcp/servers.local.json
+```
+
+`config/mcp/servers.local.json` is gitignored.

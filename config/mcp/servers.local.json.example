@@ -1,0 +1,28 @@
+{
+  "_comment": "Personal/sensitive MCP servers — copy to servers.local.json and edit. servers.local.json is gitignored. Apply with: ./scripts/sync-agent-mcps.sh --manifest config/mcp/servers.local.json",
+  "schema_version": 1,
+  "add_mcp_version": "1.8.0",
+  "defaults": {
+    "scope": "user",
+    "agents": [
+      "claude-code",
+      "codex"
+    ]
+  },
+  "servers": [
+    {
+      "name": "glean_default",
+      "source": "https://YOUR-COMPANY.glean.com/mcp/default",
+      "transport": "http",
+      "description": "Glean enterprise search. Replace hostname with your org's Glean tenant.",
+      "enabled": false
+    },
+    {
+      "name": "count-mcp",
+      "source": "https://mcp.eu.count.co/mcp/YOUR_PERSONAL_TOKEN",
+      "transport": "http",
+      "description": "Count.co MCP. URL contains a personal token — do not commit.",
+      "enabled": false
+    }
+  ]
+}

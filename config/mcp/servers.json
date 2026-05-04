@@ -14,6 +14,45 @@
       "source": "@executeautomation/playwright-mcp-server",
       "description": "Primary browser automation MCP for verification workflows.",
       "enabled": true
+    },
+    {
+      "name": "playwright",
+      "source": "@playwright/mcp@latest",
+      "description": "Official Microsoft Playwright MCP server.",
+      "enabled": true
+    },
+    {
+      "name": "browsermcp",
+      "source": "@browsermcp/mcp@latest",
+      "description": "BrowserMCP — drives the user's local browser via extension.",
+      "agents": ["claude-code"],
+      "enabled": true
+    },
+    {
+      "name": "chrome-devtools",
+      "source": "chrome-devtools-mcp@latest",
+      "description": "Chrome DevTools MCP — performance traces, network, console, screenshots.",
+      "enabled": true
+    },
+    {
+      "name": "trigger",
+      "source": "trigger.dev@4.3.1 mcp",
+      "description": "Trigger.dev MCP for managing background jobs and tasks.",
+      "enabled": true
+    },
+    {
+      "name": "figma",
+      "source": "https://mcp.figma.com/mcp",
+      "transport": "http",
+      "description": "Figma remote MCP. Requires Figma OAuth on first use.",
+      "enabled": true
+    },
+    {
+      "name": "atlassian",
+      "source": "https://mcp.atlassian.com/v1/sse",
+      "transport": "sse",
+      "description": "Atlassian remote MCP (Jira + Confluence). Requires Atlassian OAuth on first use.",
+      "enabled": true
     }
   ]
 }

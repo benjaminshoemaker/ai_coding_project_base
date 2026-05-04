@@ -8,6 +8,7 @@ Bootstrap machine-level runtime config for both Claude Code and Codex.
 This script runs:
   1) ./scripts/sync-agent-skills.sh
   2) ./scripts/sync-agent-mcps.sh
+  3) ./scripts/sync-agent-configs.sh
 
 Usage:
   ./scripts/bootstrap-agent-runtime.sh [options]
@@ -25,8 +26,10 @@ Options:
   --agents <csv>             MCP agents override (example: claude-code,codex)
   --normalize-existing       Run add-mcp sync after manifest apply (default)
   --no-normalize-existing    Skip add-mcp sync (manifest-only MCP apply)
+  --no-configs               Skip user-level config laydown (Claude/Codex)
+  --force-configs            Overwrite existing user-level config files (with backups)
   --dry-run                  Show planned operations without writes
-  --check                    Check mode (exit non-zero on skill drift)
+  --check                    Check mode (exit non-zero on skill or config drift)
   -h, --help                 Show help
 USAGE
 }
@@ -35,7 +38,9 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 SKILLS_ARGS=()
 MCPS_ARGS=()
+CONFIGS_ARGS=()
 NORMALIZE_EXISTING="1"
+DO_CONFIGS="1"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -63,6 +68,14 @@ while [[ $# -gt 0 ]]; do
       NORMALIZE_EXISTING="0"
       shift
       ;;
+    --no-configs)
+      DO_CONFIGS="0"
+      shift
+      ;;
+    --force-configs)
+      CONFIGS_ARGS+=("--force")
+      shift
+      ;;
     --force|--adopt-unmanaged-skills|--prune|--adopt-codex-shim|--no-codex-shim)
       SKILLS_ARGS+=("$1")
       shift
@@ -70,11 +83,13 @@ while [[ $# -gt 0 ]]; do
     --dry-run)
       SKILLS_ARGS+=("--dry-run")
       MCPS_ARGS+=("--dry-run")
+      CONFIGS_ARGS+=("--dry-run")
       shift
       ;;
     --check)
       SKILLS_ARGS+=("--check")
       MCPS_ARGS+=("--check")
+      CONFIGS_ARGS+=("--check")
       shift
       ;;
     -h|--help)
@@ -96,12 +111,21 @@ fi
 echo "Bootstrapping agent runtime from: $ROOT_DIR"
 
 echo
-echo "[1/2] Syncing skills"
+echo "[1/3] Syncing skills"
 "$ROOT_DIR/scripts/sync-agent-skills.sh" ${SKILLS_ARGS[@]+"${SKILLS_ARGS[@]}"}
 
 echo
-echo "[2/2] Syncing MCPs"
+echo "[2/3] Syncing MCPs"
 "$ROOT_DIR/scripts/sync-agent-mcps.sh" ${MCPS_ARGS[@]+"${MCPS_ARGS[@]}"}
+
+if [[ "$DO_CONFIGS" == "1" ]]; then
+  echo
+  echo "[3/3] Syncing user-level configs"
+  "$ROOT_DIR/scripts/sync-agent-configs.sh" ${CONFIGS_ARGS[@]+"${CONFIGS_ARGS[@]}"}
+else
+  echo
+  echo "[3/3] Skipping user-level config sync (--no-configs)"
+fi
 
 echo
 echo "Bootstrap complete."

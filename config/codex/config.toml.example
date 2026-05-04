@@ -1,0 +1,67 @@
+# Codex CLI config template — copy to ~/.codex/config.toml
+#
+# Sanitized: machine-specific [projects."..."] trust entries and any MCP
+# servers with personal tokens or company-internal URLs have been removed.
+# Add those to ~/.codex/config.toml directly after copying.
+
+model = "gpt-5.5"
+model_reasoning_effort = "xhigh"
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+personality = "pragmatic"
+
+[sandbox_workspace_write]
+writable_roots = [
+  # Adjust to your machine. Common defaults:
+  # "/Users/YOU/Projects",
+  # "/Users/YOU/.cache",
+  # "/Users/YOU/.npm",
+]
+network_access = true
+
+# Trust your common project roots so Codex skips per-folder confirmation.
+# Example:
+# [projects."/Users/YOU/Projects"]
+# trust_level = "trusted"
+
+[notice]
+hide_gpt5_1_migration_prompt = true
+"hide_gpt-5.1-codex-max_migration_prompt" = true
+
+  [notice.model_migrations]
+  "gpt-5.2" = "gpt-5.3-codex"
+  "gpt-5.3-codex" = "gpt-5.4"
+
+# MCP servers — keep this in sync with config/mcp/servers.json. The
+# sync-agent-mcps.sh script normally manages these via add-mcp; entries below
+# are shown for reference / direct editing.
+
+[mcp_servers.chrome-devtools]
+command = "npx"
+args = ["chrome-devtools-mcp@latest"]
+
+[mcp_servers.trigger]
+command = "npx"
+args = ["trigger.dev@4.3.1", "mcp"]
+
+[mcp_servers.playwright]
+command = "npx"
+args = ["@executeautomation/playwright-mcp-server"]
+
+[mcp_servers.executeautomation-playwright]
+command = "npx"
+args = ["-y", "@executeautomation/playwright-mcp-server"]
+
+[mcp_servers.figma]
+type = "http"
+url = "https://mcp.figma.com/mcp"
+
+[mcp_servers.atlassian]
+type = "sse"
+url = "https://mcp.atlassian.com/v1/sse"
+
+# Personal MCPs (Glean, Count, etc.) — add to your local config.toml from
+# config/mcp/servers.local.json.example. Do not commit secrets.
+
+[plugins."github@openai-curated"]
+enabled = true
