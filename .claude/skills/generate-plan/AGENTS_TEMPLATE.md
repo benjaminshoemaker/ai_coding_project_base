@@ -14,6 +14,7 @@ Workflow guidelines for AI agents working in this project.
 ## Instruction Hierarchy
 
 - This file is the project-wide baseline.
+- `plans/PLAN_STATUS.md` identifies the only plan agents may implement.
 - Greenfield execution guidance lives in `plans/greenfield/AGENTS.md`.
 - Feature execution guidance lives in `features/<name>/AGENTS.md`.
 - When working in a scoped directory, follow this file first, then the local
@@ -27,18 +28,20 @@ Workflow guidelines for AI agents working in this project.
 
 ## Core Workflow
 
-1. Load the nearest scoped instructions for the area you are editing.
-2. Read the relevant specification and execution-plan documents before changing code.
-3. Confirm dependencies and existing patterns before implementing.
-4. Make the smallest change that satisfies the active task.
-5. Add or update tests when behavior changes.
-6. Run configured verification before reporting completion.
-7. Update execution-plan checkboxes when scoped work requires it.
-8. Commit using the project task format after verification passes.
+1. Read `plans/PLAN_STATUS.md` and confirm your working directory matches the current plan.
+2. Load the nearest scoped instructions for the area you are editing.
+3. Read the relevant specification and execution-plan documents before changing code.
+4. Confirm dependencies and existing patterns before implementing.
+5. Make the smallest change that satisfies the active task.
+6. Add or update tests when behavior changes.
+7. Run configured verification before reporting completion.
+8. Update execution-plan checkboxes when scoped work requires it.
+9. Commit using the project task format after verification passes.
 
 ## Guardrails
 
 - Do not invent requirements that are not in the active spec or plan.
+- Do not implement archived, superseded, rejected, abandoned, completed, or non-current plans.
 - Do not skip, disable, or misreport failing tests.
 - Do not rewrite or revert unrelated user changes.
 - Do not introduce new dependencies or APIs without noting the impact.

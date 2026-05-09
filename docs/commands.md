@@ -10,7 +10,7 @@ Run from your **project directory**. These produce specification and planning do
 |---------|-------------|
 | `/product-spec` | Generate product specification via guided Q&A |
 | `/technical-spec` | Generate technical specification (uses `plans/greenfield/PRODUCT_SPEC.md`, or legacy root `PRODUCT_SPEC.md`) |
-| `/generate-plan` | Generate the greenfield execution plan plus root and scoped AGENTS files |
+| `/generate-plan` | Generate the greenfield execution plan, `plans/PLAN_STATUS.md`, plus root and scoped AGENTS files |
 | `/verify-spec <type>` | Verify spec document for quality issues |
 
 > **Migration note:** These commands previously ran from the toolkit directory with a `[path]` argument (e.g., `/product-spec ~/my-project`). They now run from the project directory with no path argument. The old invocation style shows a deprecation message with redirect instructions.
@@ -24,8 +24,8 @@ Run from your **project directory**. These produce feature-scoped documents in `
 | Command | Description |
 |---------|-------------|
 | `/feature-spec <name>` | Generate feature specification via guided Q&A |
-| `/feature-technical-spec <name>` | Generate feature technical spec (analyzes existing codebase) |
-| `/feature-plan <name>` | Generate feature execution plan plus feature-local AGENTS/CLAUDE files |
+| `/feature-technical-spec <name>` | Generate feature technical spec and flow verification plan |
+| `/feature-plan <name>` | Generate feature execution plan from specs, flow plan, and project context |
 | `/feature-audit` | Audit shipped feature against specs, vision, UI/UX, and live browser |
 
 ## Execution Commands
@@ -33,6 +33,10 @@ Run from your **project directory**. These produce feature-scoped documents in `
 Run from the scoped execution directory that contains the active plan:
 - Greenfield: `plans/greenfield/`
 - Feature work: `features/<name>/`
+
+Execution commands read `plans/PLAN_STATUS.md` when it exists. They stop rather
+than running from archived, superseded, rejected, abandoned, completed, or
+non-current plan directories.
 
 | Command | Description |
 |---------|-------------|
@@ -55,6 +59,7 @@ Run from your **project directory**. These verify code, specs, and criteria qual
 | Command | Description |
 |---------|-------------|
 | `/verify-task X.Y.Z` | Verify a specific task's acceptance criteria |
+| `/discover-flow-verification` | Guide discovery for an agent-runnable verification plan for a specific user flow |
 | `/configure-verification` | Auto-detect and set test/lint/build/auth commands for your stack |
 | `/criteria-audit [dir]` | Validate acceptance criteria metadata in EXECUTION_PLAN.md |
 | `/security-scan` | Run dependency audits, secrets detection, and static analysis |

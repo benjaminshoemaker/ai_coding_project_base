@@ -30,6 +30,7 @@ Copy this checklist and track progress:
 ```
 Go Progress:
 - [ ] Detect context (greenfield plan vs feature directory)
+- [ ] Plan status guard
 - [ ] Check for execution plan
 - [ ] Read phase state
 - [ ] Determine next action
@@ -52,6 +53,21 @@ Determine working context:
 3. Otherwise:
    - PROJECT_ROOT = current working directory
    - MODE = "greenfield-legacy"
+
+## Plan Status Guard
+
+Read `PROJECT_ROOT/plans/PLAN_STATUS.md` if it exists.
+
+- Derive the current scoped path from CWD: `plans/greenfield/` for greenfield
+  mode, or `features/<name>/` for feature mode.
+- If CWD is under `plans/archive/` or `features/archive/`, **STOP**. Archived
+  plans are historical context only.
+- If `Current status` is not `active`, **STOP** and report that the current plan
+  is not implementable.
+- If `Current plan` points to a different path than the current scoped path,
+  **STOP**. Report the current active plan path and tell the user to run `/go`
+  from that directory.
+- If the manifest is missing, continue with the legacy directory convention.
 
 ## Step 1: Check for Execution Plan
 
@@ -181,7 +197,13 @@ Phase {CURRENT_PHASE} checkpointed. Preparing Phase {CURRENT_PHASE + 1}...
 
 1. Read `.claude/deferred-reviews.json`
 2. Read `autoAdvance.drainOnCompletion` from `.claude/settings.local.json` (default: true)
-3. If queue is non-empty (has `reviewed: false` items) AND `drainOnCompletion` is true:
+3. If `PROJECT_ROOT/plans/PLAN_STATUS.md` exists, update the current plan entry:
+   - `Current stage`: `completed`
+   - `Current status`: `completed`
+   - add or update a history row for the current plan with `completed`
+   - leave `Current plan` pointing at the completed path for auditability until
+     a new plan-generation command supersedes it
+4. If queue is non-empty (has `reviewed: false` items) AND `drainOnCompletion` is true:
 
 ```
 PROJECT COMPLETE — DEFERRED REVIEW

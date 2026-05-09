@@ -3,6 +3,8 @@
 Use this prompt to generate an execution plan for implementing a **new feature** in an **existing project**:
 - **EXECUTION_PLAN.md** - Detailed phase/step/task breakdown for the feature
 - **Feature-local AGENTS.md** - Scoped workflow guidance for agents working in `features/<name>/`
+- **plans/PLAN_STATUS.md update** - Current-plan pointer and plan history
+- **FLOW_VERIFICATION_PLAN.md consumption** - Optional agent-runnable flow verification plan
 
 This prompt requires your existing `AGENTS.md` file as input to ensure compatibility and identify any workflow gaps.
 
@@ -16,6 +18,7 @@ I need you to generate an execution plan for implementing a new feature in my ex
 Read `~/.claude/skills/shared/EXECUTION_PLAN_FORMAT.md` for the execution hierarchy definitions,
 verification types, EXECUTION_PLAN.md template structure, task quality checks, red flags, and
 post-generation checklist. Use those definitions verbatim — do not redefine or paraphrase them.
+Read `~/.claude/skills/shared/PLAN_STATUS.md` for the current-plan manifest convention.
 
 Before assigning any (MANUAL) or (MANUAL:DEFER) tag to an acceptance criterion or checkpoint item,
 read `~/.claude/skills/auto-verify/PATTERNS.md` and walk through the MANUAL Decision Tree (steps 1-9).
@@ -55,12 +58,19 @@ Before generating the execution plan:
    - Are there migration concerns (database, config, etc.)?
    - Does this require new external services or dependencies?
 
-5. **Plan the phases**
+5. **Apply flow verification plan**
+   - If `FLOW_VERIFICATION_PLAN.md` has `Status: Applicable`, translate its
+     harness shape, setup/state, driver, assertions, evidence, and teardown/rerun
+     requirements into concrete implementation tasks and `Verify:` criteria.
+   - Do not leave applicable flow verification as prose-only context.
+   - If it has `Status: Not applicable`, do not invent a dedicated flow harness.
+
+6. **Plan the phases**
    - Phase 1 is typically foundation/infrastructure for the feature
    - Middle phases build core functionality incrementally
    - Final phase handles polish, edge cases, and cleanup
 
-6. **Ensure backward compatibility**
+7. **Ensure backward compatibility**
    - Existing tests must continue to pass
    - Public APIs should not break (or require migration path)
    - Consider feature flags if incremental rollout is needed
@@ -90,6 +100,8 @@ When planning feature work, explicitly address:
 - Unit tests for new code
 - Integration tests for feature flows
 - Regression tests for modified existing code
+- Agent-runnable flow verification harness tasks from `FLOW_VERIFICATION_PLAN.md`
+  when the plan is applicable
 
 **Rollback Plan**
 - Can the feature be disabled without deployment?
@@ -143,6 +155,13 @@ If you can't provide files, describe:
 - Files to create and modify
 - Regression risk assessment
 
+### FLOW_VERIFICATION_PLAN.md
+- Status: `Applicable` or `Not applicable`
+- If applicable: flow claim, channel under test, harness shape, setup/state,
+  driver, assertions, evidence, teardown/rerun, and open decisions
+- If not applicable: short reason no dedicated agent-runnable flow harness is
+  needed for this feature
+
 Read the local file `AGENTS_TEMPLATE.md` (in this skill's directory) and use its contents as the feature-local `AGENTS.md` format template (do not paraphrase or summarize — use the template verbatim, filling in project-specific values).
 
 ═══════════════════════════════════════════════════════════════════
@@ -150,10 +169,11 @@ Read the local file `AGENTS_TEMPLATE.md` (in this skill's directory) and use its
 Generate:
 1. EXECUTION_PLAN.md
 2. `features/<name>/AGENTS.md`
+3. Update `plans/PLAN_STATUS.md` with `features/<name>/` as the current active plan unless the user explicitly chose non-current planned work
 
 Note: The execution plan references FEATURE_SPEC.md and FEATURE_TECHNICAL_SPEC.md
-(your feature specification documents) instead of PRODUCT_SPEC.md and TECHNICAL_SPEC.md
-for context management purposes.
+(your feature specification documents) and FLOW_VERIFICATION_PLAN.md (when present)
+instead of PRODUCT_SPEC.md and TECHNICAL_SPEC.md for context management purposes.
 ```
 
 ---
@@ -208,9 +228,13 @@ EXECUTION_PLAN.md
 (Run the checklist from EXECUTION_PLAN_FORMAT.md, then also check:)
 □ Every task in FEATURE_SPEC.md has at least one corresponding task
 □ Every requirement in FEATURE_TECHNICAL_SPEC.md has implementation coverage
+□ If FLOW_VERIFICATION_PLAN.md is applicable, every harness/setup/assertion/evidence/teardown requirement has implementation or verification coverage
+□ If FLOW_VERIFICATION_PLAN.md is not applicable, EXECUTION_PLAN.md does not invent unnecessary harness work
 
 Feature-local AGENTS.md Quality
 □ Contains ONLY workflow/process guidance for work in `features/<name>/`
+□ Required Context points to `../../plans/PLAN_STATUS.md`
+□ Required Context includes `FLOW_VERIFICATION_PLAN.md` when it exists
 □ Defaults to "no additional feature-specific workflow rules" when root AGENTS.md already covers the workflow
 □ Does NOT include feature-specific commit examples
 □ Does NOT include acceptance criteria details (those are in EXECUTION_PLAN.md)
@@ -225,6 +249,12 @@ AGENTS.md Compatibility (check for gaps)
 □ If regression checks are needed, the applicable instruction file covers regression testing policy
 □ If migrations are needed, the applicable instruction file covers migration workflow
 □ Feature-local additions are provided ONLY for actual workflow gaps identified
+
+PLAN_STATUS.md Quality
+□ `Current plan` is `features/<name>/` for active feature execution
+□ `Current type` is `feature`
+□ `Current stage` is `execution-plan`
+□ History records any superseded current plan or archived feature snapshot
 ```
 
 ---
@@ -234,6 +264,7 @@ AGENTS.md Compatibility (check for gaps)
 Before finalizing, verify:
 - Every task in FEATURE_SPEC.md has at least one corresponding task in EXECUTION_PLAN.md
 - Every requirement in FEATURE_TECHNICAL_SPEC.md has implementation coverage
+- Every applicable FLOW_VERIFICATION_PLAN.md requirement has execution-plan coverage
 - Task estimates are realistic and dependencies are correctly ordered
 - No spec requirements were lost or misinterpreted during plan generation
 

@@ -77,4 +77,8 @@ The raw prompts are available for copy-paste into any LLM:
 | FEATURE_SPEC.md | `.claude/skills/feature-spec/PROMPT.md` |
 | FEATURE_TECHNICAL_SPEC.md | `.claude/skills/feature-technical-spec/PROMPT.md` |
 
-**Note:** The greenfield plan files (`plans/greenfield/EXECUTION_PLAN.md`, `plans/greenfield/AGENTS.md`) plus root `AGENTS.md` are best generated in Claude Code, where the generator can read your saved specs directly.
+**Note:** The greenfield plan files (`plans/greenfield/EXECUTION_PLAN.md`,
+`plans/greenfield/AGENTS.md`) plus root `AGENTS.md` and
+`plans/PLAN_STATUS.md` are best generated in Claude Code, where the generator
+can read your saved specs directly. Before executing, check
+`plans/PLAN_STATUS.md`; historical and archived plans are context only.

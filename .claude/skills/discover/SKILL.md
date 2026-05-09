@@ -15,7 +15,8 @@ Discovery Progress:
 - [ ] Phase 2: Explore (conversational Q&A)
 - [ ] Phase 3: Background research (non-blocking)
 - [ ] Phase 4: Synthesis — write DISCOVERY_NOTES.md
-- [ ] Phase 5: Handoff to /product-spec
+- [ ] Phase 5: Update plans/PLAN_STATUS.md
+- [ ] Phase 6: Handoff to /product-spec
 ```
 
 ## Lean Mode (`--lean`)
@@ -115,7 +116,19 @@ Launch a **single background Agent** (`run_in_background: true`) with this missi
 
 ## Phase 4: Synthesis
 
-Write `DISCOVERY_NOTES.md` to the project root (or `plans/greenfield/DISCOVERY_NOTES.md` if `plans/greenfield/` already exists).
+Read `~/.claude/skills/shared/PLAN_STATUS.md` before writing files.
+
+Write `DISCOVERY_NOTES.md` to `plans/greenfield/DISCOVERY_NOTES.md` by default,
+creating `plans/greenfield/` if needed. Keep the legacy root `DISCOVERY_NOTES.md`
+path only as a fallback when the user explicitly asks for it.
+
+Before writing:
+1. Ensure `plans/` exists.
+2. Read `plans/PLAN_STATUS.md` if it exists.
+3. If another path is listed as `Current plan` with `Current status: active`,
+   ask whether this discovery supersedes it, is research-only, or should abort.
+4. If discovery supersedes an existing greenfield plan, archive a snapshot under
+   `plans/archive/YYYYMMDD-HHMMSS-greenfield/` before overwriting notes.
 
 Wait for the background research agent to complete before writing. If it hasn't finished, wait briefly — this is the one place where research blocks.
 
@@ -160,7 +173,20 @@ Source: /discover conversation
 
 **If research found a strong "Use Directly" candidate:** Note it clearly but don't editorialize. The user will see it and decide.
 
-## Phase 5: Handoff
+## Phase 5: Plan Status Update
+
+After writing the file, update `plans/PLAN_STATUS.md` unless this was explicitly
+research-only:
+- `Current plan`: `plans/greenfield/`
+- `Current type`: `greenfield`
+- `Current stage`: `discovery`
+- `Current status`: `active`
+- `Next command`: `/product-spec [--lean]`
+
+If the user marked the notes research-only, add a `research` history row instead
+of changing the current plan.
+
+## Phase 6: Handoff
 
 After writing the file:
 
@@ -179,4 +205,4 @@ That's it. No lengthy summary — the user can read the file.
 | Background research agent fails or times out | Write DISCOVERY_NOTES.md without the research section. Add a note: "Background research did not complete. Run WebSearch manually or proceed without." |
 | User provides a fully formed description with no ambiguity | Skip Phase 2 entirely. Run research, write notes, hand off. |
 | User wants to explore multiple ideas | Pick the one they seem most excited about, note the others in "Raw Context" as alternatives worth revisiting. |
-| Project already has DISCOVERY_NOTES.md | Ask: overwrite, backup then overwrite, or abort. |
+| Project already has DISCOVERY_NOTES.md | Ask: archive then overwrite, overwrite, or abort. Prefer archive snapshots under `plans/archive/` over loose `.bak` files. |

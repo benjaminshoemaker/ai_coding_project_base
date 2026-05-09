@@ -20,10 +20,11 @@ Base project rules live in `../../AGENTS.md`.
 
 Before starting a task, read:
 1. `../../AGENTS.md`
-2. `PRODUCT_SPEC.md`
-3. `TECHNICAL_SPEC.md`
-4. `EXECUTION_PLAN.md`
-5. `../../LEARNINGS.md` if it exists
+2. `../PLAN_STATUS.md` and confirm this directory is the current active plan
+3. `PRODUCT_SPEC.md`
+4. `TECHNICAL_SPEC.md`
+5. `EXECUTION_PLAN.md`
+6. `../../LEARNINGS.md` if it exists
 
 ## Task Loop
 

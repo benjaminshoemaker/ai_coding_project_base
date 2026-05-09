@@ -20,11 +20,12 @@ Copy this checklist and track progress:
 ```
 Phase Prep Progress:
 - [ ] Step 1: Run pre-flight checks 1-7
-- [ ] Step 2: Verify all prerequisites pass
-- [ ] Step 3: Load phase context and task list
-- [ ] Step 4: Check for blocking dependencies
-- [ ] Step 5: Emit report and log results
-- [ ] Step 6: Auto-advance decision (MUST COMPLETE — do not stop before this)
+- [ ] Step 2: Plan status guard
+- [ ] Step 3: Verify all prerequisites pass
+- [ ] Step 4: Load phase context and task list
+- [ ] Step 5: Check for blocking dependencies
+- [ ] Step 6: Emit report and log results
+- [ ] Step 7: Auto-advance decision (MUST COMPLETE — do not stop before this)
 ```
 
 ## External Tool Documentation Protocol
@@ -88,6 +89,21 @@ Before starting, confirm the required files exist:
   - They are likely in the toolkit repo (or the wrong folder)
   - If `plans/greenfield/EXECUTION_PLAN.md` exists in the current working directory, tell them to `cd plans/greenfield` first
   - They should `cd` into their project/feature directory (the one containing `EXECUTION_PLAN.md`) and re-run `/phase-prep $1`
+
+## Plan Status Guard
+
+Read `PROJECT_ROOT/plans/PLAN_STATUS.md` if it exists.
+
+- Derive the current scoped path from CWD: `plans/greenfield/` for greenfield
+  mode, or `features/<name>/` for feature mode.
+- If CWD is under `plans/archive/` or `features/archive/`, **STOP**. Archived
+  plans are historical context only.
+- If `Current status` is not `active`, **STOP** and report that the current plan
+  is not implementable.
+- If `Current plan` does not match the current scoped path, **STOP**. Report the
+  current active plan path and tell the user to run `/phase-prep $1` from that
+  directory instead.
+- If the manifest is missing, continue with the legacy directory convention.
 
 ## Context Check
 

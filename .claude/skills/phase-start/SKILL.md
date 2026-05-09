@@ -16,6 +16,7 @@ Phase Start Progress:
 - [ ] Parse arguments and detect execution mode
 - [ ] Context detection (project root vs feature)
 - [ ] Directory guard (EXECUTION_PLAN.md + AGENTS.md)
+- [ ] Plan status guard (confirm this scoped directory is current)
 - [ ] Context check (compact if <40% remaining)
 - [ ] Codex mode prerequisites (if --codex)
 - [ ] Git setup (commit dirty files, create phase branch)
@@ -140,6 +141,21 @@ Before starting, confirm the required files exist:
 
 - If either is missing, **STOP** and tell the user to `cd` into their project/feature directory (the one containing `EXECUTION_PLAN.md`) and re-run `/phase-start $1`.
 - If `plans/greenfield/EXECUTION_PLAN.md` exists in the current working directory, tell the user to `cd plans/greenfield` and re-run `/phase-start $1`.
+
+## Plan Status Guard
+
+Read `PROJECT_ROOT/plans/PLAN_STATUS.md` if it exists.
+
+- Derive the current scoped path from CWD: `plans/greenfield/` for greenfield
+  mode, or `features/<name>/` for feature mode.
+- If CWD is under `plans/archive/` or `features/archive/`, **STOP**. Archived
+  plans are historical context only.
+- If `Current status` is not `active`, **STOP** and ask the user to choose or
+  reactivate a plan before execution.
+- If `Current plan` does not match the current scoped path, **STOP**. Report the
+  current active plan path and tell the user to run `/phase-start $1` from that
+  directory instead.
+- If the manifest is missing, continue with the legacy directory convention.
 
 ## Context Check
 

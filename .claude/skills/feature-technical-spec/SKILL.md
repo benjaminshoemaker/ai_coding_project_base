@@ -14,11 +14,14 @@ Copy this checklist and track progress:
 ```
 Feature Technical Spec Progress:
 - [ ] Directory guard
+- [ ] Plan status guard
 - [ ] Check prerequisites (FEATURE_SPEC.md exists)
 - [ ] Existing file guard (prevent overwrite)
 - [ ] Existing code analysis (similar functionality, patterns, integration points)
 - [ ] Codebase maturity assessment
 - [ ] Generate FEATURE_TECHNICAL_SPEC.md
+- [ ] Update plans/PLAN_STATUS.md
+- [ ] Write FLOW_VERIFICATION_PLAN.md
 - [ ] Run spec-verification
 - [ ] Capture deferred requirements
 - [ ] Cross-model review (if Codex available)
@@ -43,6 +46,19 @@ Feature Technical Spec Progress:
 - `PROJECT_ROOT` = current working directory
 - `FEATURE_DIR` = `PROJECT_ROOT/features/$1`
 
+## Plan Status Guard
+
+Read `~/.claude/skills/shared/PLAN_STATUS.md` before writing files.
+
+1. Read `PROJECT_ROOT/plans/PLAN_STATUS.md` if it exists.
+2. If the manifest exists and `Current plan` is different from `features/$1/`
+   with `Current status: active`, ask whether this feature should become
+   current, stay non-current planned work, or abort.
+3. If the manifest is missing, create it after writing the technical spec.
+4. If this technical spec replaces an existing feature technical direction,
+   archive a snapshot under `features/archive/YYYYMMDD-HHMMSS-$1/` before
+   overwriting downstream files.
+
 ## Prerequisites
 
 - Check that `FEATURE_DIR/FEATURE_SPEC.md` exists. If not:
@@ -56,7 +72,7 @@ Before asking any questions, check whether `FEATURE_DIR/FEATURE_TECHNICAL_SPEC.m
 
 - If it does not exist: continue normally.
 - If it exists: **STOP** and ask the user what to do:
-  1. **Backup then overwrite (recommended)**: read the existing file and write it to `FEATURE_DIR/FEATURE_TECHNICAL_SPEC.md.bak.YYYYMMDD-HHMMSS`, then write the new document to `FEATURE_DIR/FEATURE_TECHNICAL_SPEC.md`
+  1. **Archive then overwrite (recommended)**: copy the existing feature plan set to `features/archive/YYYYMMDD-HHMMSS-$1/`, mark the archived snapshot as superseded when practical, then write the new document to `FEATURE_DIR/FEATURE_TECHNICAL_SPEC.md`
   2. **Overwrite**: replace `FEATURE_DIR/FEATURE_TECHNICAL_SPEC.md` with the new document
   3. **Abort**: do not write anything; suggest they rename/move the existing file first
 
@@ -122,6 +138,51 @@ Read `.claude/skills/feature-technical-spec/PROMPT.md` and follow its instructio
 ## Output
 
 Write the completed specification to `FEATURE_DIR/FEATURE_TECHNICAL_SPEC.md`.
+
+Update `PROJECT_ROOT/plans/PLAN_STATUS.md` so:
+- `Current plan` is `features/$1/` unless the user explicitly chose non-current planned work
+- `Current type` is `feature`
+- `Current stage` is `feature-technical-spec`
+- `Current status` is `active` for current work, or `planned` for non-current work
+- the history table records any archived or superseded feature snapshot
+
+## Flow Verification Plan
+
+After writing `FEATURE_TECHNICAL_SPEC.md` and before post-generation gates, decide
+whether this feature introduces or materially changes an end-to-end user,
+integration, or agent flow that should be verified by an AI coding agent.
+
+1. Read `.claude/skills/discover-flow-verification/SKILL.md`.
+2. Use the feature spec, technical spec, project docs, tests, scripts, and
+   existing verification conventions to answer:
+   "Does this feature need agent-runnable flow verification beyond normal task
+   acceptance criteria?"
+3. If **yes**, apply the discovery steps from `/discover-flow-verification`:
+   - Name the flow in plain user language.
+   - Identify the real channel under test.
+   - Map blind spots, controllable state, success/failure assertions, evidence,
+     and teardown/rerun behavior.
+   - Ask focused questions only when the flow, success condition, or external
+     dependency policy is unclear.
+   - Write `FEATURE_DIR/FLOW_VERIFICATION_PLAN.md` using the Plan Output
+     headings from `/discover-flow-verification`, prefixed with:
+     ```markdown
+     # Flow Verification Plan: $1
+
+     Status: Applicable
+     ```
+4. If **no**, write `FEATURE_DIR/FLOW_VERIFICATION_PLAN.md` with:
+   ```markdown
+   # Flow Verification Plan: $1
+
+   Status: Not applicable
+   Reason: {short reason this feature does not introduce or materially change an
+   end-to-end flow that needs a dedicated agent-runnable harness}
+   ```
+5. If the answer is blocked by unresolved product or environment decisions,
+   ask the user before continuing. Do not hand off to `/feature-plan` until
+   `FLOW_VERIFICATION_PLAN.md` is either `Status: Applicable` with enough detail
+   for execution planning, or `Status: Not applicable` with a concrete reason.
 
 ## Lean Mode (`--lean`)
 
@@ -236,6 +297,7 @@ After verification passes, run cross-model review if Codex CLI is available:
 |-----------|--------|
 | FEATURE_SPEC.md not found in `features/$1/` | Stop and report "Run `/feature-spec $1` first" |
 | PROMPT.md not found at `.claude/skills/feature-technical-spec/PROMPT.md` | Stop and report "Skill asset missing — reinstall toolkit or run /setup" |
+| `discover-flow-verification/SKILL.md` missing | Stop and report "Flow verification skill missing — reinstall toolkit or run /setup" |
 | Codebase too large for full code analysis (>5000 files) | Limit analysis to `src/`, `lib/`, and `app/` directories; note reduced scope in output |
 | DEFERRED.md write fails (permissions or disk) | Output deferred items to terminal, warn user, continue with spec generation |
 | Codex CLI invocation fails or times out | Log the error, skip cross-model review, proceed to Next Step |
@@ -248,6 +310,7 @@ When complete, inform the user:
 ```
 FEATURE_TECHNICAL_SPEC.md created and verified at features/$1/FEATURE_TECHNICAL_SPEC.md
 
+Flow Verification Plan: APPLICABLE | NOT_APPLICABLE
 Verification: PASSED | PASSED WITH NOTES | NEEDS REVIEW | LEAN_SKIP
 Cross-Model Review: PASSED | PASSED WITH NOTES | UNAVAILABLE | LEAN_SKIP
 Deferred Requirements: {count} items captured to DEFERRED.md

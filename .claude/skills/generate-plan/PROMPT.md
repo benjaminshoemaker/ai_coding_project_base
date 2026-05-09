@@ -12,14 +12,16 @@ Generate an execution toolkit from product and technical specifications. This pr
 ```
 I need you to generate an execution toolkit from the attached specifications (PRODUCT_SPEC.md and TECHNICAL_SPEC.md).
 
-Generate three documents:
+Generate four documents:
 1. `plans/greenfield/EXECUTION_PLAN.md` — Task breakdown with acceptance criteria
 2. `AGENTS.md` — Durable project-wide workflow guidelines
 3. `plans/greenfield/AGENTS.md` — Greenfield execution guidance for agents working in `plans/greenfield/`
+4. `plans/PLAN_STATUS.md` — The single current-plan pointer and plan history
 
 Read `~/.claude/skills/shared/EXECUTION_PLAN_FORMAT.md` for the execution hierarchy definitions,
 verification types, EXECUTION_PLAN.md template structure, task quality checks, red flags, and
 post-generation checklist. Use those definitions verbatim — do not redefine or paraphrase them.
+Read `~/.claude/skills/shared/PLAN_STATUS.md` for the manifest format and use it verbatim.
 
 Before assigning any (MANUAL) or (MANUAL:DEFER) tag to an acceptance criterion or checkpoint item,
 read `~/.claude/skills/auto-verify/PATTERNS.md` and walk through the MANUAL Decision Tree (steps 1-9).
@@ -48,6 +50,11 @@ Root `AGENTS.md` owns:
 - Greenfield execution context for work inside `plans/greenfield/`
 - Which planning documents to load for the initial build
 - Per-task execution loop, verification flow, and progress updates
+
+`plans/PLAN_STATUS.md` owns:
+- The only current plan path agents may implement
+- Current plan type, stage, status, and next command
+- History rows for archived, superseded, rejected, abandoned, completed, and research-only plans
 
 Root `AGENTS.md` does NOT include:
 - Error handling patterns (agents discover from codebase)
@@ -94,6 +101,7 @@ Generate:
 1. `plans/greenfield/EXECUTION_PLAN.md`
 2. `AGENTS.md`
 3. `plans/greenfield/AGENTS.md`
+4. `plans/PLAN_STATUS.md`
 ```
 
 ---
@@ -117,7 +125,14 @@ Generate:
 **AGENTS.md**
 - [ ] Root `AGENTS.md` stays concise and project-wide
 - [ ] `plans/greenfield/AGENTS.md` captures the greenfield execution loop
+- [ ] Root and scoped `AGENTS.md` instruct agents to check `plans/PLAN_STATUS.md`
 - [ ] Project context filled in (tech stack, dev server)
 - [ ] "When to stop" triggers present
 - [ ] Git conventions present (including `/create-pr` for PRs)
 - [ ] Guardrails present
+
+**PLAN_STATUS.md**
+- [ ] `Current plan` is `plans/greenfield/`
+- [ ] `Current status` is `active`
+- [ ] `Current stage` is `execution-plan`
+- [ ] History table contains the active greenfield row and any archived/superseded rows

@@ -5,6 +5,8 @@ This guide covers adding features to existing projects using the toolkit's featu
 ## Overview
 
 Features are isolated in their own directories under `features/<name>/`, enabling multiple concurrent features without document conflicts.
+`plans/PLAN_STATUS.md` marks exactly one feature or greenfield plan as current;
+old feature directories are context only unless the manifest makes them current.
 
 ## Quick Start
 
@@ -30,6 +32,8 @@ Each feature gets its own directory with isolated planning documents:
 your-project/
 ├── AGENTS.md                    # Shared workflow rules
 ├── plans/
+│   ├── PLAN_STATUS.md           # Current-plan pointer and history
+│   ├── archive/                 # Archived greenfield plan snapshots
 │   └── greenfield/
 │       ├── EXECUTION_PLAN.md
 │       └── AGENTS.md
@@ -38,15 +42,20 @@ your-project/
 │   ├── analytics/
 │   │   ├── FEATURE_SPEC.md
 │   │   ├── FEATURE_TECHNICAL_SPEC.md
+│   │   ├── FLOW_VERIFICATION_PLAN.md
 │   │   ├── EXECUTION_PLAN.md
 │   │   ├── AGENTS.md
 │   │   └── CLAUDE.md
-│   └── notifications/
+│   ├── notifications/
 │       ├── FEATURE_SPEC.md
 │       ├── FEATURE_TECHNICAL_SPEC.md
+│       ├── FLOW_VERIFICATION_PLAN.md
 │       ├── EXECUTION_PLAN.md
 │       ├── AGENTS.md
 │       └── CLAUDE.md
+│   └── archive/
+│       └── 20260415-old-feature/
+│           └── FEATURE_SPEC.md
 └── [your code]
 ```
 
@@ -58,8 +67,24 @@ Note: `DEFERRED.md` lives at the project root (not in feature directories) since
 |----------|---------|
 | `FEATURE_SPEC.md` | Defines *what* the feature does and *why* |
 | `FEATURE_TECHNICAL_SPEC.md` | Defines *how* the feature integrates technically |
+| `FLOW_VERIFICATION_PLAN.md` | Records whether a dedicated agent-runnable flow harness is needed, and how it should work |
 | `EXECUTION_PLAN.md` | Breaks feature work into phases, steps, and tasks |
 | `AGENTS.md` | Feature-local workflow guidance layered on top of the root `AGENTS.md` |
+| `plans/PLAN_STATUS.md` | Records whether this feature is current, planned, completed, or superseded |
+
+## Current Plan Status
+
+Feature commands update `plans/PLAN_STATUS.md` as they hand off state:
+
+- `/feature-spec <name>` records `features/<name>/` at stage `feature-spec`
+- `/feature-technical-spec <name>` advances it to `feature-technical-spec` and
+  writes `FLOW_VERIFICATION_PLAN.md`
+- `/feature-plan <name>` advances it to `execution-plan` and makes it the active execution path
+- execution commands stop if run from a feature directory that is archived, completed, superseded, rejected, abandoned, or not the current plan
+
+When a feature plan replaces another plan, the old feature snapshot belongs in
+`features/archive/YYYYMMDD-HHMMSS-<name>/`; old greenfield snapshots belong in
+`plans/archive/YYYYMMDD-HHMMSS-greenfield/`.
 
 ## Deferred Requirements
 
@@ -109,6 +134,8 @@ There is no merge step. If a feature discovers a rule that should apply project-
 │       ↓                                                                 │
 │   /feature-technical-spec <name>  ──→  FEATURE_TECHNICAL_SPEC.md        │
 │       ↓                                                                 │
+│   [Flow Verification] ───────→  FLOW_VERIFICATION_PLAN.md               │
+│       ↓                                                                 │
 │   [Auto-Verify] ─────────────→  Check context preservation & quality    │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
@@ -117,7 +144,7 @@ There is no merge step. If a feature discovers a rule that should apply project-
 │                           PLANNING PHASE                                │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                         │
-│   Inputs: Specs + existing AGENTS.md                                    │
+│   Inputs: Specs + flow verification plan + existing AGENTS.md           │
 │       ↓                                                                 │
 │   /feature-plan <name>  ────→  EXECUTION_PLAN.md + AGENTS.md            │
 │       ↓                                                                 │

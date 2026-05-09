@@ -15,10 +15,12 @@ Copy this checklist and track progress:
 Feature Spec Progress:
 - [ ] Directory guard
 - [ ] Handle arguments (feature name)
+- [ ] Plan status guard
 - [ ] Create feature directory
 - [ ] Existing file guard (prevent overwrite)
 - [ ] Run guided Q&A process (from PROMPT.md)
 - [ ] Write FEATURE_SPEC.md
+- [ ] Update plans/PLAN_STATUS.md
 - [ ] Capture deferred requirements
 - [ ] Cross-model review (if Codex available)
 ```
@@ -42,6 +44,19 @@ Feature Spec Progress:
 - `PROJECT_ROOT` = current working directory
 - `FEATURE_DIR` = `PROJECT_ROOT/features/$1`
 
+## Plan Status Guard
+
+Read `~/.claude/skills/shared/PLAN_STATUS.md` before writing files.
+
+1. Ensure `PROJECT_ROOT/plans/` exists.
+2. Read `PROJECT_ROOT/plans/PLAN_STATUS.md` if it exists.
+3. If another path is listed as `Current plan` with `Current status: active`,
+   ask whether this feature supersedes it, should be recorded as non-current
+   planned work, or should abort.
+4. If this feature supersedes the current plan, record the previous plan as
+   `superseded` in the history table.
+5. If `plans/PLAN_STATUS.md` is missing, create it after writing the feature spec.
+
 Create `features/$1/` if it doesn't exist:
 ```bash
 mkdir -p "features/$1"
@@ -53,7 +68,7 @@ Before asking any questions, check whether `FEATURE_DIR/FEATURE_SPEC.md` already
 
 - If it does not exist: continue normally.
 - If it exists: **STOP** and ask the user what to do:
-  1. **Backup then overwrite (recommended)**: read the existing file and write it to `FEATURE_DIR/FEATURE_SPEC.md.bak.YYYYMMDD-HHMMSS`, then write the new document to `FEATURE_DIR/FEATURE_SPEC.md`
+  1. **Archive then overwrite (recommended)**: copy the existing feature plan set to `features/archive/YYYYMMDD-HHMMSS-$1/`, mark the archived snapshot as superseded when practical, then write the new document to `FEATURE_DIR/FEATURE_SPEC.md`
   2. **Overwrite**: replace `FEATURE_DIR/FEATURE_SPEC.md` with the new document
   3. **Abort**: do not write anything; suggest they rename/move the existing file first
 
@@ -69,6 +84,13 @@ Read `.claude/skills/feature-spec/PROMPT.md` and follow its instructions exactly
 ## Output
 
 Write the completed specification to `FEATURE_DIR/FEATURE_SPEC.md`.
+
+Update `PROJECT_ROOT/plans/PLAN_STATUS.md` so:
+- `Current plan` is `features/$1/` unless the user explicitly chose non-current planned work
+- `Current type` is `feature`
+- `Current stage` is `feature-spec`
+- `Current status` is `active` for current work, or `planned` for non-current work
+- the history table records any archived or superseded plan snapshot
 
 ## Deferred Requirements Capture (During Q&A)
 

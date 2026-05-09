@@ -47,10 +47,12 @@ Base project rules live in `../../AGENTS.md`.
 
 Before starting a task, read:
 1. `../../AGENTS.md`
-2. `FEATURE_SPEC.md`
-3. `FEATURE_TECHNICAL_SPEC.md`
-4. `EXECUTION_PLAN.md`
-5. `../../LEARNINGS.md` if it exists
+2. `../../plans/PLAN_STATUS.md` and confirm this feature is the current active plan
+3. `FEATURE_SPEC.md`
+4. `FEATURE_TECHNICAL_SPEC.md`
+5. `FLOW_VERIFICATION_PLAN.md` if it exists
+6. `EXECUTION_PLAN.md`
+7. `../../LEARNINGS.md` if it exists
 
 ## Task Loop
 

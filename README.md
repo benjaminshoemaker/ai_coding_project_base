@@ -9,7 +9,7 @@ A structured framework for AI agents to build software autonomously — with ver
 A framework that turns ad-hoc AI prompting into a repeatable workflow with automatic verification. Three phases:
 
 1. **Specify** — Guided Q&A produces `plans/greenfield/PRODUCT_SPEC.md` and `plans/greenfield/TECHNICAL_SPEC.md`
-2. **Plan** — Generator creates `plans/greenfield/EXECUTION_PLAN.md`, a scoped `plans/greenfield/AGENTS.md`, and a durable root `AGENTS.md`
+2. **Plan** — Generator creates `plans/greenfield/EXECUTION_PLAN.md`, `plans/PLAN_STATUS.md`, a scoped `plans/greenfield/AGENTS.md`, and a durable root `AGENTS.md`
 3. **Execute** — AI agents work task-by-task with automatic verification after each one
 
 **What makes execution robust?**
@@ -89,6 +89,7 @@ For feature development in existing projects, see [Feature Workflow](docs/featur
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                         │
 │   /generate-plan  ──────────→  plans/greenfield/EXECUTION_PLAN.md      │
+│                                 plans/PLAN_STATUS.md                   │
 │                                 AGENTS.md + plans/greenfield/AGENTS.md │
 │       ↓                                                                 │
 │   [Auto-Verify] ─────────────→  Check context preservation & quality    │
@@ -137,12 +138,16 @@ your-project/
 ├── LEARNINGS.md             # Discovered patterns (created as you work)
 ├── DEFERRED.md              # Deferred requirements (captured during Q&A)
 ├── plans/
+│   ├── PLAN_STATUS.md       # Single current-plan pointer and plan history
+│   ├── archive/             # Superseded/rejected/abandoned greenfield snapshots
 │   └── greenfield/
 │       ├── PRODUCT_SPEC.md      # What you're building
 │       ├── TECHNICAL_SPEC.md    # How it's built
 │       ├── EXECUTION_PLAN.md    # Tasks with acceptance criteria
 │       ├── AGENTS.md            # Greenfield execution guidance
 │       └── CLAUDE.md            # Scoped Claude shim
+├── features/
+│   └── archive/             # Superseded/rejected/abandoned feature snapshots
 ├── .claude/
 │   ├── verification-config.json
 │   └── toolkit-version.json # Tracks toolkit sync state (global skill resolution)
@@ -151,6 +156,9 @@ your-project/
 
 Skills resolve globally from `~/.claude/skills/` (managed by `./scripts/bootstrap-agent-runtime.sh`) rather than long-lived per-project copies.
 These documents persist across sessions, enabling any AI agent to pick up where another left off.
+`plans/PLAN_STATUS.md` tells Claude Code, Codex, and other agents which plan is
+current so historical specs and abandoned experiments stay available without
+becoming accidental requirements.
 
 ## Documentation
 

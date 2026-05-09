@@ -54,6 +54,7 @@ The generated instruction files now split responsibilities:
 
 - Root `AGENTS.md` keeps durable project-wide rules concise
 - Scoped `AGENTS.md` files in `plans/greenfield/` or `features/<name>/` define the active task loop and verification expectations
+- `plans/PLAN_STATUS.md` identifies which scoped plan is current before execution or verification begins
 - Detailed test conventions should follow the codebase and verification metadata in `EXECUTION_PLAN.md`
 
 ## Test Quality Gate (Optional)

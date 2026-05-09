@@ -15,9 +15,12 @@ Copy this checklist and track progress:
 Feature Plan Progress:
 - [ ] Directory guard
 - [ ] Handle arguments (feature name)
+- [ ] Plan status guard
 - [ ] Check prerequisites (FEATURE_SPEC.md + FEATURE_TECHNICAL_SPEC.md)
+- [ ] Resolve FLOW_VERIFICATION_PLAN.md
 - [ ] Existing file guard (prevent overwrite)
 - [ ] Generate EXECUTION_PLAN.md and feature-local AGENTS.md
+- [ ] Update plans/PLAN_STATUS.md
 - [ ] Verify execution skills installed
 - [ ] Codex CLI detection and skill install
 - [ ] Run spec-verification
@@ -44,6 +47,20 @@ Feature Plan Progress:
 - `PROJECT_ROOT` = current working directory
 - `FEATURE_DIR` = `PROJECT_ROOT/features/$1`
 
+## Plan Status Guard
+
+Read `~/.claude/skills/shared/PLAN_STATUS.md` before writing files.
+
+1. Ensure `PROJECT_ROOT/plans/` exists.
+2. Read `PROJECT_ROOT/plans/PLAN_STATUS.md` if it exists.
+3. If another path is listed as `Current plan` with `Current status: active`,
+   ask whether this feature supersedes it, should remain non-current planned
+   work, or should abort.
+4. If an existing feature execution plan is being replaced, archive a snapshot
+   under `features/archive/YYYYMMDD-HHMMSS-$1/` before overwriting.
+5. After writing output files, update `plans/PLAN_STATUS.md` so exactly one plan
+   is current and active.
+
 ## Prerequisites
 
 - Check that `FEATURE_DIR/FEATURE_SPEC.md` exists. If not:
@@ -53,6 +70,28 @@ Feature Plan Progress:
 - Check that `PROJECT_ROOT/AGENTS.md` exists. If not:
   "AGENTS.md not found. Feature development requires an existing AGENTS.md."
 
+## Flow Verification Plan Input
+
+Before generating the execution plan, resolve `FEATURE_DIR/FLOW_VERIFICATION_PLAN.md`.
+
+1. If the file exists, read it and use it as an input alongside
+   `FEATURE_SPEC.md` and `FEATURE_TECHNICAL_SPEC.md`.
+2. If the file is missing, treat this as a legacy or partially generated feature:
+   - Read `.claude/skills/discover-flow-verification/SKILL.md`.
+   - Decide whether the feature introduces or materially changes an end-to-end
+     user, integration, or agent flow.
+   - If yes, apply `/discover-flow-verification` and write
+     `FEATURE_DIR/FLOW_VERIFICATION_PLAN.md` with `Status: Applicable`.
+   - If no, write `FEATURE_DIR/FLOW_VERIFICATION_PLAN.md` with
+     `Status: Not applicable` and a short reason.
+   - Ask focused questions only if the flow, success condition, or external
+     dependency policy is unclear.
+3. If the plan has `Status: Applicable`, the generated `EXECUTION_PLAN.md` must
+   include concrete work for any required harness, fixtures, setup/state,
+   driver actions, assertions, evidence capture, and teardown/rerun behavior.
+4. If the plan has `Status: Not applicable`, do not invent a dedicated flow
+   harness. Rely on normal task acceptance criteria and regression checks.
+
 ## Existing File Guard (Prevent Overwrite)
 
 Before generating anything, check whether any output files already exist:
@@ -61,7 +100,7 @@ Before generating anything, check whether any output files already exist:
 
 - If neither exists: continue normally.
 - If one or both exist: **STOP** and ask the user what to do for the existing file(s):
-  1. **Backup then overwrite (recommended)**: for each existing file, read it and write it to `{path}.bak.YYYYMMDD-HHMMSS`, then write the new document(s) to the original path(s)
+  1. **Archive then overwrite (recommended)**: copy the existing feature plan set to `features/archive/YYYYMMDD-HHMMSS-$1/`, mark the archived snapshot as superseded when practical, then write the new document(s) to the original path(s)
   2. **Overwrite**: replace the existing file(s) with the new document(s)
   3. **Abort**: do not write anything; suggest they rename/move the existing file(s) first
 
@@ -69,7 +108,8 @@ Before generating anything, check whether any output files already exist:
 
 Read `.claude/skills/feature-plan/PROMPT.md` and follow its instructions exactly:
 
-1. Read `FEATURE_DIR/FEATURE_SPEC.md` and `FEATURE_DIR/FEATURE_TECHNICAL_SPEC.md` as inputs
+1. Read `FEATURE_DIR/FEATURE_SPEC.md`, `FEATURE_DIR/FEATURE_TECHNICAL_SPEC.md`,
+   and `FEATURE_DIR/FLOW_VERIFICATION_PLAN.md` as inputs
 2. Read existing `PROJECT_ROOT/AGENTS.md` to understand current conventions
 3. Generate EXECUTION_PLAN.md with phases, steps, and tasks for the feature
 4. Generate `FEATURE_DIR/AGENTS.md` with feature-scoped workflow guidance
@@ -79,6 +119,14 @@ Read `.claude/skills/feature-plan/PROMPT.md` and follow its instructions exactly
 Write both documents to the feature directory:
 - `FEATURE_DIR/EXECUTION_PLAN.md`
 - `FEATURE_DIR/AGENTS.md`
+
+Update `PROJECT_ROOT/plans/PLAN_STATUS.md` so:
+- `Current plan` is `features/$1/`
+- `Current type` is `feature`
+- `Current stage` is `execution-plan`
+- `Current status` is `active`
+- `Next command` is `cd features/$1 && /fresh-start`
+- the history table records any archived or superseded feature snapshot
 
 ## Create Scoped CLAUDE.md
 
@@ -147,7 +195,7 @@ These gates MUST execute before you produce the "Next Step" output. The output t
 After writing EXECUTION_PLAN.md, run the spec-verification workflow:
 
 1. Read `.claude/skills/spec-verification/SKILL.md` for the verification process
-2. Verify context preservation: Check that all key items from FEATURE_TECHNICAL_SPEC.md and FEATURE_SPEC.md appear as tasks or acceptance criteria
+2. Verify context preservation: Check that all key items from FEATURE_TECHNICAL_SPEC.md, FEATURE_SPEC.md, and any applicable FLOW_VERIFICATION_PLAN.md appear as tasks or acceptance criteria
 3. Run quality checks for untestable criteria, missing dependencies, vague language, regression coverage
 4. Present any CRITICAL issues to the user with resolution options
 5. Apply fixes based on user choices
@@ -190,6 +238,7 @@ After verification passes, run cross-model review if Codex CLI is available:
 | Situation | Action |
 |-----------|--------|
 | `FEATURE_SPEC.md` or `FEATURE_TECHNICAL_SPEC.md` missing | STOP with message directing user to run `/feature-spec` or `/feature-technical-spec` first |
+| `discover-flow-verification/SKILL.md` missing while `FLOW_VERIFICATION_PLAN.md` is absent | Stop and report "Flow verification skill missing — reinstall toolkit or run /setup" |
 | EXECUTION_PLAN.md generation produces empty or malformed output | Re-read input specs, retry generation once; if still empty, report error and ask user to check spec completeness |
 | `/criteria-audit` returns FAIL | STOP and present failing criteria to user; do not proceed until metadata is fixed |
 | Codex CLI invocation errors or times out | Log the error, mark cross-model review as SKIPPED, and continue to Next Step |
@@ -203,6 +252,7 @@ When complete, inform the user:
 ```
 EXECUTION_PLAN.md and AGENTS.md created and verified at features/$1/
 
+Flow Verification Plan: APPLICABLE | NOT_APPLICABLE
 Verification: PASSED | PASSED WITH NOTES | NEEDS REVIEW | LEAN_SKIP
 Criteria Audit: PASSED | WARN | LEAN_SKIP
 Cross-Model Review: PASSED | PASSED WITH NOTES | UNAVAILABLE | LEAN_SKIP

@@ -20,6 +20,7 @@ Copy this checklist and track progress:
 Fresh Start Progress:
 - [ ] Detect context (greenfield plan vs feature directory)
 - [ ] Directory guard (verify AGENTS.md + EXECUTION_PLAN.md exist)
+- [ ] Plan status guard (confirm this scoped directory is current)
 - [ ] Git initialization (if needed)
 - [ ] Feature branch setup (feature mode only)
 - [ ] Scoped AGENTS check
@@ -78,6 +79,22 @@ Confirm the required files exist:
     2. `cd` into the project/feature directory
     3. Re-run `/fresh-start`
   - Otherwise, ask the user for the correct project directory path and re-run `/fresh-start <project-path>`
+
+## Plan Status Guard
+
+Read `PROJECT_ROOT/plans/PLAN_STATUS.md` if it exists.
+
+- If it exists, compare its `Current plan` path to `SCOPE_DIR` relative to
+  `PROJECT_ROOT`.
+- If `Current status` is not `active`, **STOP**. Report that the current plan is
+  not implementable and ask the user to choose or reactivate a plan.
+- If `Current plan` points to a different path than `SCOPE_DIR`, **STOP**. Tell
+  the user the current active plan path and instruct them to `cd` there before
+  running `/fresh-start`.
+- If `SCOPE_DIR` is under `plans/archive/` or `features/archive/`, **STOP**.
+  Archived plans are historical context only.
+- If the manifest is missing, continue with legacy directory detection, but
+  report: "No plans/PLAN_STATUS.md found; proceeding from directory convention."
 
 ## Git Initialization (First Run)
 
@@ -243,6 +260,7 @@ Detect the current git branch and load relevant context:
 
 Read these files first:
 - **PROJECT_ROOT/AGENTS.md** — Durable project-wide workflow guidelines
+- **PROJECT_ROOT/plans/PLAN_STATUS.md** — Current plan manifest (if exists)
 - **SCOPE_DIR/AGENTS.md** — Scoped execution guidance (if `SCOPE_DIR != PROJECT_ROOT`)
 - **SCOPE_DIR/EXECUTION_PLAN.md** — Tasks and acceptance criteria
 
@@ -264,6 +282,7 @@ Check which of these exist and read them:
 **From SCOPE_DIR** (if feature mode):
 - **FEATURE_SPEC.md** — Feature requirements
 - **FEATURE_TECHNICAL_SPEC.md** — Feature technical approach
+- **FLOW_VERIFICATION_PLAN.md** — Agent-runnable flow verification plan (if exists)
 
 ## Your Task
 
@@ -292,7 +311,7 @@ When invoked by another skill (e.g., `/go`), return structured data:
 ```json
 {
   "status": "<Status>",
-  "context_loaded": ["AGENTS.md", "EXECUTION_PLAN.md", "PRODUCT_SPEC.md"],
+  "context_loaded": ["AGENTS.md", "EXECUTION_PLAN.md", "FLOW_VERIFICATION_PLAN.md"],
   "blockers": [],
   "next_action": "Continue with Phase 1, Task 1"
 }

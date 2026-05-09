@@ -15,13 +15,15 @@ Copy this checklist and track progress:
 Technical Spec Progress:
 - [ ] Step 1: Directory guard
 - [ ] Step 2: Project root confirmation
-- [ ] Step 3: Check prerequisites (plans/greenfield/PRODUCT_SPEC.md)
-- [ ] Step 4: Check for existing plans/greenfield/TECHNICAL_SPEC.md
-- [ ] Step 5: Conduct guided Q&A with user
-- [ ] Step 6: Cross-verify against PRODUCT_SPEC.md
-- [ ] Step 7: Handle deferred decisions
-- [ ] Step 8: Review and refine with user
-- [ ] Step 9: Suggest next step (/generate-plan)
+- [ ] Step 3: Plan status guard
+- [ ] Step 4: Check prerequisites (plans/greenfield/PRODUCT_SPEC.md)
+- [ ] Step 5: Check for existing plans/greenfield/TECHNICAL_SPEC.md
+- [ ] Step 6: Conduct guided Q&A with user
+- [ ] Step 7: Cross-verify against PRODUCT_SPEC.md
+- [ ] Step 8: Update plans/PLAN_STATUS.md
+- [ ] Step 9: Handle deferred decisions
+- [ ] Step 10: Review and refine with user
+- [ ] Step 11: Suggest next step (/generate-plan)
 ```
 
 ## Lean Mode (`--lean`)
@@ -47,6 +49,20 @@ Continue? (Yes / Change directory)
 
 If the user says "Change directory", ask for the correct path and instruct them to `cd` there first.
 
+## Plan Status Guard
+
+Read `~/.claude/skills/shared/PLAN_STATUS.md` before writing files.
+
+1. Ensure `plans/` exists.
+2. Read `plans/PLAN_STATUS.md` if it exists.
+3. If another path is listed as `Current plan` with `Current status: active`,
+   ask whether the greenfield plan supersedes it, should remain non-current, or
+   should abort.
+4. If `plans/PLAN_STATUS.md` is missing, create it after writing the technical spec.
+5. If this technical spec replaces an existing technical direction, archive a
+   greenfield snapshot under `plans/archive/YYYYMMDD-HHMMSS-greenfield/` before
+   overwriting downstream files.
+
 ## Prerequisites
 
 - Check for `plans/greenfield/PRODUCT_SPEC.md` first.
@@ -62,7 +78,7 @@ Before asking any questions, ensure `plans/greenfield/` exists, then check wheth
 
 - If it does not exist: continue normally.
 - If it exists: **STOP** and ask the user what to do:
-  1. **Backup then overwrite (recommended)**: read the existing file and write it to `plans/greenfield/TECHNICAL_SPEC.md.bak.YYYYMMDD-HHMMSS`, then write the new document to `plans/greenfield/TECHNICAL_SPEC.md`
+  1. **Archive then overwrite (recommended)**: copy the existing greenfield plan set to `plans/archive/YYYYMMDD-HHMMSS-greenfield/`, mark the archived snapshot as superseded when practical, then write the new document to `plans/greenfield/TECHNICAL_SPEC.md`
   2. **Overwrite**: replace `plans/greenfield/TECHNICAL_SPEC.md` with the new document
   3. **Abort**: do not write anything; suggest they rename/move the existing file first
 
@@ -78,6 +94,13 @@ Read `.claude/skills/technical-spec/PROMPT.md` and follow its instructions exact
 ## Output
 
 Write the completed specification to `plans/greenfield/TECHNICAL_SPEC.md`.
+
+Update `plans/PLAN_STATUS.md` so:
+- `Current plan` is `plans/greenfield/`
+- `Current type` is `greenfield`
+- `Current stage` is `technical-spec`
+- `Current status` is `active`
+- the history table records any archived or superseded plan snapshot
 
 ## Post-Generation Gates (MANDATORY unless `--lean`)
 

@@ -13,14 +13,16 @@ Copy this checklist and track progress:
 ```
 Generate Plan Progress:
 - [ ] Step 1: Directory guard
-- [ ] Step 2: Check prerequisites (plans/greenfield specs)
-- [ ] Step 3: Check for toolkit setup
-- [ ] Step 4: Check for existing output files
-- [ ] Step 5: Process specs into task breakdown
-- [ ] Step 6: Create root and scoped CLAUDE.md files (if missing)
-- [ ] Step 7: Verify plan completeness
-- [ ] Step 8: Review and refine with user
-- [ ] Step 9: Suggest next step (/fresh-start)
+- [ ] Step 2: Plan status guard
+- [ ] Step 3: Check prerequisites (plans/greenfield specs)
+- [ ] Step 4: Check for toolkit setup
+- [ ] Step 5: Check for existing output files
+- [ ] Step 6: Process specs into task breakdown
+- [ ] Step 7: Write/update plans/PLAN_STATUS.md
+- [ ] Step 8: Create root and scoped CLAUDE.md files (if missing)
+- [ ] Step 9: Verify plan completeness
+- [ ] Step 10: Review and refine with user
+- [ ] Step 11: Suggest next step (/fresh-start)
 ```
 
 ## Directory Guard
@@ -37,10 +39,25 @@ Before generating any files, confirm the output location with the user:
 Will write:
 - `AGENTS.md` to: {absolute path of cwd}/
 - planning docs to: {absolute path of cwd}/plans/greenfield/
+- plan status to: {absolute path of cwd}/plans/PLAN_STATUS.md
 Continue? (Yes / Change directory)
 ```
 
 If the user says "Change directory", ask for the correct path and instruct them to `cd` there first.
+
+## Plan Status Guard
+
+Read `~/.claude/skills/shared/PLAN_STATUS.md` before writing files.
+
+1. Ensure `plans/` exists.
+2. Read `plans/PLAN_STATUS.md` if it exists.
+3. If another path is listed as `Current plan` with `Current status: active`,
+   ask whether this greenfield plan supersedes it, should remain non-current,
+   or should abort.
+4. If an existing greenfield execution plan is being replaced, archive a
+   snapshot under `plans/archive/YYYYMMDD-HHMMSS-greenfield/` before overwriting.
+5. After writing output files, update `plans/PLAN_STATUS.md` so exactly one plan
+   is current and active.
 
 ## Prerequisites
 
@@ -77,7 +94,7 @@ Before generating anything, ensure `plans/greenfield/` exists, then check whethe
 
 - If none exist: continue normally.
 - If one or more exist: **STOP** and ask the user what to do for the existing file(s):
-  1. **Backup then overwrite (recommended)**: for each existing file, read it and write it to `{path}.bak.YYYYMMDD-HHMMSS`, then write the new document(s) to the original path(s)
+  1. **Archive then overwrite (recommended)**: copy the existing greenfield plan set to `plans/archive/YYYYMMDD-HHMMSS-greenfield/`, mark the archived snapshot as superseded when practical, then write the new document(s) to the original path(s)
   2. **Overwrite**: replace the existing file(s) with the new document(s)
   3. **Abort**: do not write anything; suggest they rename/move the existing file(s) first
 
@@ -96,6 +113,14 @@ Write these files:
 - `AGENTS.md`
 - `plans/greenfield/EXECUTION_PLAN.md`
 - `plans/greenfield/AGENTS.md`
+- `plans/PLAN_STATUS.md` (create or update current plan, stage, status, and history)
+
+`plans/PLAN_STATUS.md` must set:
+- `Current plan` to `plans/greenfield/`
+- `Current type` to `greenfield`
+- `Current stage` to `execution-plan`
+- `Current status` to `active`
+- `Next command` to `cd plans/greenfield && /fresh-start`
 
 ## Create CLAUDE.md Files
 

@@ -73,6 +73,24 @@ The toolkit enforces this:
 
 If your root `AGENTS.md` grows too large, move scoped execution detail into `plans/greenfield/AGENTS.md`, `features/<name>/AGENTS.md`, and matching `CLAUDE.md` files.
 
+## Iterating Plans Without Stale Requirements
+
+Use `plans/PLAN_STATUS.md` as the single current-plan pointer. Keep
+`plans/greenfield/` as the canonical greenfield path and put superseded
+greenfield snapshots under `plans/archive/YYYYMMDD-HHMMSS-greenfield/`.
+Put superseded feature snapshots under `features/archive/YYYYMMDD-HHMMSS-<name>/`.
+
+Status rules:
+- `active` is implementable only when it is the manifest's current plan
+- `planned`, `research`, `completed`, `superseded`, `rejected`, and `abandoned`
+  are not implementable
+- `.bak` files and archive directories are historical context only
+
+When a new spec or plan supersedes old work, the generation skill should archive
+a snapshot and update the manifest before handing off to execution. Execution
+skills read the manifest and stop if they are run from the wrong scoped
+directory.
+
 ## Optional Ad-Hoc Tools
 
 These tools are available for on-demand use but are **not part of the standard workflow**.

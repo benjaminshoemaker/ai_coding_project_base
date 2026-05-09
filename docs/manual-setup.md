@@ -34,7 +34,7 @@ If you're not using Claude Code, you can use this toolkit with any LLM by copyin
 |-----------------|-------------|
 | `plans/greenfield/PRODUCT_SPEC.md` | `.claude/skills/product-spec/PROMPT.md` |
 | `plans/greenfield/TECHNICAL_SPEC.md` | `.claude/skills/technical-spec/PROMPT.md` |
-| `AGENTS.md` + `plans/greenfield/EXECUTION_PLAN.md` + `plans/greenfield/AGENTS.md` | `.claude/skills/generate-plan/PROMPT.md` |
+| `AGENTS.md` + `plans/PLAN_STATUS.md` + `plans/greenfield/EXECUTION_PLAN.md` + `plans/greenfield/AGENTS.md` | `.claude/skills/generate-plan/PROMPT.md` |
 
 ### Feature Development
 
@@ -47,6 +47,8 @@ If you're not using Claude Code, you can use this toolkit with any LLM by copyin
 ### Execution
 
 See `START_PROMPTS.md` for phase execution prompts.
+Read `plans/PLAN_STATUS.md` before executing; only the current active plan is
+implementable.
 
 ## Limitations
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Discover Flow Verification"
+  short_description: "Design agent-runnable flow checks"
+  default_prompt: "Help me figure out how an AI coding agent can autonomously run and verify this user flow end to end. Read the repo context first, identify the channel under test, ask focused questions where needed, and stop with a concrete verification plan before implementation."

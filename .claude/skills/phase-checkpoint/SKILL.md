@@ -19,13 +19,14 @@ Copy this checklist and track progress:
 ```
 Phase Checkpoint Progress:
 - [ ] Step 1: Context detection
-- [ ] Step 2: Tool availability & config
-- [ ] Step 3: Local verification (automated, optional, manual)
-- [ ] Step 4: Cross-model review (Codex)
-- [ ] Step 5: Production verification
-- [ ] Step 6: State update
-- [ ] Step 7: Generate report
-- [ ] Step 8: Auto-advance check
+- [ ] Step 2: Plan status guard
+- [ ] Step 3: Tool availability & config
+- [ ] Step 4: Local verification (automated, optional, manual)
+- [ ] Step 5: Cross-model review (Codex)
+- [ ] Step 6: Production verification
+- [ ] Step 7: State update
+- [ ] Step 8: Generate report
+- [ ] Step 9: Auto-advance check
 ```
 
 ## Step 1: Context Detection
@@ -48,7 +49,22 @@ Determine working context:
 
 **Context Check:** If context is below 40% remaining, run `/compact` first.
 
-## Step 2: Tool Availability & Config
+## Step 2: Plan Status Guard
+
+Read `PROJECT_ROOT/plans/PLAN_STATUS.md` if it exists.
+
+- Derive the current scoped path from CWD: `plans/greenfield/` for greenfield
+  mode, or `features/<name>/` for feature mode.
+- If CWD is under `plans/archive/` or `features/archive/`, STOP. Archived plans
+  are historical context only.
+- If `Current status` is not `active`, STOP and report that the current plan is
+  not implementable.
+- If `Current plan` does not match the current scoped path, STOP. Report the
+  current active plan path and tell the user to run `/phase-checkpoint $1` from
+  that directory instead.
+- If the manifest is missing, continue with the legacy directory convention.
+
+## Step 3: Tool Availability & Config
 
 Check which optional tools are available:
 
@@ -76,7 +92,7 @@ Read `.claude/settings.local.json` for cross-model review config:
 
 If `codexReview` is not configured, default to `enabled: true` when Codex CLI is available.
 
-## Step 3: Local Verification (Must Pass First)
+## Step 4: Local Verification (Must Pass First)
 
 **IMPORTANT**: All local verification must pass before production verification.
 
@@ -118,7 +134,7 @@ failure (it is part of the quality gate).
 
 For external integrations, follow [DOCS_PROTOCOL.md](DOCS_PROTOCOL.md) to fetch latest documentation.
 
-## Step 4: Cross-Model Review (Codex)
+## Step 5: Cross-Model Review (Codex)
 
 **Purpose:** Get a second opinion from a different AI model to catch blind spots.
 
@@ -180,7 +196,7 @@ them automatically. Do NOT ask the user — this keeps the auto-advance chain fl
        Do NOT create new files unless a fix explicitly requires it."
    - The subagent edits files and returns a summary of what it changed
 
-2. **Re-run automated verification** (same commands from Step 3):
+2. **Re-run automated verification** (same commands from Step 4):
    - Tests, typecheck, lint, build — whatever is configured in verification-config
    - This confirms the fixes don't break anything
 
@@ -197,7 +213,7 @@ them automatically. Do NOT ask the user — this keeps the auto-advance chain fl
    - `git checkout -- .` reverts working tree changes without needing `git reset --hard`
    - If pre-commit hooks fail the commit, treat as "skip auto-commit" and continue
 
-4. **Continue to Step 5** regardless of outcome — Codex findings never block.
+4. **Continue to Step 6** regardless of outcome — Codex findings never block.
 
 ### Output
 
@@ -218,7 +234,7 @@ Skip this step (mark as SKIPPED) if:
 - Phase has fewer than 3 tasks (trivial phase)
 - `--skip-codex` flag passed to checkpoint
 
-## Step 5: Production Verification
+## Step 6: Production Verification
 
 **BLOCKED** until all Local Verification passes.
 
@@ -227,7 +243,7 @@ When local passes, verify:
 - External integrations
 - Production-only manual checks
 
-## Step 6: State Update
+## Step 7: State Update
 
 After checkpoint passes, update `.claude/phase-state.json`:
 
@@ -260,7 +276,7 @@ After checkpoint passes, update `.claude/phase-state.json`:
 
 Write checkpoint report to `.claude/verification/phase-$1.md` and append to `.claude/verification-log.jsonl`.
 
-## Step 7: Report
+## Step 8: Report
 
 ```
 Phase $1 Checkpoint Results
@@ -320,7 +336,7 @@ Status: PASS | PASS WITH NOTES | NEEDS ATTENTION | SKIPPED
 Overall: Ready to proceed | Issues to address
 ```
 
-## Step 8: Auto-Advance
+## Step 9: Auto-Advance
 
 See [AUTO_ADVANCE.md](AUTO_ADVANCE.md) for auto-advance logic.
 
@@ -376,7 +392,7 @@ See [AUTO_ADVANCE.md](AUTO_ADVANCE.md) for auto-advance logic.
 - Suggest: Re-run `/codex-review` manually after checkpoint if desired
 
 **If Codex finds critical issues:**
-- Auto-implement all findings (see "Auto-Implement Findings" in Step 4)
+- Auto-implement all findings (see "Auto-Implement Findings" in Step 5)
 - If fixes pass re-verification, commit with `git add -u` and continue
 - If fixes break re-verification, revert with `git checkout -- .` and log to deferred queue
 - Continue without pausing — cross-model review never blocks

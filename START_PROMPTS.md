@@ -6,7 +6,7 @@ Copy-paste prompts for executing phases from your EXECUTION_PLAN.md.
 
 ## Greenfield Projects
 
-Use these prompts when working with documents generated from the greenfield workflow (`AGENTS.md`, `plans/greenfield/PRODUCT_SPEC.md`, `plans/greenfield/TECHNICAL_SPEC.md`, `plans/greenfield/EXECUTION_PLAN.md`, `plans/greenfield/AGENTS.md`).
+Use these prompts when working with documents generated from the greenfield workflow (`AGENTS.md`, `plans/PLAN_STATUS.md`, `plans/greenfield/PRODUCT_SPEC.md`, `plans/greenfield/TECHNICAL_SPEC.md`, `plans/greenfield/EXECUTION_PLAN.md`, `plans/greenfield/AGENTS.md`).
 
 ### Fresh Start
 
@@ -15,6 +15,7 @@ Use this when beginning work on a new project or onboarding to an existing execu
 ```
 Read the following files to understand the structure and purpose of this project:
 - ../../AGENTS.md or AGENTS.md at project root (workflow guidelines)
+- ../PLAN_STATUS.md or plans/PLAN_STATUS.md at project root (current-plan pointer)
 - AGENTS.md in `plans/greenfield/` (scoped execution guidance)
 - PRODUCT_SPEC.md (what we're building and why)
 - TECHNICAL_SPEC.md (how it's built technically)
@@ -30,11 +31,12 @@ Use this before starting a new phase to verify prerequisites are met.
 ```
 I want to execute Phase {N} from EXECUTION_PLAN.md. Before starting:
 
-1. Check the Pre-Phase Setup section — are there unmet prerequisites I need to complete?
-2. Verify dependencies — are all prior phases complete?
-3. Run a criteria audit for Phase 1 — are acceptance criteria tagged with verification metadata?
-4. Ensure verification config is set — if missing, run /configure-verification
-5. Review permissions — are there any permissions needed in configuration files for autonomous execution?
+1. Check plans/PLAN_STATUS.md — is this directory the current active plan?
+2. Check the Pre-Phase Setup section — are there unmet prerequisites I need to complete?
+3. Verify dependencies — are all prior phases complete?
+4. Run a criteria audit for Phase 1 — are acceptance criteria tagged with verification metadata?
+5. Ensure verification config is set — if missing, run /configure-verification
+6. Review permissions — are there any permissions needed in configuration files for autonomous execution?
 
 Report what's ready and what's blocking.
 ```
@@ -48,6 +50,7 @@ I have completed all prerequisites for Phase {N}. Execute all steps and tasks in
 
 Guidelines:
 - Read both the root `AGENTS.md` and the scoped `plans/greenfield/AGENTS.md`
+- Confirm `plans/PLAN_STATUS.md` marks `plans/greenfield/` as the current active plan
 - Use the code-verification skill for every task
 - Do not check back until the phase is complete, unless blocked
 - Report blockers using the format in AGENTS.md
@@ -73,7 +76,7 @@ Report results and confirm ready to proceed to Phase {N+1}.
 
 ## Feature Development
 
-Use these prompts when working with documents generated from the feature workflow (`AGENTS.md` at project root plus `features/<name>/AGENTS.md`, `FEATURE_SPEC.md`, `FEATURE_TECHNICAL_SPEC.md`, and `EXECUTION_PLAN.md`).
+Use these prompts when working with documents generated from the feature workflow (`AGENTS.md` at project root plus `plans/PLAN_STATUS.md`, `features/<name>/AGENTS.md`, `FEATURE_SPEC.md`, `FEATURE_TECHNICAL_SPEC.md`, and `EXECUTION_PLAN.md`).
 
 ### Fresh Start
 
@@ -82,6 +85,7 @@ Use this when beginning work on a new feature.
 ```
 Read the following files to understand this feature and how it integrates:
 - ../../AGENTS.md (project-wide workflow guidelines)
+- ../../plans/PLAN_STATUS.md (current-plan pointer)
 - AGENTS.md in this feature directory (scoped workflow guidance)
 - FEATURE_SPEC.md (what the feature does and why)
 - FEATURE_TECHNICAL_SPEC.md (how it integrates technically)
@@ -97,12 +101,13 @@ Use this before starting a new phase to verify prerequisites are met.
 ```
 I want to execute Phase {N} from EXECUTION_PLAN.md for this feature. Before starting:
 
-1. Check the Pre-Phase Setup section — are there unmet prerequisites I need to complete?
-2. Verify dependencies — are all prior phases complete?
-3. Run a criteria audit for Phase 1 — are acceptance criteria tagged with verification metadata?
-4. Ensure verification config is set — if missing, run /configure-verification
-5. Review integration points — are the existing components we're modifying in the expected state?
-6. Check for any permissions needed in configuration files for autonomous execution
+1. Check plans/PLAN_STATUS.md — is this feature directory the current active plan?
+2. Check the Pre-Phase Setup section — are there unmet prerequisites I need to complete?
+3. Verify dependencies — are all prior phases complete?
+4. Run a criteria audit for Phase 1 — are acceptance criteria tagged with verification metadata?
+5. Ensure verification config is set — if missing, run /configure-verification
+6. Review integration points — are the existing components we're modifying in the expected state?
+7. Check for any permissions needed in configuration files for autonomous execution
 
 Report what's ready and what's blocking.
 ```
@@ -116,6 +121,7 @@ I have completed all prerequisites for Phase {N}. Execute all steps and tasks in
 
 Guidelines:
 - Read both the root `AGENTS.md` and the feature-local `AGENTS.md`
+- Confirm `plans/PLAN_STATUS.md` marks this feature directory as the current active plan
 - Use the code-verification skill for every task
 - Pay attention to "Existing Code to Reference" in each task for patterns to follow
 - Run existing tests after modifications to catch regressions

@@ -27,6 +27,21 @@ creates `/review`. The `.claude/commands/` format still works but skills are pre
 - **Avoid speculation:** If requirements are unclear, ask the user rather than
   encoding assumptions into prompts.
 
+## Plan Status Convention
+
+The toolkit uses `plans/PLAN_STATUS.md` in target projects to mark exactly one
+plan as current. Keep `plans/greenfield/` as the canonical greenfield path for
+compatibility; archive stale greenfield snapshots under `plans/archive/` and
+stale feature snapshots under `features/archive/`.
+
+When editing planning skills, follow `.claude/skills/shared/PLAN_STATUS.md`:
+- generation skills should update `plans/PLAN_STATUS.md` when they create or
+  supersede discovery notes, specs, technical specs, or execution plans
+- execution skills should refuse to run from archived, superseded, rejected,
+  abandoned, completed, or non-current plan directories
+- old specs and rejected plans are useful context only, not implementable
+  requirements
+
 ## Plan Review Protocol
 
 After writing a plan in plan mode, use AskUserQuestion **before** calling
