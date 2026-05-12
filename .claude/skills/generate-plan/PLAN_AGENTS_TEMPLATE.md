@@ -20,7 +20,8 @@ Base project rules live in `../../AGENTS.md`.
 
 Before starting a task, read:
 1. `../../AGENTS.md`
-2. `../PLAN_STATUS.md` and confirm this directory is the current active plan
+2. `../PLAN_STATUS.md` and confirm this directory is active, or that the user
+   explicitly directed work in this planned directory
 3. `PRODUCT_SPEC.md`
 4. `TECHNICAL_SPEC.md`
 5. `EXECUTION_PLAN.md`
@@ -31,7 +32,7 @@ Before starting a task, read:
 1. Start fresh for each new task.
 2. Read the task definition and its acceptance criteria from `EXECUTION_PLAN.md`.
 3. Confirm prior dependencies are complete.
-4. Add or update tests for the acceptance criteria when behavior changes.
+4. Default to TDD for behavior changes: add or update a failing automated test first, then implement the minimum fix and refactor with tests green.
 5. Implement the minimum change needed to satisfy the task.
 6. Verify using the metadata in `EXECUTION_PLAN.md` and `.claude/verification-config.json`.
 7. Update completed checkboxes in `EXECUTION_PLAN.md`.
@@ -41,6 +42,14 @@ Before starting a task, read:
 
 - All acceptance criteria must be satisfied before a task is complete.
 - Run configured test, typecheck, lint, and build commands when available.
+- Before asking for manual verification, try to verify directly using this order:
+  1. repo-native verification scripts/tests
+  2. local CLI tools
+  3. direct API or SDK calls
+  4. MCP tools
+  5. browser automation or Computer Use
+  If blocked, record attempted tools/commands, outcomes, and the next viable
+  option before declaring a human-only blocker.
 - If an acceptance criterion uses browser or manual verification, follow the
   execution and checkpoint skills for that verification type.
 - If verification metadata is missing, add it before proceeding.
