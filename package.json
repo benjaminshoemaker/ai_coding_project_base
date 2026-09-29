@@ -1,10 +1,10 @@
 {
   "name": "ai_coding_project_base",
   "version": "1.0.0",
-  "description": "A structured prompt framework for building software with AI coding assistants. Instead of ad-hoc prompting, this toolkit provides a systematic workflow that produces documents AI agents can execute against autonomously.",
+  "description": "Migration guidance and a read-only scanner for projects created with the retired AI coding workflow.",
   "scripts": {
-    "lint": "markdownlint '**/*.md' --ignore node_modules --ignore deprecated",
-    "lint:fix": "markdownlint '**/*.md' --ignore node_modules --ignore deprecated --fix"
+    "lint": "markdownlint '**/*.md' --ignore node_modules --ignore tmp",
+    "lint:fix": "markdownlint '**/*.md' --ignore node_modules --ignore tmp --fix"
   },
   "repository": {
     "type": "git",
